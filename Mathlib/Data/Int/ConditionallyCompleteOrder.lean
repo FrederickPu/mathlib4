@@ -22,7 +22,7 @@ noncomputable section
 open scoped Classical
 
 instance : ConditionallyCompleteLinearOrder ℤ :=
-  { Int.linearOrderedCommRing,
+  { instLinearOrderedCommRing,
     LinearOrder.toLattice with
     sSup := fun s =>
       if h : s.Nonempty ∧ BddAbove s then
