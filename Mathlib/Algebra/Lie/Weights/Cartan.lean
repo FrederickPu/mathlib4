@@ -276,33 +276,49 @@ theorem rootSpace_zero_eq (H : LieSubalgebra R L) [H.IsCartanSubalgebra] [IsNoet
 variable {R L H}
 variable [H.IsCartanSubalgebra] [IsNoetherian R L] (α : H → R)
 
-/-- Given a root `α`, the Lie bracket restricted to the product of the root space of `α` and `-α`
-takes value in the Cartan subalgebra.
+/-- Given a root `α` relative to a Cartan subalgebra `H`, this is the span of all products of
+an element of the `α` root space and an element of the `-α` root space. Informally it is often
+denoted `⁅H(α), H(-α)⁆`.
 
-When `L` is semisimple, the image of this map is one-dimensional and is spanned by the corresponding
-coroot. -/
-def rootSpaceProductNegSelf : rootSpace H α ⊗[R] rootSpace H (-α) →ₗ⁅R,H⁆ H :=
-  ((rootSpace H 0).incl.comp <| rootSpaceProduct R L H α (-α) 0 (add_neg_self α)).codRestrict
-    H.toLieSubmodule (by
+When `L` is semisimple over a field of characteristic zero, it is one-dimensional and spanned by
+corresponding coroot corresponding to `α`, see
+`LieAlgebra.IsKilling.corootSpace_eq_span_singleton`. -/
+def corootSpace : LieIdeal R H :=
+  LieModuleHom.range <| ((rootSpace H 0).incl.comp <|
+    rootSpaceProduct R L H α (-α) 0 (add_neg_self α)).codRestrict H.toLieSubmodule (by
   rw [← rootSpace_zero_eq]
   exact fun p ↦ (rootSpaceProduct R L H α (-α) 0 (add_neg_self α) p).property)
 
-@[simp]
-lemma coe_rootSpaceProductNegSelf_apply (x : rootSpace H α) (y : rootSpace H (-α)) :
-    (rootSpaceProductNegSelf α (x ⊗ₜ y) : L) = ⁅(x : L), (y : L)⁆ :=
-  rfl
-
-lemma mem_range_rootSpaceProductNegSelf {x : H} :
-    x ∈ (rootSpaceProductNegSelf α).range ↔
+lemma mem_corootSpace {x : H} :
+    x ∈ corootSpace α ↔
     (x : L) ∈ Submodule.span R {⁅y, z⁆ | (y ∈ rootSpace H α) (z ∈ rootSpace H (-α))} := by
-  have : x ∈ (rootSpaceProductNegSelf α).range ↔
-      (x : L) ∈ (rootSpaceProductNegSelf α).range.map H.toLieSubmodule.incl := by
+  have : x ∈ corootSpace α ↔
+      (x : L) ∈ LieSubmodule.map H.toLieSubmodule.incl (corootSpace α) := by
+    rw [corootSpace]
     simpa using exists_congr fun _ ↦ H.toLieSubmodule.injective_incl.eq_iff.symm
-  simp_rw [this, ← LieModuleHom.map_top, ← LieSubmodule.mem_coeSubmodule,
+  simp_rw [this, corootSpace, ← LieModuleHom.map_top, ← LieSubmodule.mem_coeSubmodule,
     LieSubmodule.coeSubmodule_map, LieSubmodule.top_coeSubmodule, ← TensorProduct.span_tmul_eq_top,
     LinearMap.map_span, Set.image, Set.mem_setOf_eq, exists_exists_exists_and_eq]
   change (x : L) ∈ Submodule.span R
     {x | ∃ (a : rootSpace H α) (b : rootSpace H (-α)), ⁅(a : L), (b : L)⁆ = x} ↔ _
   simp
+
+lemma mem_corootSpace' {x : H} :
+    x ∈ corootSpace α ↔
+    x ∈ Submodule.span R {u : H | ∃ᵉ (y ∈ rootSpace H α) (z ∈ rootSpace H (-α)), ⁅y, z⁆ = u} := by
+  set s : Set H := {u : H | ∃ᵉ (y ∈ rootSpace H α) (z ∈ rootSpace H (-α)), ⁅y, z⁆ = u}
+  suffices H.subtype '' s = {⁅y, z⁆ | (y ∈ rootSpace H α) (z ∈ rootSpace H (-α))} by
+    obtain ⟨x, hx⟩ := x
+    erw [← (H : Submodule R L).injective_subtype.mem_set_image (s := Submodule.span R s)]
+    change _ ↔ x ∈ (Submodule.span R s).map H.subtype
+    rw [Submodule.map_span, mem_corootSpace, ← this]
+    rfl
+  ext u
+  simp only [Submodule.coeSubtype, mem_image, Subtype.exists, LieSubalgebra.mem_coe_submodule,
+    exists_and_right, exists_eq_right, mem_setOf_eq, s]
+  refine ⟨fun ⟨_, y, hy, z, hz, hyz⟩ ↦ ⟨y, hy, z, hz, hyz⟩,
+    fun ⟨y, hy, z, hz, hyz⟩ ↦ ⟨?_, y, hy, z, hz, hyz⟩⟩
+  convert (rootSpaceProduct R L H α (-α) 0 (add_neg_self α) (⟨y, hy⟩ ⊗ₜ[R] ⟨z, hz⟩)).property
+  simp [hyz]
 
 end LieAlgebra
