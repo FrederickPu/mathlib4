@@ -356,14 +356,6 @@ namespace NNRat
 
 variable {p q : ℚ≥0}
 
-/-- The numerator of a nonnegative rational. -/
-@[pp_dot] def num (q : ℚ≥0) : ℕ := (q : ℚ).num.natAbs
-#align nnrat.num NNRat.num
-
-/-- The denominator of a nonnegative rational. -/
-@[pp_dot] def den (q : ℚ≥0) : ℕ := (q : ℚ).den
-#align nnrat.denom NNRat.den
-
 @[norm_cast] lemma num_coe (q : ℚ≥0) : (q : ℚ).num = q.num := by
   simp [num, abs_of_nonneg, Rat.num_nonneg, q.2]
 
@@ -394,34 +386,3 @@ theorem ext_num_den_iff : p = q ↔ p.num = q.num ∧ p.den = q.den :=
 #align nnrat.ext_num_denom_iff NNRat.ext_num_den_iff
 
 end NNRat
-
-/-!
-### Cast from `NNRat`
-
-This section sets up the typeclass and i
--/
-
-/-- Typeclass for the canonical homomorphism `ℚ≥0 → K`.
-
-This should be considered as a notation typeclass. The sole purpose of this typeclass is to be
-extended by `DivisionSemiring`. -/
-class NNRatCast (K : Type*) where
-  /-- The canonical homomorphism `ℚ≥0 → K`.
-
-  Do not use directly. Use the coercion instead. -/
-  protected nnratCast : ℚ≥0 → K
-
-instance NNRat.instNNRatCast : NNRatCast ℚ≥0 where nnratCast q := q
-
-variable {K : Type*} [NNRatCast K]
-
-/-- Canonical homomorphism from `ℚ≥0` to a division semiring `K`.
-
-This is just the bare function in order to aid in creating instances of `DivisionSemiring`. -/
-@[coe, reducible, match_pattern] protected def NNRat.cast : ℚ≥0 → K := NNRatCast.nnratCast
-
--- See note [coercion into rings]
-instance NNRatCast.toCoeTail [NNRatCast K] : CoeTail ℚ≥0 K where coe := NNRat.cast
-
--- See note [coercion into rings]
-instance NNRatCast.toCoeHTCT [NNRatCast K] : CoeHTCT ℚ≥0 K where coe := NNRat.cast
