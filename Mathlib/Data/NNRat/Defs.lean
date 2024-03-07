@@ -30,30 +30,18 @@ of `x` with `↑x`. This tactic also works for a function `f : α → ℚ` with 
 
 open Function
 
-/-- Nonnegative rational numbers. -/
-def NNRat := { q : ℚ // 0 ≤ q} deriving
-  CanonicallyOrderedCommSemiring, CanonicallyLinearOrderedAddCommMonoid, Sub, Inhabited
-#align nnrat NNRat
+deriving instance CanonicallyOrderedCommSemiring for NNRat
+deriving instance CanonicallyLinearOrderedAddCommMonoid for NNRat
+deriving instance Sub for NNRat
+deriving instance Inhabited for NNRat
 
--- Porting note (#10754): Added these instances to get `OrderedSub, DenselyOrdered, Archimedean`
--- instead of `deriving` them
-instance : OrderedSub NNRat := Nonneg.orderedSub
-
--- mathport name: nnrat
-scoped[NNRat] notation "ℚ≥0" => NNRat
+-- TODO: `deriving instance OrderedSub for NNRat` doesn't work yet, so we add the instance manually
+instance NNRat.instOrderedSub : OrderedSub NNRat := Nonneg.orderedSub
 
 namespace NNRat
 
 variable {α : Type*} {p q : ℚ≥0}
 
-instance instCoe : Coe ℚ≥0 ℚ := ⟨Subtype.val⟩
-
-/-
--- Simp lemma to put back `n.val` into the normal form given by the coercion.
-@[simp]
-theorem val_eq_coe (q : ℚ≥0) : q.val = q :=
-  rfl
--/
 -- Porting note: `val_eq_coe` is no longer needed.
 #noalign nnrat.val_eq_coe
 
