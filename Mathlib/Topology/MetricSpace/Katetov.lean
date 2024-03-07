@@ -10,6 +10,10 @@ import Mathlib.Topology.MetricSpace.Isometry
 import Mathlib.Topology.MetricSpace.Cauchy
 import Mathlib.Topology.UniformSpace.Cauchy
 import Mathlib.Data.Finsupp.Defs
+import Mathlib.Data.Set.Image
+import Mathlib.Data.Set.Pointwise.Basic
+import Mathlib.Algebra.Order.AbsoluteValue
+import Mathlib.Init.Algebra.Classes
 
 /-!
 # Katetov Maps
@@ -287,14 +291,203 @@ protected theorem katetovKuratowskiEmbedding.isometry (α : Type*) [MetricSpace 
 
 namespace KatetovExtension
 
-example (α : Type*) (s : Set α) [MetricSpace α] : MetricSpace s := by infer_instance
+lemma helper₁ {α : Type*} {f g : α → ℝ} (hf : BddAbove (Set.range f))
+  (hg : BddAbove (Set.range g)) (fpos : ∀ x, 0 ≤ f x) (gpos : ∀ x, 0 ≤ g x) :
+    BddAbove {f x - g x | x} := by
+  obtain ⟨Cf, hf⟩ := hf
+  obtain ⟨Cg, hg⟩ := hg
+  refine ⟨Cf+Cg, ?_⟩
+  rintro _ ⟨x, rfl⟩
+  calc
+  _ ≤ |f x - g x|   := by exact le_abs_self _
+  _ ≤ |f x| + |g x| := by exact abs_sub _ _
+  _ = f x + g x := by rw [abs_of_nonneg (fpos x), abs_of_nonneg (gpos x)]
+  _ ≤ _  := by refine add_le_add (hf (by simp)) (hg (by simp))
+
+lemma helper₁₁ {α : Type*} {f g : α → ℝ} (hf : BddAbove (Set.range f))
+  (hg : BddAbove (Set.range g)) (fpos : ∀ x, 0 ≤ f x) (gpos : ∀ x, 0 ≤ g x) :
+    BddAbove {|f x - g x| | x} := by
+  obtain ⟨Cf, hf⟩ := hf
+  obtain ⟨Cg, hg⟩ := hg
+  refine ⟨Cf+Cg, ?_⟩
+  rintro _ ⟨x, rfl⟩
+  calc
+  _ ≤ |f x| + |g x| := by exact abs_sub _ _
+  _ = f x + g x := by rw [abs_of_nonneg (fpos x), abs_of_nonneg (gpos x)]
+  _ ≤ _  := by refine add_le_add (hf (by simp)) (hg (by simp))
+
+lemma helper₂ {α : Type*} {f g : α → ℝ} (hα : Nonempty α) (hf : BddAbove (Set.range f))
+  (hg : BddAbove (Set.range g)) (fpos : ∀ x, 0 ≤ f x) (gpos : ∀ x, 0 ≤ g x) :
+    sSup {f x | x} ≤ sSup {f x - g x | x} + sSup {g x | x} := by
+    rw [← csSup_add]
+    · apply csSup_le
+      · have z₀ := Classical.choice hα
+        refine ⟨f z₀, by simp⟩
+      · rintro _ ⟨x, rfl⟩
+        apply le_csSup
+        · apply BddAbove.add (helper₁ hf hg fpos gpos)  hg
+        · apply Set.mem_add.mpr ⟨f x - g x, by simp, g x, by simp, by ring⟩
+    · have z₀ := Classical.choice hα
+      refine ⟨f z₀ - g z₀, by simp⟩
+    · exact (helper₁ hf hg fpos gpos)
+    · have z₀ := Classical.choice hα
+      refine ⟨g z₀, by simp⟩
+    · exact hg
+
+
+lemma helper₃ {α : Type*}  {f g : α → ℝ} (hα : Nonempty α) (hb : BddAbove (Set.range |f - g|))
+  (fpos : ∀ x, 0 ≤ f x) (gpos : ∀ x, 0 ≤ g x) :
+    sSup {f x | x} ≤ sSup {|f x - g x| | x} + sSup {g x | x} := by
+  by_cases hf : BddAbove (Set.range f)
+  · by_cases hg : BddAbove (Set.range g)
+    · apply le_trans (helper₂ hα hf hg fpos gpos)
+      apply add_le_add_right
+      apply csSup_le
+      · have z₀ := Classical.choice hα
+        refine ⟨f z₀ - g z₀, by simp⟩
+      · rintro _ ⟨x, rfl⟩
+        apply le_csSup_of_le (helper₁₁ hf hg fpos gpos) (by simp) (le_abs_self _)
+    · have : ¬BddAbove (Set.range |f - g|) := by
+        intro hc
+        obtain ⟨C, hC⟩ := hc
+        obtain ⟨Cf, hf⟩ := hf
+        rw [mem_upperBounds] at hC
+        rw [mem_upperBounds] at hf
+        simp_rw [abs_sub_comm f g] at hC
+        apply hg
+        refine ⟨C + Cf, ?_⟩
+        rintro y ⟨x, rfl⟩
+        calc
+          _ = |g x| := by rw [abs_of_nonneg (gpos x)]
+          _ = |(g x - f x) + f x| := by ring_nf
+          _ ≤ |g x - f x| + |f x| := by exact abs_add (g x - f x) _
+        apply add_le_add
+        · apply hC
+          refine ⟨x, rfl⟩
+        · apply hf
+          refine ⟨x, Eq.symm <| abs_of_nonneg (fpos x)⟩
+      contradiction
+  · by_cases hg : BddAbove (Set.range g)
+    · sorry
+    · simp [Real.sSup_def]
+      aesop <;> (try contradiction)
+      sorry
+
+
+
+lemma abs_sub_Ssup_le_sup {α : Type*}  (f g : α → ℝ) (hα : Nonempty α)
+  (hb : BddAbove (Set.range |f - g|)) (fpos : ∀ x, 0 ≤ f x) (gpos : ∀ x, 0 ≤ g x) :
+  |sSup {f x | x} - sSup {g x | x}| ≤ sSup {|f x - g x| | x} := by
+    refine abs_le.mpr ⟨?_, ?_⟩
+    · have : BddAbove (Set.range |g - f|) := by
+        simp_rw [abs_sub_comm f g] at hb
+        exact hb
+      have := helper₃ hα this gpos fpos
+      simp_rw [abs_sub_comm] at this
+      linarith
+    · linarith [helper₃ hα hb fpos gpos]
+
+open Pointwise
+
+-- remove Nonempty α
+lemma abs_inf_dist_le_sup {α : Type*} {f g : α → ℝ} (hα : Nonempty α)
+ (fpos : ∀ x, 0 ≤ f x) (gpos : ∀ x, 0 ≤ g x) (hb : BddAbove (Set.range |f - g|)):
+    |sInf {f x | x} - sInf {g x | x}| ≤ sSup {|f x - g x| | x} := by
+    refine abs_le.mpr ⟨?_, ?_⟩
+    · have : sInf {g x | x} - sSup {|f x - g x| | x} ≤ sInf {f x | x} := by
+        rw [← csInf_sub]
+        · apply le_csInf
+          · have z₀ := Classical.choice hα
+            refine ⟨f z₀, by simp⟩
+          · rintro _ ⟨x, rfl⟩
+            refine @csInf_le_of_le _ _ ({x | ∃ x_1, g x_1 = x} - {x | ∃ x_1, |f x_1 - g x_1| = x})
+              (f x) (g x - |f x - g x|) ?_ ?_ ?_
+            · simp_rw [sub_eq_add_neg]
+              apply BddBelow.add
+              · refine ⟨0, ?_⟩
+                rintro _ ⟨x, rfl⟩
+                apply gpos
+              · apply BddAbove.neg hb
+            · apply Set.mem_sub.mpr
+              refine ⟨g x, (by simp), |f x - g x|, by simp, by ring⟩
+            · nth_rewrite 1 [← abs_of_nonneg (gpos x)]
+              rw [abs_sub_comm _ _]
+              calc
+              _ ≤ |g x - (g x - f x)| := by exact abs_sub_abs_le_abs_sub (g x) _
+              _ = |f x| := by ring_nf
+              _ = f x := by rw [abs_of_nonneg (fpos x)]
+        · have z₀ := Classical.choice hα
+          refine ⟨g z₀, by simp⟩
+        · refine ⟨0, ?_⟩
+          rintro _ ⟨x, rfl⟩
+          apply gpos
+        · have z₀ := Classical.choice hα
+          refine ⟨|f z₀ - g z₀|, by simp⟩
+        · exact hb
+      linarith [this]
+    · have : sInf {f x | x} - sSup {|f x - g x| | x} ≤ sInf {g x | x} := by
+        rw [← csInf_sub]
+        · apply le_csInf
+          · have z₀ := Classical.choice hα
+            refine ⟨g z₀, by simp⟩
+          · rintro _ ⟨x, rfl⟩
+            refine @csInf_le_of_le _ _ ({x | ∃ x_1, f x_1 = x} - {x | ∃ x_1, |f x_1 - g x_1| = x})
+              (g x) (f x - |f x - g x|) ?_ ?_ ?_
+            · simp_rw [sub_eq_add_neg]
+              apply BddBelow.add
+              · refine ⟨0, ?_⟩
+                rintro _ ⟨x, rfl⟩
+                apply fpos
+              · apply BddAbove.neg hb
+            · apply Set.mem_sub.mpr
+              refine ⟨f x, (by simp), |f x - g x|, by simp, by ring⟩
+            · nth_rewrite 1 [← abs_of_nonneg (fpos x)]
+              calc
+              _ ≤ |f x - (f x - g x)| := by exact abs_sub_abs_le_abs_sub (f x) _
+              _ = |g x| := by ring_nf
+              _ = g x := by rw [abs_of_nonneg (gpos x)]
+        · have z₀ := Classical.choice hα
+          refine ⟨f z₀, by simp⟩
+        · refine ⟨0, ?_⟩
+          rintro _ ⟨x, rfl⟩
+          apply fpos
+        · have z₀ := Classical.choice hα
+          refine ⟨|f z₀ - g z₀|, by simp⟩
+        · exact hb
+      linarith [this]
+
+
+
+
+
+example (α : Type*) (f : α → ℝ ) (z : α): |f| z = |f z| := by
+  exact rfl
+
+
 
 -- if s empty return dist?
 noncomputable def katetovExtension (α : Type*) (s : Set α) (hs : Nonempty s) [MetricSpace α] (f : E(s)) : E(α) := by
   refine ⟨fun x ↦ sInf {(f z) + dist x z | z : s }, ?_⟩
   constructor <;> intro x y
   · --rw [sub_eq_add_neg, ← csSup_neg]
-    sorry
+    calc
+    _ ≤ sSup {|f z + dist x z - (f z + dist y z)| | z : s} := by
+      refine abs_inf_dist_le_sup hs ?_ ?_ ?_
+      · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
+      · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
+      · use dist x y
+        rintro _ ⟨z, rfl⟩
+        have : |(fun z ↦ f z + dist x z) - fun z ↦ f z + dist y z| z
+          = |(f z + dist x z) - (f z + dist y z)| := by rfl
+        rw [this]
+        ring_nf
+        apply abs_dist_sub_le
+    _ = sSup {|dist x (z : α) - dist y (z : α)| | z : s} := by ring_nf
+    _ ≤ _ := by
+      apply Real.sSup_le
+      · rintro _ ⟨z, hz, rfl⟩
+        apply abs_dist_sub_le x y z
+      · exact dist_nonneg
   · rw [← csInf_add]
     · set c : ℝ := sInf {dist x z + dist z z₁ + dist z₁ y | (z ∈ s) (z₁ ∈ s)} with hc
       calc
@@ -307,8 +500,6 @@ noncomputable def katetovExtension (α : Type*) (s : Set α) (hs : Nonempty s) [
           repeat apply (dist_triangle ..).trans; gcongr; try exact dist_triangle _ _
           exact dist_triangle x _ _
       _ ≤ _ := by
-
-        -- apply sInf_le_of_le
         apply le_csInf
         · have z₀ := Classical.choice hs
           refine ⟨(f z₀) + dist x z₀ + (f z₀) + dist y z₀,
