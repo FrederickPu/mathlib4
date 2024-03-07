@@ -9,6 +9,7 @@ import Mathlib.Topology.Instances.Real
 import Mathlib.Topology.MetricSpace.Isometry
 import Mathlib.Topology.MetricSpace.Cauchy
 import Mathlib.Topology.UniformSpace.Cauchy
+import Mathlib.Data.Finsupp.Defs
 
 /-!
 # Katetov Maps
@@ -48,6 +49,7 @@ structure KatetovMap (α : Type*) [MetricSpace α] where
 notation "E(" α ")" => KatetovMap α
 
 section
+
 
 /-- `KatetovMapClass F α` states that `F` is a type of Katetov maps. -/
 class KatetovMapClass (F : Type*) (α : Type*) [MetricSpace α] [FunLike F α  ℝ] : Prop where
@@ -281,3 +283,117 @@ noncomputable def katetovKuratowskiEmbedding (α : Type*) [MetricSpace α] : α 
 protected theorem katetovKuratowskiEmbedding.isometry (α : Type*) [MetricSpace α] :
     Isometry (katetovKuratowskiEmbedding α) :=
     Classical.choose_spec <| exists_isometric_embedding α
+
+
+namespace KatetovExtension
+
+example (α : Type*) (s : Set α) [MetricSpace α] : MetricSpace s := by infer_instance
+
+-- if s empty return dist?
+noncomputable def katetovExtension (α : Type*) (s : Set α) (hs : Nonempty s) [MetricSpace α] (f : E(s)) : E(α) := by
+  refine ⟨fun x ↦ sInf {(f z) + dist x z | z : s }, ?_⟩
+  constructor <;> intro x y
+  · --rw [sub_eq_add_neg, ← csSup_neg]
+    sorry
+  · rw [← csInf_add]
+    · set c : ℝ := sInf {dist x z + dist z z₁ + dist z₁ y | (z ∈ s) (z₁ ∈ s)} with hc
+      calc
+      _ ≤ c := by
+        apply le_csInf
+        · have z₀ := Classical.choice hs
+          refine ⟨dist x z₀ + dist z₀ z₀ + (dist (z₀ : α) y),
+            Set.mem_setOf.mpr ⟨z₀, Subtype.coe_prop z₀, ⟨z₀, Subtype.coe_prop z₀, rfl⟩⟩⟩
+        · rintro b ⟨z, hz, z₁, hz₁, rfl⟩
+          repeat apply (dist_triangle ..).trans; gcongr; try exact dist_triangle _ _
+          exact dist_triangle x _ _
+      _ ≤ _ := by
+
+        -- apply sInf_le_of_le
+        apply le_csInf
+        · have z₀ := Classical.choice hs
+          refine ⟨(f z₀) + dist x z₀ + (f z₀) + dist y z₀,
+            Set.mem_add.mpr ⟨(f z₀) + dist x z₀, by aesop, ⟨(f z₀) + dist y z₀, by aesop, by ring⟩⟩⟩
+        · rintro b ⟨_, ⟨z, rfl⟩, _, ⟨z₁, rfl⟩, rfl⟩
+          dsimp
+          rw [hc]
+          refine @csInf_le_of_le _ _ _ (f z + dist x ↑z + (f z₁ + dist y ↑z₁))
+            (dist x z + dist z z₁ + dist (z₁ : α) y) ?_ ?_ ?_
+          · refine ⟨0, Set.mem_setOf.mpr ?_⟩
+            rintro a ⟨z, hz, z₁, hz₁, rfl⟩
+            apply add_nonneg (add_nonneg dist_nonneg dist_nonneg) dist_nonneg
+          · aesop
+          · rw [dist_comm y z₁]
+            linarith [(map_katetov f).dist_le_add z z₁]
+    · have z₀ := Classical.choice hs
+      refine ⟨(f z₀) + dist x z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
+    · refine ⟨0, Set.mem_setOf.mpr ?_⟩
+      rintro a ⟨z, rfl⟩
+      apply add_nonneg (katetov_nonneg _ _) dist_nonneg
+    · have z₀ := Classical.choice hs
+      refine ⟨(f z₀) + dist y z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
+    · refine ⟨0, Set.mem_setOf.mpr ?_⟩
+      rintro a ⟨z, rfl⟩
+      apply add_nonneg (katetov_nonneg _ _) dist_nonneg
+
+end KatetovExtension
+
+
+
+-- /-- The type of finitely supported Katetov maps from `α` -/
+-- structure FinsuppKatetovMap (α : Type*) [MetricSpace α] extends KatetovMap α, Finsupp α ℝ
+
+-- /-- The type of Katetov maps from `α`. -/
+-- notation "E(" α ", ω)" => FinsuppKatetovMap α
+
+
+-- -- example (F : Type*) (α : Type*) [MetricSpace α] [FunLike F α  ℝ] [FinsuppKatetovMapClass F α] :
+-- --   (FinsuppKatetovMapClass.toKatetovMapClass) = FinsuppKatetovMapClass.toFinsupp := rfl
+
+-- namespace FinsuppKatetovMap
+
+-- variable {α : Type*} [MetricSpace α]
+
+-- instance funLike : FunLike E(α, ω) α ℝ where
+--   coe := FinsuppKatetovMap.toFun
+--   coe_injective' f g h := by cases f; cases g; congr
+
+
+-- @[simp]
+-- theorem toFun_eq_coe {f : E(α, ω)} : f.toFun = (f : α → ℝ) := rfl
+
+-- instance : CanLift (α → ℝ) E(α) DFunLike.coe IsKatetov := ⟨fun f hf ↦ ⟨⟨f, hf⟩, rfl⟩⟩
+
+-- /-- See Topology/ContinuousFunction.Basic -/
+-- def Simps.apply (f : E(α)) : α → ℝ := f
+
+-- initialize_simps_projections KatetovMap (toFun → apply)
+
+-- @[ext]
+-- theorem ext {f g : E(α)} (h : ∀ a, f a = g a) : f = g := DFunLike.ext _ _ h
+
+-- /-- Copy of a `KatetovMap` with a new `toFun` equal to the old one. Useful to fix definitional
+-- equalities. See Topology/ContinuousFunction.Basic -/
+-- protected def copy (f : E(α)) (f' : α → ℝ) (h : f' = f) : E(α) where
+--   toFun := f'
+--   IsKatetovtoFun := h.symm ▸ f.IsKatetovtoFun
+
+-- @[simp]
+-- theorem coe_copy (f : E(α)) (f' : α → ℝ) (h : f' = f) : ⇑(f.copy f' h) = f' :=
+--   rfl
+
+-- theorem copy_eq (f : E(α)) (f' : α → ℝ) (h : f' = f) : f.copy f' h = f :=
+--   DFunLike.ext' h
+
+-- variable {f g : E(α)}
+
+-- theorem katetov_set_coe (s : Set E(α)) (f : s) : IsKatetov (f : α → ℝ) :=
+--   f.1.IsKatetovtoFun
+
+-- theorem coe_injective : @Function.Injective E(α) (α → ℝ) (↑) :=
+--   fun f g h ↦ by cases f; cases g; congr
+
+-- @[simp]
+-- theorem coe_mk (f : α → ℝ) (h : IsKatetov f) : ⇑(⟨f, h⟩ : E(α)) = f :=
+--   rfl
+
+-- end FinsuppKatetovMap
