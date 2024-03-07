@@ -31,7 +31,7 @@ of `x` with `↑x`. This tactic also works for a function `f : α → ℚ` with 
 open Function
 
 /-- Nonnegative rational numbers. -/
-def NNRat := { q : ℚ // 0 ≤ q } deriving
+def NNRat := { q : ℚ // 0 ≤ q} deriving
   CanonicallyOrderedCommSemiring, CanonicallyLinearOrderedAddCommMonoid, Sub, Inhabited
 #align nnrat NNRat
 
@@ -418,8 +418,7 @@ variable {K : Type*} [NNRatCast K]
 /-- Canonical homomorphism from `ℚ≥0` to a division semiring `K`.
 
 This is just the bare function in order to aid in creating instances of `DivisionSemiring`. -/
-@[coe, reducible, match_pattern] protected def NNRat.cast : ℚ≥0 → K :=
-  NNRatCast.nnratCast
+@[coe, reducible, match_pattern] protected def NNRat.cast : ℚ≥0 → K := NNRatCast.nnratCast
 
 -- See note [coercion into rings]
 instance NNRatCast.toCoeTail [NNRatCast K] : CoeTail ℚ≥0 K where coe := NNRat.cast

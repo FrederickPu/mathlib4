@@ -350,10 +350,11 @@ protected def Function.Injective.field [Field K] {K'} [Zero K'] [Mul K'] [Add K'
     Field K' where
   toCommRing := hf.commRing f zero one add mul neg sub nsmul zsmul npow natCast intCast
   __ := hf.commGroupWithZero f zero one mul inv div npow zpow
+  __ := hf.divisionSemiring f zero one add mul inv div nsmul npow zpow natCast nnratCast
   ratCast_def a b h1 h2 := hf $ by
-          erw [rat_cast, mul, inv, int_cast, nat_cast]
-          exact DivisionRing.ratCast_mk a b h1 h2),
-    qsmul := (· • ·), qsmul_eq_mul' := fun a x ↦ hf (by erw [qsmul, mul, Rat.smul_def, rat_cast]) }
+    erw [ratCast, mul, inv, intCast, natCast, Rat.cast_def, div_eq_mul_inv]
+  qsmul := (· • ·)
+  qsmul_def q a := hf $ by erw [qsmul, mul, Rat.smul_def, ratCast]
 #align function.injective.field Function.Injective.field
 
 /-! ### Order dual -/

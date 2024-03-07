@@ -4,11 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Floris van Doorn
 -/
 import Mathlib.Data.Nat.Cast.Order
-import Mathlib.Algebra.GroupPower.CovariantClass
-import Mathlib.Algebra.Order.Ring.Defs
 import Mathlib.Algebra.Order.Ring.InjSurj
 import Mathlib.Order.CompleteLatticeIntervals
-import Mathlib.Order.LatticeIntervals
 
 #align_import algebra.order.nonneg.ring from "leanprover-community/mathlib"@"422e70f7ce183d2900c586a8cda8381e788a0c62"
 
@@ -308,15 +305,6 @@ instance linearOrderedCommMonoidWithZero [LinearOrderedCommRing α] :
   { Nonneg.linearOrderedSemiring, Nonneg.orderedCommSemiring with
     mul_le_mul_left := fun _ _ h c ↦ mul_le_mul_of_nonneg_left h c.prop }
 #align nonneg.linear_ordered_comm_monoid_with_zero Nonneg.linearOrderedCommMonoidWithZero
-
-/-- Coercion `{x : α // 0 ≤ x} → α` as a `RingHom`. -/
-def coeRingHom [OrderedSemiring α] : { x : α // 0 ≤ x } →+* α :=
-  { toFun := ((↑) : { x : α // 0 ≤ x } → α)
-    map_one' := Nonneg.coe_one
-    map_mul' := Nonneg.coe_mul
-    map_zero' := Nonneg.coe_zero,
-    map_add' := Nonneg.coe_add }
-#align nonneg.coe_ring_hom Nonneg.coeRingHom
 
 instance canonicallyOrderedAddCommMonoid [OrderedRing α] :
     CanonicallyOrderedAddCommMonoid { x : α // 0 ≤ x } :=

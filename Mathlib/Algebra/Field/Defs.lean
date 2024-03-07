@@ -51,6 +51,8 @@ field, division ring, skew field, skew-field, skewfield
 -- Check that we have not imported `Mathlib.Tactic.Common` yet.
 assert_not_exists Mathlib.Tactic.LibrarySearch.librarySearch
 
+assert_not_exists MonoidHom
+
 open Function Set
 open scoped NNRat
 

@@ -30,6 +30,15 @@ variable {α : Type*}
 
 namespace Nonneg
 
+/-- Coercion `{x : α // 0 ≤ x} → α` as a `RingHom`. -/
+def coeRingHom [OrderedSemiring α] : { x : α // 0 ≤ x } →+* α :=
+  { toFun := ((↑) : { x : α // 0 ≤ x } → α)
+    map_one' := Nonneg.coe_one
+    map_mul' := Nonneg.coe_mul
+    map_zero' := Nonneg.coe_zero,
+    map_add' := Nonneg.coe_add }
+#align nonneg.coe_ring_hom Nonneg.coeRingHom
+
 section LinearOrderedSemifield
 
 variable [LinearOrderedSemifield α] {x y : α}
