@@ -66,7 +66,7 @@ variable {α β K : Type*}
 
 Do not use this directly (instances of `DivisionSemiring` are allowed to override that default for
 better definitional properties). Instead, use the coercion. -/
-def NNRat.castRec [NatCast K] [Mul K] [Inv K] (q : ℚ≥0) : K := q.num * (q.den : K)⁻¹
+def NNRat.castRec [NatCast K] [Div K] (q : ℚ≥0) : K := q.num / (q.den : K)
 
 /-- The default definition of the scalar multiplication by `ℚ≥0` on a division semiring `K`.
 

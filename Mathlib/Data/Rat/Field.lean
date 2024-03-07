@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Mario Carneiro
 -/
 import Mathlib.Algebra.Order.Field.Defs
+import Mathlib.Data.NNRat.Defs
 import Mathlib.Data.Rat.Order
 
 #align_import data.rat.basic from "leanprover-community/mathlib"@"a59dad53320b73ef180174aae867addd707ef00e"
@@ -38,6 +39,9 @@ namespace Rat
 instance instField : Field ℚ where
   toCommRing := commRing
   __ := commGroupWithZero
+  nnratCast := (↑)
+  nnratCast_def q := by
+    rw [← NNRat.den_coe, ← Int.cast_natCast q.num, ← NNRat.num_coe]; exact(num_div_den _).symm
   ratCast_def a b h1 h2 := (num_div_den _).symm
 
 -- Extra instances to short-circuit type class resolution

@@ -7,6 +7,7 @@ import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Algebra.Order.Field.Canonical.Defs
 import Mathlib.Algebra.Order.Field.InjSurj
 import Mathlib.Algebra.Order.Nonneg.Ring
+import Mathlib.Data.Rat.Cast.Order
 
 #align_import algebra.order.nonneg.field from "leanprover-community/mathlib"@"b3f4f007a962e3787aa0f3b5c7942a1317f7d88e"
 
@@ -29,15 +30,6 @@ open Set
 variable {α : Type*}
 
 namespace Nonneg
-
-/-- Coercion `{x : α // 0 ≤ x} → α` as a `RingHom`. -/
-def coeRingHom [OrderedSemiring α] : { x : α // 0 ≤ x } →+* α :=
-  { toFun := ((↑) : { x : α // 0 ≤ x } → α)
-    map_one' := Nonneg.coe_one
-    map_mul' := Nonneg.coe_mul
-    map_zero' := Nonneg.coe_zero,
-    map_add' := Nonneg.coe_add }
-#align nonneg.coe_ring_hom Nonneg.coeRingHom
 
 section LinearOrderedSemifield
 
@@ -88,10 +80,23 @@ theorem mk_zpow (hx : 0 ≤ x) (n : ℤ) :
   rfl
 #align nonneg.mk_zpow Nonneg.mk_zpow
 
+instance instNNRatCast : NNRatCast {x : α // 0 ≤ x} := ⟨fun q ↦ ⟨q, q.cast_nonneg⟩⟩
+instance instNNRatSMul : SMul ℚ≥0 {x : α // 0 ≤ x} where
+  smul q a := ⟨q • a, by rw [NNRat.smul_def]; exact mul_nonneg q.cast_nonneg a.2⟩
+
+@[simp, norm_cast] lemma coe_nnratCast (q : ℚ≥0) : (q : {x : α // 0 ≤ x}) = (q : α) := rfl
+@[simp] lemma mk_nnratCast (q : ℚ≥0) : (⟨q, q.cast_nonneg⟩ : {x : α // 0 ≤ x}) = q := rfl
+
+@[simp, norm_cast] lemma coe_nnqsmul (q : ℚ≥0) (a : {x : α // 0 ≤ x}) :
+    ↑(q • a) = (q • a : α) := rfl
+@[simp] lemma mk_nnqsmul (q : ℚ≥0) (a : α) (ha : 0 ≤ a) :
+    (⟨q • a, by rw [NNRat.smul_def]; exact mul_nonneg q.cast_nonneg ha⟩ : {x : α // 0 ≤ x}) =
+      q • a := rfl
+
 instance linearOrderedSemifield : LinearOrderedSemifield { x : α // 0 ≤ x } :=
   Subtype.coe_injective.linearOrderedSemifield _ Nonneg.coe_zero Nonneg.coe_one Nonneg.coe_add
     Nonneg.coe_mul Nonneg.coe_inv Nonneg.coe_div (fun _ _ => rfl) Nonneg.coe_pow Nonneg.coe_zpow
-    Nonneg.coe_nat_cast (fun _ _ => rfl) fun _ _ => rfl
+    Nonneg.coe_nat_cast coe_nnratCast (fun _ _ => rfl) fun _ _ => rfl
 #align nonneg.linear_ordered_semifield Nonneg.linearOrderedSemifield
 
 end LinearOrderedSemifield

@@ -206,12 +206,11 @@ variable {α : Type*} [LinearOrderedField α]
 
 variable {β : Type*} [DivisionRing β] {abv : β → α} [IsAbsoluteValue abv]
 
-instance : RatCast (Cauchy abv) :=
-  ⟨fun q => ofRat q⟩
+instance instNNRatCast : NNRatCast (Cauchy abv) := ⟨fun q ↦ ofRat q⟩
+instance instRatCast : RatCast (Cauchy abv) := ⟨fun q ↦ ofRat q⟩
 
-@[simp, coe]
-theorem ofRat_ratCast (q : ℚ) : ofRat (↑q : β) = (q : (Cauchy abv)) :=
-  rfl
+@[simp, norm_cast] lemma ofRat_nnratCast (q : ℚ≥0) : ofRat (q : β) = (q : Cauchy abv) := rfl
+@[simp, norm_cast] lemma ofRat_ratCast (q : ℚ) : ofRat (q : β) = (q : Cauchy abv) := rfl
 #align cau_seq.completion.of_rat_rat_cast CauSeq.Completion.ofRat_ratCast
 
 noncomputable instance : Inv (Cauchy abv) :=
@@ -266,19 +265,20 @@ theorem ofRat_inv (x : β) : ofRat x⁻¹ = ((ofRat x)⁻¹ : (Cauchy abv)) :=
   congr_arg mk <| by split_ifs with h <;> [simp [const_limZero.1 h]; rfl]
 #align cau_seq.completion.of_rat_inv CauSeq.Completion.ofRat_inv
 
-/- porting note: This takes a long time to compile.
-   Also needed to rewrite the proof of ratCast_mk due to simp issues -/
+noncomputable instance instDivInvMonoid : DivInvMonoid (Cauchy abv) where
+
+lemma ofRat_div (x y : β) : ofRat (x / y) = (ofRat x / ofRat y : Cauchy abv) := by
+  simp only [div_eq_mul_inv, ofRat_inv, ofRat_mul]
+#align cau_seq.completion.of_rat_div CauSeq.Completion.ofRat_div
+
 /-- The Cauchy completion forms a division ring. -/
 noncomputable instance Cauchy.divisionRing : DivisionRing (Cauchy abv) where
   exists_pair_ne := ⟨0, 1, zero_ne_one⟩
   inv_zero := inv_zero
   mul_inv_cancel x := CauSeq.Completion.mul_inv_cancel
-  ratCast q := ofRat q
-  ratCast_mk n d hd hnd := by rw [← ofRat_ratCast, Rat.cast_mk', ofRat_mul, ofRat_inv]; rfl
-
-theorem ofRat_div (x y : β) : ofRat (x / y) = (ofRat x / ofRat y : Cauchy abv) := by
-  simp only [div_eq_mul_inv, ofRat_inv, ofRat_mul]
-#align cau_seq.completion.of_rat_div CauSeq.Completion.ofRat_div
+  nnratCast_def q := by simp_rw [← ofRat_nnratCast, NNRat.cast_def, ofRat_div, ofRat_natCast]
+  ratCast_def n d hd hnd := by
+    rw [← ofRat_ratCast, Rat.cast_mk', ofRat_mul, ofRat_inv, ofRat_natCast, ofRat_intCast]
 
 /-- Show the first 10 items of a representative of this equivalence class of cauchy sequences.
 

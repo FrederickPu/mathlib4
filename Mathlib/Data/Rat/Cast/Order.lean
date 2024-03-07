@@ -15,6 +15,14 @@ import Mathlib.Data.Rat.Order
 
 variable {F ι α β : Type*}
 
+namespace NNRat
+variable [LinearOrderedSemifield α]
+
+lemma cast_nonneg (q : ℚ≥0) : 0 ≤ (q : α) := by
+  rw [cast_def]; exact div_nonneg q.num.cast_nonneg q.den.cast_nonneg
+
+end NNRat
+
 namespace Rat
 
 open Rat
