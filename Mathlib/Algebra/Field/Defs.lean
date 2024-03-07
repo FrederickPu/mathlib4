@@ -105,11 +105,17 @@ If the division semiring has positive characteristic `p`, our division by zero c
 `nnratCast (1 / p) = 1 / 0 = 0`. -/
 class DivisionSemiring (α : Type*) extends Semiring α, GroupWithZero α, NNRatCast α where
   protected nnratCast := NNRat.castRec
-  /-- However `NNRat.cast` is defined, it must be equal to `a / b`. -/
+  /-- However `NNRat.cast` is defined, it must be equal to `a / b`.
+
+  Do not use this lemma directly. Use `NNRat.cast_def` instead. -/
   protected nnratCast_def (q : ℚ≥0) : (NNRat.cast q : α) = q.num / q.den := by intros; rfl
-  /-- Scalar multiplication by a rational number. -/
+  /-- Scalar multiplication by a nonnegative rational number.
+
+  Do not use directly. Instead use the `•` notation. -/
   protected nnqsmul : ℚ≥0 → α → α := nnqsmulRec NNRat.cast
-  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`. -/
+  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`.
+
+  Do not use this lemma directly. Use `NNRat.smul_def` instead. -/
   protected nnqsmul_def (q : ℚ≥0) (a : α) : nnqsmul q a = NNRat.cast q * a := by intros; rfl
 #align division_semiring DivisionSemiring
 
@@ -130,19 +136,31 @@ class DivisionRing (α : Type*)
   /-- The inverse of `0` is `0` by convention. -/
   protected inv_zero : (0 : α)⁻¹ = 0
   protected nnratCast := NNRat.castRec
-  /-- However `NNRat.cast` is defined, it must be equal to `a / b`. -/
+  /-- However `NNRat.cast` is defined, it must be equal to `a / b`.
+
+  Do not use this lemma directly. Use `NNRat.cast_def` instead. -/
   protected nnratCast_def (q : ℚ≥0) : (NNRat.cast q : α) = q.num / q.den := by intros; rfl
-  /-- Scalar multiplication by a rational number. -/
+  /-- Scalar multiplication by a nonnegative rational number.
+
+  Do not use directly. Instead use the `•` notation. -/
   protected nnqsmul : ℚ≥0 → α → α := nnqsmulRec NNRat.cast
-  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`. -/
+  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`.
+
+  Do not use this lemma directly. Use `NNRat.smul_def` instead. -/
   protected nnqsmul_def (q : ℚ≥0) (a : α) : nnqsmul q a = NNRat.cast q * a := by intros; rfl
   protected ratCast := Rat.castRec
-  /-- However `Rat.cast` is defined, it must be equal to `a * b⁻¹`. -/
+  /-- However `Rat.cast` is defined, it must be equal to `a * b⁻¹`.
+
+  Do not use this lemma directly. Use `Rat.cast_def` instead. -/
   protected ratCast_def (a : ℤ) (b : ℕ) (h1 h2) : Rat.cast ⟨a, b, h1, h2⟩ = a * (b : α)⁻¹ := by
     intros; rfl
-  /-- Scalar multiplication by a rational number. -/
+  /-- Scalar multiplication by a rational number.
+
+  Do not use directly. Instead use the `•` notation. -/
   protected qsmul : ℚ → α → α := qsmulRec Rat.cast
-  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`. -/
+  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`.
+
+  Do not use this lemma directly. Use `Rat.cast_def` instead. -/
   protected qsmul_def (a : ℚ) (x : α) : qsmul a x = Rat.cast a * x := by intros; rfl
 #align division_ring DivisionRing
 #align division_ring.rat_cast_mk DivisionRing.ratCast_def
