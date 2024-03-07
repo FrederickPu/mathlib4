@@ -572,20 +572,19 @@ noncomputable instance : LinearOrderedSemiring ℝ := by infer_instance
 instance : IsDomain ℝ :=
   { Real.nontrivial, Real.commRing, LinearOrderedRing.isDomain with }
 
-noncomputable instance : LinearOrderedField ℝ :=
-  { Real.linearOrderedCommRing with
-    inv := Inv.inv
-    mul_inv_cancel := by
-      rintro ⟨a⟩ h
-      rw [mul_comm]
-      simp only [← ofCauchy_inv, ← ofCauchy_mul, ← ofCauchy_one, ← ofCauchy_zero,
-        Ne.def, ofCauchy.injEq] at *
-      exact CauSeq.Completion.inv_mul_cancel h
-    inv_zero := by simp [← ofCauchy_zero, ← ofCauchy_inv]
-    ratCast := (↑)
-    ratCast_mk := fun n d hd h2 => by
-      rw [← ofCauchy_ratCast, Rat.cast_mk', ofCauchy_mul, ofCauchy_inv, ofCauchy_natCast,
-        ofCauchy_intCast] }
+noncomputable instance instLinearOrderedField : LinearOrderedField ℝ where
+  toLinearOrderedCommRing := linearOrderedCommRing
+  mul_inv_cancel := by
+    rintro ⟨a⟩ h
+    rw [mul_comm]
+    simp only [← ofCauchy_inv, ← ofCauchy_mul, ← ofCauchy_one, ← ofCauchy_zero,
+      Ne.def, ofCauchy.injEq] at *
+    exact CauSeq.Completion.inv_mul_cancel h
+  inv_zero := by simp [← ofCauchy_zero, ← ofCauchy_inv]
+  ratCast := (↑)
+  ratCast_def n d hd h2 := by
+    rw [← ofCauchy_ratCast, Rat.cast_mk', ofCauchy_mul, ofCauchy_inv, ofCauchy_natCast,
+      ofCauchy_intCast]
 
 -- Extra instances to short-circuit type class resolution
 noncomputable instance : LinearOrderedAddCommGroup ℝ := by infer_instance

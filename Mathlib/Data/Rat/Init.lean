@@ -27,20 +27,6 @@ def NNRat := {q : ℚ // 0 ≤ q}
 
 @[inherit_doc] notation "ℚ≥0" => NNRat
 
-namespace NNRat
-
-instance instCoe : Coe ℚ≥0 ℚ := ⟨Subtype.val⟩
-
-/-- The numerator of a nonnegative rational. -/
-@[pp_dot] def num (q : ℚ≥0) : ℕ := (q : ℚ).num.natAbs
-#align nnrat.num NNRat.num
-
-/-- The denominator of a nonnegative rational. -/
-@[pp_dot] def den (q : ℚ≥0) : ℕ := (q : ℚ).den
-#align nnrat.denom NNRat.den
-
-end NNRat
-
 /-!
 ### Cast from `NNRat`
 
@@ -72,3 +58,19 @@ instance NNRatCast.toCoeTail [NNRatCast K] : CoeTail ℚ≥0 K where coe := NNRa
 
 -- See note [coercion into rings]
 instance NNRatCast.toCoeHTCT [NNRatCast K] : CoeHTCT ℚ≥0 K where coe := NNRat.cast
+
+instance Rat.instNNRatCast : NNRatCast ℚ := ⟨Subtype.val⟩
+
+/-! ### Numerator and denominator of a nonnegative rational -/
+
+namespace NNRat
+
+/-- The numerator of a nonnegative rational. -/
+@[pp_dot] def num (q : ℚ≥0) : ℕ := (q : ℚ).num.natAbs
+#align nnrat.num NNRat.num
+
+/-- The denominator of a nonnegative rational. -/
+@[pp_dot] def den (q : ℚ≥0) : ℕ := (q : ℚ).den
+#align nnrat.denom NNRat.den
+
+end NNRat
