@@ -25,6 +25,11 @@ of `x` with `↑x`. This tactic also works for a function `f : α → ℚ` with 
 ## Notation
 
 `ℚ≥0` is notation for `NNRat` in locale `NNRat`.
+
+## Huge warning
+
+Whenever you state a lemma about the coercion `ℚ0 → ℚ`, check that Lean inserts `NNRat.cast`, not
+`Subtype.val`. Else your lemma will never apply.
 -/
 
 
@@ -42,8 +47,8 @@ namespace NNRat
 
 variable {α : Type*} {p q : ℚ≥0}
 
--- Porting note: `val_eq_coe` is no longer needed.
-#noalign nnrat.val_eq_coe
+@[simp] lemma val_eq_cast (q : ℚ≥0) : q.1 = q := rfl
+#align nnrat.val_eq_coe NNRat.val_eq_cast
 
 instance canLift : CanLift ℚ ℚ≥0 (↑) fun q ↦ 0 ≤ q where
   prf q hq := ⟨⟨q, hq⟩, rfl⟩
@@ -71,9 +76,8 @@ theorem ne_iff {x y : ℚ≥0} : (x : ℚ) ≠ (y : ℚ) ↔ x ≠ y :=
   NNRat.coe_inj.not
 #align nnrat.ne_iff NNRat.ne_iff
 
-@[norm_cast]
-theorem coe_mk (q : ℚ) (hq) : ((⟨q, hq⟩ : ℚ≥0) : ℚ) = q :=
-  rfl
+-- TODO: We have to write `NNRat.cast` explicitly, else the statement picks up `Subtype.val` instead
+@[simp, norm_cast] lemma coe_mk (q : ℚ) (hq) : NNRat.cast ⟨q, hq⟩ = q := rfl
 #align nnrat.coe_mk NNRat.coe_mk
 
 lemma «forall» {p : ℚ≥0 → Prop} : (∀ q, p q) ↔ ∀ q hq, p ⟨q, hq⟩ := Subtype.forall
@@ -372,5 +376,15 @@ theorem ext_num_den (hn : p.num = q.num) (hd : p.den = q.den) : p = q := by
 theorem ext_num_den_iff : p = q ↔ p.num = q.num ∧ p.den = q.den :=
   ⟨by rintro rfl; exact ⟨rfl, rfl⟩, fun h ↦ ext_num_den h.1 h.2⟩
 #align nnrat.ext_num_denom_iff NNRat.ext_num_den_iff
+
+/-- Form the quotient `n / d` where `n d : ℕ`. -/
+def divNat (n d : ℕ) : ℚ≥0 := ⟨.divInt n d, Rat.divInt_nonneg n.cast_nonneg d.cast_nonneg⟩
+
+variable {n₁ n₂ d₁ d₂ d : ℕ}
+
+@[simp, norm_cast] lemma coe_divNat (n d : ℕ) : (divNat n d : ℚ) = .divInt n d := rfl
+
+lemma divNat_inj (h₁ : d₁ ≠ 0) (h₂ : d₂ ≠ 0) : divNat n₁ d₁ = divNat n₂ d₂ ↔ n₁ * d₂ = n₂ * d₁ := by
+  rw [← coe_inj]; simp [Rat.mkRat_eq_iff, h₁, h₂]; norm_cast
 
 end NNRat

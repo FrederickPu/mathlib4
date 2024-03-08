@@ -20,9 +20,6 @@ cycles.
 open Function
 open scoped NNRat
 
--- The `LinearOrderedCommGroupWithZero` instance is a shortcut instance for performance
-deriving instance CanonicallyLinearOrderedSemifield, LinearOrderedCommGroupWithZero for NNRat
-
 namespace NNRat
 variable {α : Type*} {p q : ℚ≥0}
 

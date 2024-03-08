@@ -124,6 +124,12 @@ theorem zpow_pos_of_pos (ha : 0 < a) : ∀ n : ℤ, 0 < a ^ n
     exact pow_pos ha _
 #align zpow_pos_of_pos zpow_pos_of_pos
 
+lemma NNRat.cast_nonneg (q : ℚ≥0) : 0 ≤ (q : α) := by
+  rw [cast_def]; exact div_nonneg q.num.cast_nonneg q.den.cast_nonneg
+
+lemma nnqsmul_nonneg (q : ℚ≥0) (ha : 0 ≤ a) : 0 ≤ q • a := by
+  rw [NNRat.smul_def]; exact mul_nonneg q.cast_nonneg ha
+
 /-!
 ### Relating one division with another term.
 -/

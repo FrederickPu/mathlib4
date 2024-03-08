@@ -3,7 +3,7 @@ Copyright (c) 2019 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Mario Carneiro
 -/
-import Mathlib.Algebra.Order.Field.Defs
+import Mathlib.Algebra.Order.Nonneg.Field
 import Mathlib.Data.NNRat.Defs
 import Mathlib.Data.Rat.Order
 
@@ -19,7 +19,7 @@ was defined in `Mathlib.Data.Rat.Defs`.
 
 ## Main Definitions
 
-- `Rat.field` is the field structure on `ℚ`.
+- `Rat.instField` is the field structure on `ℚ`.
 
 ## Implementation notes
 
@@ -33,7 +33,6 @@ hierarchy `Mathlib.Data.Rat.basic → Mathlib.Algebra.Field.Defs → Std.Data.Ra
 rat, rationals, field, ℚ, numerator, denominator, num, denom
 -/
 
-
 namespace Rat
 
 instance instField : Field ℚ where
@@ -45,10 +44,15 @@ instance instField : Field ℚ where
   ratCast_def a b h1 h2 := (num_div_den _).symm
 
 -- Extra instances to short-circuit type class resolution
-instance divisionRing : DivisionRing ℚ := by infer_instance
+instance instDivisionRing : DivisionRing ℚ := by infer_instance
 
 instance instLinearOrderedField : LinearOrderedField ℚ where
   toLinearOrderedCommRing := instLinearOrderedCommRing
   __ := instField
 
 end Rat
+
+-- The `LinearOrderedSemifield` and `LinearOrderedCommGroupWithZero` instances are shortcut
+-- instances for performance
+deriving instance CanonicallyLinearOrderedSemifield, LinearOrderedSemifield,
+  LinearOrderedCommGroupWithZero for NNRat

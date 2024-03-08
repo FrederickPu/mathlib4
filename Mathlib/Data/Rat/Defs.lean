@@ -135,6 +135,13 @@ def numDenCasesOn'.{u} {C : ℚ → Sort u} (a : ℚ) (H : ∀ (n : ℤ) (d : �
   numDenCasesOn a fun n d h _ => H n d h.ne'
 #align rat.num_denom_cases_on' Rat.numDenCasesOn'
 
+/-- Define a (dependent) function or prove `∀ r : ℚ, p r` by dealing with rational
+numbers of the form `mk' n d` with `d ≠ 0`. -/
+@[elab_as_elim]
+def numDenCasesOn''.{u} {C : ℚ → Sort u} (a : ℚ)
+    (H : ∀ (n : ℤ) (d : ℕ) (nz red), C (mk' n d nz red)) : C a :=
+  numDenCasesOn a fun n d h h' ↦ by rw [← mk_eq_divInt _ _ h.ne' h']; exact H n d h.ne' _
+
 #align rat.add Rat.add
 
 -- Porting note: there's already an instance for `Add ℚ` is in Std.
