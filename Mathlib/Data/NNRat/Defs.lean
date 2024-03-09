@@ -384,6 +384,9 @@ variable {n₁ n₂ d₁ d₂ d : ℕ}
 
 @[simp, norm_cast] lemma coe_divNat (n d : ℕ) : (divNat n d : ℚ) = .divInt n d := rfl
 
+lemma mk_divInt (n d : ℕ) :
+    ⟨.divInt n d, Rat.divInt_nonneg n.cast_nonneg d.cast_nonneg⟩ = divNat n d := rfl
+
 lemma divNat_inj (h₁ : d₁ ≠ 0) (h₂ : d₂ ≠ 0) : divNat n₁ d₁ = divNat n₂ d₂ ↔ n₁ * d₂ = n₂ * d₁ := by
   rw [← coe_inj]; simp [Rat.mkRat_eq_iff, h₁, h₂]; norm_cast
 

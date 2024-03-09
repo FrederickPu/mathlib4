@@ -46,6 +46,9 @@ variable {a b c : ℚ}
     rfl
   rwa [divInt_nonneg_iff_of_pos_right hb]
 
+@[simp] lemma mkRat_nonneg {a : ℤ} (ha : 0 ≤ a) (b : ℕ) : 0 ≤ mkRat a b := by
+  simpa using divInt_nonneg ha b.cast_nonneg
+
 protected lemma add_nonneg : 0 ≤ a → 0 ≤ b → 0 ≤ a + b :=
   numDenCasesOn' a fun n₁ d₁ h₁ =>
     numDenCasesOn' b fun n₂ d₂ h₂ => by

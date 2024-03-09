@@ -30,6 +30,9 @@ variable {F ι α β : Type*}
 
 namespace NNRat
 
+@[simp] lemma num_mk (q : ℚ) (hq : 0 ≤ q) : num ⟨q, hq⟩ = q.num.natAbs := rfl
+@[simp] lemma den_mk (q : ℚ) (hq : 0 ≤ q) : den ⟨q, hq⟩ = q.den := rfl
+
 @[norm_cast] lemma cast_id (n : ℚ≥0) : NNRat.cast n = n := rfl
 @[simp] lemma cast_eq_id : NNRat.cast = id := rfl
 
@@ -54,18 +57,22 @@ lemma cast_comm (q : ℚ≥0) (a : α) : q * a = a * q := cast_commute _ _
 @[norm_cast] lemma cast_divNat_of_ne_zero (a b : ℕ) (hb : (b : α) ≠ 0) :
     (divNat a b : ℚ≥0) = (a / b : α) := by
   rcases e : divNat a b with ⟨⟨n, d, h, c⟩, hn⟩
+  rw [← Rat.num_nonneg] at hn
+  lift n to ℕ using hn
   have hd : (d : α) ≠ 0 := by
     refine fun hd ↦ hb ?_
-    obtain ⟨k, rfl⟩ : d ∣ b := by simpa [Int.coe_nat_dvd, e] using Rat.den_dvd a b
+    have : Rat.divInt a b = _ := congr_arg NNRat.cast e
+    obtain ⟨k, rfl⟩ : d ∣ b := by simpa [Int.coe_nat_dvd, this] using Rat.den_dvd a b
     simp [*]
   have hb' : b ≠ 0 := by rintro rfl; exact hb Nat.cast_zero
   have hd' : d ≠ 0 := by rintro rfl; exact hd Nat.cast_zero
-  simp_rw [Rat.num_den'] at e
-  rw [Rat.divInt_eq_iff (Nat.cast_ne_zero.2 hb') (Nat.cast_ne_zero.2 hd')] at h
-  have := congr_arg ((↑) : ℕ → α) ((Rat.divInt_eq_iff hb' $ ne_of_gt $ Int.coe_nat_pos.2 h.bot_lt).1 e)
-  rw [int.cast_mul, int.cast_mul, int.cast_coe_nat] at this
-  rw [eq_comm, cast_def, div_eq_mul_inv, eq_div_iff_mul_eq d0, mul_assoc, (d.commute_cast _).eq,
-      ← mul_assoc, this, mul_assoc, mul_inv_cancel b0, mul_one]
+  simp_rw [Rat.num_den', mk_divInt, divNat_inj hb' hd'] at e
+  rw [cast_def]
+  dsimp
+  rw [Commute.div_eq_div_iff _ hd hb]
+  norm_cast
+  rw [e]
+  exact b.commute_cast _
 
 @[norm_cast]
 lemma cast_add_of_ne_zero :
