@@ -89,6 +89,9 @@ lemma num_eq_zero {q : ℚ} : q.num = 0 ↔ q = 0 := by
   · exact congr_arg num
 
 lemma num_ne_zero {q : ℚ} : q.num ≠ 0 ↔ q ≠ 0 := num_eq_zero.not
+#align rat.num_ne_zero_of_ne_zero Rat.num_ne_zero
+
+@[simp] lemma den_ne_zero (q : ℚ) : q.den ≠ 0 := q.den_pos.ne'
 
 @[simp]
 theorem divInt_eq_zero {a b : ℤ} (b0 : b ≠ 0) : a /. b = 0 ↔ a = 0 := by
@@ -106,17 +109,16 @@ theorem divInt_ne_zero {a b : ℤ} (b0 : b ≠ 0) : a /. b ≠ 0 ↔ a ≠ 0 :=
 theorem normalize_eq_mk' (n : Int) (d : Nat) (h : d ≠ 0) (c : Nat.gcd (Int.natAbs n) d = 1) :
     normalize n d h = mk' n d h c := (mk_eq_normalize ..).symm
 
--- Porting note: removing as a `@[simp]` lemma as
--- theorem Rat.divInt_ofNat : ∀ (num : ℤ) (den : ℕ), num /. ↑den = mkRat num den
--- applies to the LHS.
--- @[simp]
-theorem num_den : ∀ {a : ℚ}, a.num /. a.den = a := divInt_self _
-#align rat.num_denom Rat.num_den
+-- TODO: Rename `mkRat_num_den` in Std
+@[simp] alias mkRat_num_den' := mkRat_self
 
-theorem num_den' {n d h c} : (⟨n, d, h, c⟩ : ℚ) = n /. d := num_den.symm
-#align rat.num_denom' Rat.num_den'
+lemma num_divInt_den (a : ℚ) : a.num /. a.den = a := divInt_self _
+#align rat.num_denom Rat.num_divInt_den
 
-theorem coe_int_eq_divInt (z : ℤ) : (z : ℚ) = z /. 1 := num_den'
+lemma mk'_eq_divInt {n d h c} : (⟨n, d, h, c⟩ : ℚ) = n /. d := (num_divInt_den _).symm
+#align rat.num_denom' Rat.mk'_eq_divInt
+
+theorem coe_int_eq_divInt (z : ℤ) : (z : ℚ) = z /. 1 := mk'_eq_divInt
 #align rat.coe_int_eq_mk Rat.coe_int_eq_divInt
 
 /-- Define a (dependent) function or prove `∀ r : ℚ, p r` by dealing with rational
@@ -124,7 +126,7 @@ numbers of the form `n /. d` with `0 < d` and coprime `n`, `d`. -/
 @[elab_as_elim]
 def numDenCasesOn.{u} {C : ℚ → Sort u} :
     ∀ (a : ℚ) (_ : ∀ n d, 0 < d → (Int.natAbs n).Coprime d → C (n /. d)), C a
-  | ⟨n, d, h, c⟩, H => by rw [num_den']; exact H n d (Nat.pos_of_ne_zero h) c
+  | ⟨n, d, h, c⟩, H => by rw [mk'_eq_divInt]; exact H n d (Nat.pos_of_ne_zero h) c
 #align rat.num_denom_cases_on Rat.numDenCasesOn
 
 /-- Define a (dependent) function or prove `∀ r : ℚ, p r` by dealing with rational
@@ -156,8 +158,8 @@ theorem lift_binop_eq (f : ℚ → ℚ → ℚ) (f₁ : ℤ → ℤ → ℤ → 
       ∀ {n₁ d₁ n₂ d₂}, a * d₁ = n₁ * b → c * d₂ = n₂ * d →
         f₁ n₁ d₁ n₂ d₂ * f₂ a b c d = f₁ a b c d * f₂ n₁ d₁ n₂ d₂) :
     f (a /. b) (c /. d) = f₁ a b c d /. f₂ a b c d := by
-  generalize ha : a /. b = x; cases' x with n₁ d₁ h₁ c₁; rw [num_den'] at ha
-  generalize hc : c /. d = x; cases' x with n₂ d₂ h₂ c₂; rw [num_den'] at hc
+  generalize ha : a /. b = x; cases' x with n₁ d₁ h₁ c₁; rw [mk'_eq_divInt] at ha
+  generalize hc : c /. d = x; cases' x with n₂ d₂ h₂ c₂; rw [mk'_eq_divInt] at hc
   rw [fv]
   have d₁0 := ne_of_gt (Int.ofNat_lt.2 <| Nat.pos_of_ne_zero h₁)
   have d₂0 := ne_of_gt (Int.ofNat_lt.2 <| Nat.pos_of_ne_zero h₂)
@@ -396,7 +398,7 @@ instance semigroup : Semigroup ℚ := by infer_instance
 theorem eq_iff_mul_eq_mul {p q : ℚ} : p = q ↔ p.num * q.den = q.num * p.den := by
   conv =>
     lhs
-    rw [← @num_den p, ← @num_den q]
+    rw [← @num_divInt_den p, ← @num_divInt_den q]
   apply Rat.divInt_eq_iff <;>
     · rw [← Nat.cast_zero, Ne, Int.ofNat_inj]
       apply den_nz
@@ -422,18 +424,12 @@ theorem den_zero : Rat.den 0 = 1 :=
   rfl
 #align rat.denom_zero Rat.den_zero
 
-theorem zero_of_num_zero {q : ℚ} (hq : q.num = 0) : q = 0 := by
-  have : q = q.num /. q.den := num_den.symm
-  simpa [hq] using this
+lemma zero_of_num_zero {q : ℚ} (hq : q.num = 0) : q = 0 := by simpa [hq] using q.num_divInt_den.symm
 #align rat.zero_of_num_zero Rat.zero_of_num_zero
 
 theorem zero_iff_num_zero {q : ℚ} : q = 0 ↔ q.num = 0 :=
   ⟨fun _ => by simp [*], zero_of_num_zero⟩
 #align rat.zero_iff_num_zero Rat.zero_iff_num_zero
-
-theorem num_ne_zero_of_ne_zero {q : ℚ} (h : q ≠ 0) : q.num ≠ 0 := fun hq0 : q.num = 0 =>
-  h <| zero_of_num_zero hq0
-#align rat.num_ne_zero_of_ne_zero Rat.num_ne_zero_of_ne_zero
 
 @[simp]
 theorem num_one : (1 : ℚ).num = 1 :=
@@ -461,7 +457,7 @@ theorem mul_num_den (q r : ℚ) : q * r = q.num * r.num /. ↑(q.den * r.den) :=
   have hq' : (↑q.den : ℤ) ≠ 0 := by have := den_nz q; simpa
   have hr' : (↑r.den : ℤ) ≠ 0 := by have := den_nz r; simpa
   suffices q.num /. ↑q.den * (r.num /. ↑r.den) = q.num * r.num /. ↑(q.den * r.den) by
-    simpa [num_den] using this
+    simpa [num_divInt_den] using this
   simp [mul_def' hq' hr']
 #align rat.mul_num_denom Rat.mul_num_den
 
@@ -472,7 +468,7 @@ theorem div_num_den (q r : ℚ) : q / r = q.num * r.den /. (q.den * r.num) :=
   else
     calc
       q / r = q * r⁻¹ := div_eq_mul_inv q r
-      _ = q.num /. q.den * (r.num /. r.den)⁻¹ := by simp [num_den]
+      _ = q.num /. q.den * (r.num /. r.den)⁻¹ := by simp [num_divInt_den]
       _ = q.num /. q.den * (r.den /. r.num) := by rw [inv_def']
       _ = q.num * r.den /. (q.den * r.num) := mul_def' (by simpa using den_nz q) hr
 #align rat.div_num_denom Rat.div_num_den
@@ -517,11 +513,11 @@ theorem coe_int_div_eq_divInt {n d : ℤ} : (n : ℚ) / (d) = n /. d := by
 -- Porting note: see porting note above about `Int.cast`@[simp]
 theorem num_div_den (r : ℚ) : (r.num : ℚ) / (r.den : ℚ) = r := by
   rw [← Int.cast_ofNat]
-  erw [← divInt_eq_div, num_den]
+  erw [← divInt_eq_div, num_divInt_den]
 #align rat.num_div_denom Rat.num_div_den
 
 theorem coe_int_num_of_den_eq_one {q : ℚ} (hq : q.den = 1) : (q.num : ℚ) = q := by
-  conv_rhs => rw [← @num_den q, hq]
+  conv_rhs => rw [← @num_divInt_den q, hq]
   rw [coe_int_eq_divInt]
   rfl
 #align rat.coe_int_num_of_denom_eq_one Rat.coe_int_num_of_den_eq_one

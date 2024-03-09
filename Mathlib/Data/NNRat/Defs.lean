@@ -354,12 +354,15 @@ variable {p q : ℚ≥0}
 theorem natAbs_num_coe : (q : ℚ).num.natAbs = q.num := rfl
 #align nnrat.nat_abs_num_coe NNRat.natAbs_num_coe
 
-@[simp, norm_cast] lemma den_coe : (q : ℚ).den = q.den := rfl
+@[norm_cast] lemma den_coe : (q : ℚ).den = q.den := rfl
 #align nnrat.denom_coe NNRat.den_coe
 
 @[simp] lemma num_ne_zero : q.num ≠ 0 ↔ q ≠ 0 := by simp [num]
 @[simp] lemma num_pos : 0 < q.num ↔ 0 < q := by simp [pos_iff_ne_zero]
 @[simp] lemma den_pos (q : ℚ≥0) : 0 < q.den := Rat.den_pos _
+@[simp] lemma den_ne_zero (q : ℚ≥0) : q.den ≠ 0 := Rat.den_ne_zero _
+
+lemma coprime_num_den (q : ℚ≥0) : q.num.Coprime q.den := by simpa [num, den] using Rat.reduced _
 
 -- TODO: Rename `Rat.coe_nat_num`, `Rat.intCast_den`, `Rat.ofNat_num`, `Rat.ofNat_den`
 @[simp, norm_cast] lemma num_natCast (n : ℕ) : num n = n := rfl
@@ -389,5 +392,14 @@ lemma mk_divInt (n d : ℕ) :
 
 lemma divNat_inj (h₁ : d₁ ≠ 0) (h₂ : d₂ ≠ 0) : divNat n₁ d₁ = divNat n₂ d₂ ↔ n₁ * d₂ = n₂ * d₁ := by
   rw [← coe_inj]; simp [Rat.mkRat_eq_iff, h₁, h₂]; norm_cast
+
+@[simp] lemma num_divNat_den (q : ℚ≥0) : divNat q.num q.den = q :=
+  ext $ by rw [← (q : ℚ).mkRat_num_den']; simp [num_coe, den_coe]
+
+/-- Define a (dependent) function or prove `∀ r : ℚ, p r` by dealing with nonnegative rational
+numbers of the form `n / d` with `d ≠ 0` and `n`, `d` coprime. -/
+@[elab_as_elim]
+def numDenCasesOn.{u} {C : ℚ≥0 → Sort u} (q) (H : ∀ n d, d ≠ 0 → n.Coprime d → C (divNat n d)) :
+    C q := by rw [← q.num_divNat_den]; exact H _ _ q.den_ne_zero q.coprime_num_den
 
 end NNRat

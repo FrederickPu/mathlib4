@@ -419,7 +419,7 @@ open Rat
 
 private alias ⟨_, num_pos_of_pos⟩ := num_pos
 private alias ⟨_, num_nonneg_of_nonneg⟩ := num_nonneg
-private alias ⟨_, num_ne_zero_of_ne_zero⟩ := num_ne_zero
+private alias ⟨_, num_ne_zero.2⟩ := num_ne_zero
 
 /-- The `positivity` extension which identifies expressions of the form `Rat.num a`,
 such that `positivity` successfully recognises `a`. -/
@@ -433,7 +433,7 @@ def evalRatNum : PositivityExt where eval {u α} _ _ e := do
     match ← core zα pα a with
     | .positive pa => pure $ .positive q(num_pos_of_pos $pa)
     | .nonnegative pa => pure $ .nonnegative q(num_nonneg_of_nonneg $pa)
-    | .nonzero pa => pure $ .nonzero q(num_ne_zero_of_ne_zero $pa)
+    | .nonzero pa => pure $ .nonzero q(num_ne_zero.2 $pa)
     | .none => pure .none
   | _, _ => throwError "not Rat.num"
 

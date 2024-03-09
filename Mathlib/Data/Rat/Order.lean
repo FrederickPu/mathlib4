@@ -35,7 +35,7 @@ variable {a b c : ℚ}
 
 @[simp] lemma divInt_nonneg_iff_of_pos_right {a b : ℤ} (hb : 0 < b) : 0 ≤ a /. b ↔ 0 ≤ a := by
   cases' hab : a /. b with n d hd hnd
-  rw [num_den', divInt_eq_iff hb.ne' (mod_cast hd)] at hab
+  rw [mk'_eq_divInt, divInt_eq_iff hb.ne' (mod_cast hd)] at hab
   rw [← num_nonneg, ← mul_nonneg_iff_of_pos_right hb, ← hab,
     mul_nonneg_iff_of_pos_right (mod_cast hd.bot_lt)]
 #align rat.mk_nonneg Rat.divInt_nonneg_iff_of_pos_right
@@ -177,8 +177,8 @@ instance : PartialOrder ℚ := by infer_instance
 instance : Preorder ℚ := by infer_instance
 
 protected theorem le_def' {p q : ℚ} : p ≤ q ↔ p.num * q.den ≤ q.num * p.den := by
-  rw [← @num_den q, ← @num_den p]
-  conv_rhs => simp only [num_den]
+  rw [← @num_divInt_den q, ← @num_divInt_den p]
+  conv_rhs => simp only [num_divInt_den]
   exact Rat.le_def (mod_cast p.pos) (mod_cast q.pos)
 #align rat.le_def' Rat.le_def'
 
@@ -245,13 +245,13 @@ theorem lt_one_iff_num_lt_denom {q : ℚ} : q < 1 ↔ q.num < q.den := by simp [
 theorem abs_def (q : ℚ) : |q| = q.num.natAbs /. q.den := by
   rcases le_total q 0 with hq | hq
   · rw [abs_of_nonpos hq]
-    rw [← @num_den q, ← divInt_zero_one, Rat.le_def (Int.coe_nat_pos.2 q.pos) zero_lt_one, mul_one,
+    rw [← @num_divInt_den q, ← divInt_zero_one, Rat.le_def (Int.coe_nat_pos.2 q.pos) zero_lt_one, mul_one,
       zero_mul] at hq
-    rw [Int.ofNat_natAbs_of_nonpos hq, ← neg_def, num_den]
+    rw [Int.ofNat_natAbs_of_nonpos hq, ← neg_def, num_divInt_den]
   · rw [abs_of_nonneg hq]
-    rw [← @num_den q, ← divInt_zero_one, Rat.le_def zero_lt_one (Int.coe_nat_pos.2 q.pos), mul_one,
+    rw [← @num_divInt_den q, ← divInt_zero_one, Rat.le_def zero_lt_one (Int.coe_nat_pos.2 q.pos), mul_one,
       zero_mul] at hq
-    rw [Int.natAbs_of_nonneg hq, num_den]
+    rw [Int.natAbs_of_nonneg hq, num_divInt_den]
 #align rat.abs_def Rat.abs_def
 
 end Rat

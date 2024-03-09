@@ -66,7 +66,7 @@ lemma cast_comm (q : ℚ≥0) (a : α) : q * a = a * q := cast_commute _ _
     simp [*]
   have hb' : b ≠ 0 := by rintro rfl; exact hb Nat.cast_zero
   have hd' : d ≠ 0 := by rintro rfl; exact hd Nat.cast_zero
-  simp_rw [Rat.num_den', mk_divInt, divNat_inj hb' hd'] at e
+  simp_rw [Rat.mk'_eq_divInt, mk_divInt, divNat_inj hb' hd'] at e
   rw [cast_def]
   dsimp
   rw [Commute.div_eq_div_iff _ hd hb]
@@ -75,21 +75,20 @@ lemma cast_comm (q : ℚ≥0) (a : α) : q * a = a * q := cast_commute _ _
   exact b.commute_cast _
 
 @[norm_cast]
-lemma cast_add_of_ne_zero :
-    ∀ {m n : ℚ≥0}, (m.den : α) ≠ 0 → (n.den : α) ≠ 0 → ((m + n : ℚ≥0) : α) = m + n
-  | ⟨n₁, d₁, h₁, c₁⟩, ⟨n₂, d₂, h₂, c₂⟩ => fun (d₁0 : (d₁ : α) ≠ 0) (d₂0 : (d₂ : α) ≠ 0) => by
-    have d₁0' : (d₁ : ℤ) ≠ 0 :=
-      Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₁0; exact d₁0 Nat.cast_zero
-    have d₂0' : (d₂ : ℤ) ≠ 0 :=
-      Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₂0; exact d₂0 Nat.cast_zero
-    rw [num_den', num_den', add_def'' d₁0' d₂0']
-    suffices (n₁ * (d₂ * ((d₂ : α)⁻¹ * (d₁ : α)⁻¹)) + n₂ * (d₁ * (d₂ : α)⁻¹) * (d₁ : α)⁻¹ : α)
-        = n₁ * (d₁ : α)⁻¹ + n₂ * (d₂ : α)⁻¹ by
-      rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, cast_mk_of_ne_zero]
-      · simpa [division_def, left_distrib, right_distrib, mul_inv_rev, d₁0, d₂0, mul_assoc]
-      all_goals simp [d₁0, d₂0]
-    rw [← mul_assoc (d₂ : α), mul_inv_cancel d₂0, one_mul, (Nat.cast_commute _ _).eq]
-    simp [d₁0, mul_assoc]
+lemma cast_add_of_ne_zero {q r : ℚ≥0} (hq : (q.den : α) ≠ 0) (hr : (r.den : α) ≠ 0) :
+    (q + r : ℚ≥0) = (q + r : α) := by
+  have d₁0' : (d₁ : ℤ) ≠ 0 :=
+    Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₁0; exact d₁0 Nat.cast_zero
+  have d₂0' : (d₂ : ℤ) ≠ 0 :=
+    Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₂0; exact d₂0 Nat.cast_zero
+  rw [mk'_eq_divInt, mk'_eq_divInt, add_def'' d₁0' d₂0']
+  suffices (n₁ * (d₂ * ((d₂ : α)⁻¹ * (d₁ : α)⁻¹)) + n₂ * (d₁ * (d₂ : α)⁻¹) * (d₁ : α)⁻¹ : α)
+      = n₁ * (d₁ : α)⁻¹ + n₂ * (d₂ : α)⁻¹ by
+    rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, cast_mk_of_ne_zero]
+    · simpa [division_def, left_distrib, right_distrib, mul_inv_rev, d₁0, d₂0, mul_assoc]
+    all_goals simp [d₁0, d₂0]
+  rw [← mul_assoc (d₂ : α), mul_inv_cancel d₂0, one_mul, (Nat.cast_commute _ _).eq]
+  simp [d₁0, mul_assoc]
 
 @[norm_cast]
 theorem cast_mul_of_ne_zero :
@@ -99,7 +98,7 @@ theorem cast_mul_of_ne_zero :
       Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₁0; exact d₁0 Nat.cast_zero
     have d₂0' : (d₂ : ℤ) ≠ 0 :=
       Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₂0; exact d₂0 Nat.cast_zero
-    rw [num_den', num_den', mul_def' d₁0' d₂0']
+    rw [mk'_eq_divInt, mk'_eq_divInt, mul_def' d₁0' d₂0']
     suffices (n₁ * (n₂ * (d₂ : α)⁻¹ * (d₁ : α)⁻¹) : α) = n₁ * ((d₁ : α)⁻¹ * (n₂ * (d₂ : α)⁻¹)) by
       rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, cast_mk_of_ne_zero]
       · simpa [division_def, mul_inv_rev, d₁0, d₂0, mul_assoc]
@@ -110,14 +109,14 @@ theorem cast_mul_of_ne_zero :
 theorem cast_inv_of_ne_zero :
     ∀ {n : ℚ≥0}, (n.num : α) ≠ 0 → (n.den : α) ≠ 0 → ((n⁻¹ : ℚ≥0) : α) = (n : α)⁻¹
   | ⟨n, d, h, c⟩ => fun (n0 : (n : α) ≠ 0) (d0 : (d : α) ≠ 0) => by
-    rw [num_den', inv_def']
+    rw [mk'_eq_divInt, inv_def']
     rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, inv_div] <;> simp [n0, d0]
 
 @[norm_cast]
 theorem cast_div_of_ne_zero {m n : ℚ≥0} (md : (m.den : α) ≠ 0) (nn : (n.num : α) ≠ 0)
     (nd : (n.den : α) ≠ 0) : ((m / n : ℚ≥0) : α) = m / n := by
   have : (n⁻¹.den : ℤ) ∣ n.num := by
-    conv in n⁻¹.den => rw [← @num_den n, inv_def']
+    conv in n⁻¹.den => rw [← @num_divInt_den n, inv_def']
     apply den_dvd
   have : (n⁻¹.den : α) = 0 → (n.num : α) = 0 := fun h => by
     let ⟨k, e⟩ := this
@@ -186,14 +185,12 @@ theorem cast_mk_of_ne_zero (a b : ℤ) (b0 : (b : α) ≠ 0) : (a /. b : α) = a
     have : (b : α) = (d : α) * (k : α) := by rw [ke, Int.cast_mul, Int.cast_ofNat]
     rw [d0, zero_mul] at this
     contradiction
-  rw [num_den'] at e
+  rw [mk'_eq_divInt] at e
   have := congr_arg ((↑) : ℤ → α)
     ((divInt_eq_iff b0' <| ne_of_gt <| Int.coe_nat_pos.2 h.bot_lt).1 e)
   rw [Int.cast_mul, Int.cast_mul, Int.cast_ofNat] at this
-  -- Porting note: was `symm`
-  apply Eq.symm
-  rw [cast_def, div_eq_mul_inv, eq_div_iff_mul_eq d0, mul_assoc, (d.commute_cast _).eq, ← mul_assoc,
-    this, mul_assoc, mul_inv_cancel b0, mul_one]
+  rw [eq_comm, cast_def, div_eq_mul_inv, eq_div_iff_mul_eq d0, mul_assoc, (d.commute_cast _).eq,
+    ← mul_assoc, this, mul_assoc, mul_inv_cancel b0, mul_one]
 #align rat.cast_mk_of_ne_zero Rat.cast_mk_of_ne_zero
 
 @[norm_cast]
@@ -204,7 +201,7 @@ theorem cast_add_of_ne_zero :
       Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₁0; exact d₁0 Nat.cast_zero
     have d₂0' : (d₂ : ℤ) ≠ 0 :=
       Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₂0; exact d₂0 Nat.cast_zero
-    rw [num_den', num_den', add_def'' d₁0' d₂0']
+    rw [mk'_eq_divInt, mk'_eq_divInt, add_def'' d₁0' d₂0']
     suffices (n₁ * (d₂ * ((d₂ : α)⁻¹ * (d₁ : α)⁻¹)) + n₂ * (d₁ * (d₂ : α)⁻¹) * (d₁ : α)⁻¹ : α)
         = n₁ * (d₁ : α)⁻¹ + n₂ * (d₂ : α)⁻¹ by
       rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, cast_mk_of_ne_zero]
@@ -237,7 +234,7 @@ theorem cast_mul_of_ne_zero :
       Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₁0; exact d₁0 Nat.cast_zero
     have d₂0' : (d₂ : ℤ) ≠ 0 :=
       Int.coe_nat_ne_zero.2 fun e => by rw [e] at d₂0; exact d₂0 Nat.cast_zero
-    rw [num_den', num_den', mul_def' d₁0' d₂0']
+    rw [mk'_eq_divInt, mk'_eq_divInt, mul_def' d₁0' d₂0']
     suffices (n₁ * (n₂ * (d₂ : α)⁻¹ * (d₁ : α)⁻¹) : α) = n₁ * ((d₁ : α)⁻¹ * (n₂ * (d₂ : α)⁻¹)) by
       rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, cast_mk_of_ne_zero]
       · simpa [division_def, mul_inv_rev, d₁0, d₂0, mul_assoc]
@@ -249,7 +246,7 @@ theorem cast_mul_of_ne_zero :
 theorem cast_inv_of_ne_zero :
     ∀ {n : ℚ}, (n.num : α) ≠ 0 → (n.den : α) ≠ 0 → ((n⁻¹ : ℚ) : α) = (n : α)⁻¹
   | ⟨n, d, h, c⟩ => fun (n0 : (n : α) ≠ 0) (d0 : (d : α) ≠ 0) => by
-    rw [num_den', inv_def']
+    rw [mk'_eq_divInt, inv_def']
     rw [cast_mk_of_ne_zero, cast_mk_of_ne_zero, inv_div] <;> simp [n0, d0]
 #align rat.cast_inv_of_ne_zero Rat.cast_inv_of_ne_zero
 
@@ -257,7 +254,7 @@ theorem cast_inv_of_ne_zero :
 theorem cast_div_of_ne_zero {m n : ℚ} (md : (m.den : α) ≠ 0) (nn : (n.num : α) ≠ 0)
     (nd : (n.den : α) ≠ 0) : ((m / n : ℚ) : α) = m / n := by
   have : (n⁻¹.den : ℤ) ∣ n.num := by
-    conv in n⁻¹.den => rw [← @num_den n, inv_def']
+    conv in n⁻¹.den => rw [← @num_divInt_den n, inv_def']
     apply den_dvd
   have : (n⁻¹.den : α) = 0 → (n.num : α) = 0 := fun h => by
     let ⟨k, e⟩ := this
