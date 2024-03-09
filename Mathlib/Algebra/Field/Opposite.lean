@@ -42,6 +42,7 @@ instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵐᵒ�
   __ := groupWithZero _
   nnratCast_def q := unop_injective $ by rw [unop_nnratCast, unop_div, unop_natCast, unop_natCast,
     NNRat.cast_def, div_eq_mul_inv, Nat.cast_comm]
+  nnqsmul := nnqsmulRec _
 
 instance instDivisionRing [DivisionRing α] : DivisionRing αᵐᵒᵖ where
   toRing := ring _
@@ -68,6 +69,7 @@ instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵃᵒ�
   __ := groupWithZero _
   nnratCast_def q := unop_injective $ by rw [unop_nnratCast, unop_div, unop_natCast, unop_natCast,
     NNRat.cast_def, div_eq_mul_inv]
+  nnqsmul := nnqsmulRec _
 
 instance instDivisionRing [DivisionRing α] : DivisionRing αᵃᵒᵖ where
   toRing := ring _

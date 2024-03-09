@@ -419,7 +419,7 @@ open Rat
 
 private alias ⟨_, num_pos_of_pos⟩ := num_pos
 private alias ⟨_, num_nonneg_of_nonneg⟩ := num_nonneg
-private alias ⟨_, num_ne_zero.2⟩ := num_ne_zero
+private alias ⟨_, num_ne_zero_of_ne_zero⟩ := num_ne_zero
 
 /-- The `positivity` extension which identifies expressions of the form `Rat.num a`,
 such that `positivity` successfully recognises `a`. -/
