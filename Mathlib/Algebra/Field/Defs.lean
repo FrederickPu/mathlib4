@@ -159,7 +159,7 @@ class DivisionRing (α : Type*)
   /-- Scalar multiplication by a rational number.
 
   Do not use directly. Instead use the `•` notation. -/
-  protected qsmul : ℚ → α → α := qsmulRec Rat.cast
+  protected qsmul : ℚ → α → α
   /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`.
 
   Do not use this lemma directly. Use `Rat.cast_def` instead. -/
