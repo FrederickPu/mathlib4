@@ -14,7 +14,7 @@ import Mathlib.Data.Set.Image
 import Mathlib.Data.Set.Pointwise.Basic
 import Mathlib.Algebra.Order.AbsoluteValue
 import Mathlib.Init.Algebra.Classes
-
+import Mathlib.Analysis.Complex.Basic
 /-!
 # Katetov Maps
 
@@ -200,6 +200,8 @@ noncomputable instance: MetricSpace E(α) where
     · rintro _ ⟨x, rfl⟩; exact abs_nonneg _
   edist_dist x y:= by exact ENNReal.coe_nnreal_eq _
 
+#check Complex.mk
+
 theorem dist_coe_le_dist (f g : E(α)) (x : α) : dist (f x) (g x) ≤ dist f g :=
   by refine le_csSup bounded_dist_set (by simp [dist])
 
@@ -207,6 +209,7 @@ theorem dist_le {C :ℝ} (C0 : (0 : ℝ) ≤ C) (f g : E(α)):
     dist f g ≤ C ↔ ∀ x : α, dist (f x) (g x) ≤ C := by
   refine ⟨fun h x => le_trans (dist_coe_le_dist _ _ x) h, fun H ↦ ?_⟩
   simp [dist]; apply Real.sSup_le (by simp [*] at *; assumption) (C0)
+
 
 noncomputable instance : CompleteSpace E(α) :=
   Metric.complete_of_cauchySeq_tendsto fun (u : ℕ → E(α)) (hf : CauchySeq u) => by
@@ -344,67 +347,114 @@ lemma abs_inf_dist_le_sup {α : Type*} {f g : α → ℝ} (hα : Nonempty α)
       linarith [this]
 
 -- if s empty return dist?
-noncomputable def katetovExtension (α : Type*) (s : Set α) (hs : Nonempty s) [MetricSpace α] (f : E(s)) : E(α) := by
-  refine ⟨fun x ↦ sInf {(f z) + dist x z | z : s }, ?_⟩
-  constructor <;> intro x y
-  · --rw [sub_eq_add_neg, ← csSup_neg]
-    calc
-    _ ≤ sSup {|f z + dist x z - (f z + dist y z)| | z : s} := by
-      refine abs_inf_dist_le_sup hs ?_ ?_ ?_
-      · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
-      · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
-      · use dist x y
-        rintro _ ⟨z, rfl⟩
-        have : |(fun z ↦ f z + dist x z) - fun z ↦ f z + dist y z| z
-          = |(f z + dist x z) - (f z + dist y z)| := by rfl
-        rw [this]
-        ring_nf
-        apply abs_dist_sub_le
-    _ = sSup {|dist x (z : α) - dist y (z : α)| | z : s} := by ring_nf
-    _ ≤ _ := by
-      apply Real.sSup_le
-      · rintro _ ⟨z, hz, rfl⟩
-        apply abs_dist_sub_le x y z
-      · exact dist_nonneg
-  · rw [← csInf_add]
-    · set c : ℝ := sInf {dist x z + dist z z₁ + dist z₁ y | (z ∈ s) (z₁ ∈ s)} with hc
+noncomputable def katetovExtension {α : Type*} (s : Set α) [MetricSpace α]
+    (f : E(s)) : E(α) := by
+  by_cases hs : Nonempty s
+  · refine ⟨fun x ↦ sInf {(f z) + dist x z | z : s }, ?_⟩
+    constructor <;> intro x y
+    · --rw [sub_eq_add_neg, ← csSup_neg]
       calc
-      _ ≤ c := by
-        apply le_csInf
-        · have z₀ := Classical.choice hs
-          refine ⟨dist x z₀ + dist z₀ z₀ + (dist (z₀ : α) y),
-            Set.mem_setOf.mpr ⟨z₀, Subtype.coe_prop z₀, ⟨z₀, Subtype.coe_prop z₀, rfl⟩⟩⟩
-        · rintro b ⟨z, hz, z₁, hz₁, rfl⟩
-          repeat apply (dist_triangle ..).trans; gcongr; try exact dist_triangle _ _
-          exact dist_triangle x _ _
+      _ ≤ sSup {|f z + dist x z - (f z + dist y z)| | z : s} := by
+        refine abs_inf_dist_le_sup hs ?_ ?_ ?_
+        · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
+        · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
+        · use dist x y
+          rintro _ ⟨z, rfl⟩
+          have : |(fun z ↦ f z + dist x z) - fun z ↦ f z + dist y z| z
+            = |(f z + dist x z) - (f z + dist y z)| := by rfl
+          rw [this]
+          ring_nf
+          apply abs_dist_sub_le
+      _ = sSup {|dist x (z : α) - dist y (z : α)| | z : s} := by ring_nf
       _ ≤ _ := by
-        apply le_csInf
-        · have z₀ := Classical.choice hs
-          refine ⟨(f z₀) + dist x z₀ + (f z₀) + dist y z₀,
-            Set.mem_add.mpr ⟨(f z₀) + dist x z₀, by aesop, ⟨(f z₀) + dist y z₀, by aesop, by ring⟩⟩⟩
-        · rintro b ⟨_, ⟨z, rfl⟩, _, ⟨z₁, rfl⟩, rfl⟩
-          dsimp
-          rw [hc]
-          refine @csInf_le_of_le _ _ _ (f z + dist x ↑z + (f z₁ + dist y ↑z₁))
-            (dist x z + dist z z₁ + dist (z₁ : α) y) ?_ ?_ ?_
-          · refine ⟨0, Set.mem_setOf.mpr ?_⟩
-            rintro a ⟨z, hz, z₁, hz₁, rfl⟩
-            apply add_nonneg (add_nonneg dist_nonneg dist_nonneg) dist_nonneg
-          · aesop
-          · rw [dist_comm y z₁]
-            linarith [(map_katetov f).dist_le_add z z₁]
-    · have z₀ := Classical.choice hs
-      refine ⟨(f z₀) + dist x z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
-    · refine ⟨0, Set.mem_setOf.mpr ?_⟩
-      rintro a ⟨z, rfl⟩
-      apply add_nonneg (katetov_nonneg _ _) dist_nonneg
-    · have z₀ := Classical.choice hs
-      refine ⟨(f z₀) + dist y z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
-    · refine ⟨0, Set.mem_setOf.mpr ?_⟩
-      rintro a ⟨z, rfl⟩
-      apply add_nonneg (katetov_nonneg _ _) dist_nonneg
+        apply Real.sSup_le
+        · rintro _ ⟨z, hz, rfl⟩
+          apply abs_dist_sub_le x y z
+        · exact dist_nonneg
+    · rw [← csInf_add]
+      · set c : ℝ := sInf {dist x z + dist z z₁ + dist z₁ y | (z ∈ s) (z₁ ∈ s)} with hc
+        calc
+        _ ≤ c := by
+          apply le_csInf
+          · have z₀ := Classical.choice hs
+            refine ⟨dist x z₀ + dist z₀ z₀ + (dist (z₀ : α) y),
+              Set.mem_setOf.mpr ⟨z₀, Subtype.coe_prop z₀, ⟨z₀, Subtype.coe_prop z₀, rfl⟩⟩⟩
+          · rintro b ⟨z, hz, z₁, hz₁, rfl⟩
+            repeat apply (dist_triangle ..).trans; gcongr; try exact dist_triangle _ _
+            exact dist_triangle x _ _
+        _ ≤ _ := by
+          apply le_csInf
+          · have z₀ := Classical.choice hs
+            refine ⟨(f z₀) + dist x z₀ + (f z₀) + dist y z₀,
+              Set.mem_add.mpr ⟨(f z₀) + dist x z₀, by aesop, ⟨(f z₀) + dist y z₀, by aesop, by ring⟩⟩⟩
+          · rintro b ⟨_, ⟨z, rfl⟩, _, ⟨z₁, rfl⟩, rfl⟩
+            dsimp
+            rw [hc]
+            refine @csInf_le_of_le _ _ _ (f z + dist x ↑z + (f z₁ + dist y ↑z₁))
+              (dist x z + dist z z₁ + dist (z₁ : α) y) ?_ ?_ ?_
+            · refine ⟨0, Set.mem_setOf.mpr ?_⟩
+              rintro a ⟨z, hz, z₁, hz₁, rfl⟩
+              apply add_nonneg (add_nonneg dist_nonneg dist_nonneg) dist_nonneg
+            · aesop
+            · rw [dist_comm y z₁]
+              linarith [(map_katetov f).dist_le_add z z₁]
+      · have z₀ := Classical.choice hs
+        refine ⟨(f z₀) + dist x z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
+      · refine ⟨0, Set.mem_setOf.mpr ?_⟩
+        rintro a ⟨z, rfl⟩
+        apply add_nonneg (katetov_nonneg _ _) dist_nonneg
+      · have z₀ := Classical.choice hs
+        refine ⟨(f z₀) + dist y z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
+      · refine ⟨0, Set.mem_setOf.mpr ?_⟩
+        rintro a ⟨z, rfl⟩
+        apply add_nonneg (katetov_nonneg _ _) dist_nonneg
+  · by_cases hα : Nonempty α
+    · have z₀ := Classical.choice hα
+      exact katetovKuratowskiEmbedding α z₀
+    · exact @instKatetovMapOfEmpty _ _ (not_nonempty_iff.mp hα)
+
+def restrict {α : Type*} (s : Set α) [MetricSpace α] (f : E(α)) : E(s) := by
+  refine ⟨fun x ↦ f x, ?_⟩
+  constructor <;> intro x y
+  · exact (map_katetov f).abs_sub_le_dist x y
+  · exact (map_katetov f).dist_le_add x y
+
+theorem eq_restric_support {α : Type*} (s : Set α) [MetricSpace α] (f : E(s)) :
+  restrict s (katetovExtension s f) = f := by
+  ext x
+  simp [katetovExtension, restrict]
+  by_cases hs : Nonempty s
+  · simp [hs]
+    apply le_antisymm
+    · apply csInf_le
+      · refine ⟨f x + dist x x, Set.mem_setOf.mpr ?_⟩
+        simp
+        rintro _ z hz rfl
+        rw [show dist (x : α ) z = dist x ⟨z, hz⟩ by aesop]
+        linarith [le_trans (le_abs_self _) ((map_katetov f).abs_sub_le_dist x ⟨z, hz⟩)]
+      · refine ⟨x, ?_⟩
+        simp only [Subtype.coe_eta, dist_self, add_zero, Subtype.coe_prop, exists_const]
+    · apply le_csInf
+      · refine ⟨f x + dist x x, Set.mem_setOf.mpr ?_⟩
+        simp
+        refine ⟨x, ?_⟩
+        simp only [Subtype.coe_eta, dist_self, add_zero, Subtype.coe_prop, exists_const]
+      · simp
+        rintro _ z hz rfl
+        rw [show dist (x : α ) z = dist x ⟨z, hz⟩ by aesop]
+        linarith [le_trans (le_abs_self _) ((map_katetov f).abs_sub_le_dist x ⟨z, hz⟩)]
+  · exact False.elim (hs ⟨x⟩)
+
+
+structure FinsuppKatetovMap {α : Type*} [MetricSpace α] extends KatetovMap α  where
+  kat_ext: ∃ s : Set α, Set.Finite s ∧
+    ⟨toFun, IsKatetovtoFun⟩  = katetovExtension s (restrict s ⟨toFun, IsKatetovtoFun⟩)
+
+
 
 end KatetovExtension
+
+
 
 
 
