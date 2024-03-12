@@ -10,7 +10,8 @@ import Mathlib.LinearAlgebra.AffineSpace.ContinuousAffineEquiv
 # Ample subsets of real vector spaces
 
 In this file we study ample set in real vector spaces. A set is ample if all its connected
-component have full convex hull.
+component have full convex hull. Ample sets are an important ingredient for defining ample
+differential relations.
 
 ## Main results
 - `ampleSet_empty` and `ampleSet_univ`: the empty set and `univ` are ample
@@ -18,8 +19,7 @@ component have full convex hull.
 - `AmpleSet.{pre}image`: being ample is invariant under continuous affine equivalences
 - `AmpleSet.vadd`: in particular, ampleness is invariant under affine translations
 
-TODO: migrate proof to this file...
-- `AmpleSet.xxx`: a linear subspace with codimension at least two has an ample complement.
+- `AmpleSet.of_two_le_codim`: a linear subspace of codimension at least two has an ample complement.
 This is the crucial geometric ingredient which allows to apply convex integration
 to the theory of immersions in positive codimension.
 
@@ -83,7 +83,7 @@ theorem AmpleSet.image {s : Set E} (h : AmpleSet s) (L : E ≃ᵃL[ℝ] F) :
     conv_rhs => rw [← L.apply_symm_apply x]
     exact (L.toHomeomorph).image_connectedComponentIn hx
   rw [← this]
-  -- when mathlib4#11298 lands, switch order of argument
+  -- when mathlib4#11298 lands, switch argument order
   refine (AffineMap.image_convexHull _ L.toAffineMap).symm.trans ?_
   rw [h (L.symm x) hx, image_univ]
   exact L.surjective.range_eq
@@ -92,3 +92,27 @@ theorem AmpleSet.image {s : Set E} (h : AmpleSet s) (L : E ≃ᵃL[ℝ] F) :
 theorem AmpleSet.preimage {s : Set F} (h : AmpleSet s) (L : E ≃ᵃL[ℝ] F) : AmpleSet (L ⁻¹' s) := by
   rw [← L.image_symm_eq_preimage]
   exact h.image L.symm
+
+/-! ## Subspaces of codimension at least two have ample complement -/
+section Codimension
+
+variable {E F : Type*} [AddCommGroup F] [Module ℝ F] [TopologicalSpace F]
+  [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
+  [TopologicalAddGroup F] [ContinuousSMul ℝ F]
+
+/-- Let `E` be a linear subspace in a real vector space.
+If `E` has codimension at least two, its complement is ample. -/
+theorem AmpleSet.of_two_le_codim {E : Submodule ℝ F} (hcodim : 2 ≤ Module.rank ℝ (F ⧸ E)) :
+    AmpleSet (Eᶜ : Set F) := fun x hx ↦ by
+  rw [E.connectedComponentIn_eq_self_of_two_le_codim hcodim hx, eq_univ_iff_forall]
+  intro y
+  by_cases h : y ∈ E
+  · obtain ⟨z, hz⟩ : ∃ z, z ∉ E := by
+      rw [← not_forall, ← Submodule.eq_top_iff']
+      rintro rfl
+      simp [rank_zero_iff.2 inferInstance] at hcodim
+    refine segment_subset_convexHull ?_ ?_ (mem_segment_sub_add y z) <;>
+      simpa [sub_eq_add_neg, Submodule.add_mem_iff_right _ h]
+  · exact subset_convexHull ℝ (Eᶜ : Set F) h
+
+end Codimension
