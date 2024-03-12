@@ -5,7 +5,6 @@ Authors: Michael Rothgang
 -/
 import Mathlib.LinearAlgebra.AffineSpace.AffineEquiv
 import Mathlib.Topology.Algebra.Module.Basic
-import Mathlib.Data.Real.Basic
 
 /-!
 # Continuous affine equivalences
@@ -19,13 +18,18 @@ which are continuous with continuous inverse.
 * `e.trans e'`: composition of two `ContinuousAffineEquiv`s; note that the order
   follows `mathlib`'s `CategoryTheory` convention (apply `e`, then `e'`),
   not the convention used in function composition and compositions of bundled morphisms.
+* `ContinuousLinearEquiv.toContinuousAffineEquiv`: continuous linear equivalences are also
+  continuous affine equivalences
 
 ## TODO
+- `AffineEquiv.constVAdd` is a continuous affine equivalence (under suitable hypotheses)
 - equip `AffineEquiv k P P` with a `Group` structure,
 with multiplication corresponding to composition in `AffineEquiv.group`.
 
 - am I missing further basic API? fix remaining (few) sorries
-- relate continuous linear equivalences and continuous affine equivalences
+
+## Tags
+affine equivalence, continuous
 
 -/
 
