@@ -172,8 +172,8 @@ theorem mem_span_of_zero_mem_segment {x y : E} (hx : x ≠ 0) (h : (0 : E) ∈ [
     rw [h] at htxy
     refine hx ?_
     simpa using htxy
-  rw [← smul_eq_zero_iff_right (neg_ne_zero.mpr <| inv_ne_zero this), smul_add, smul_smul, smul_smul,
-    ← neg_one_mul, mul_assoc, mul_assoc, inv_mul_cancel this, mul_one, neg_one_smul,
+  rw [← smul_eq_zero_iff_right (neg_ne_zero.mpr <| inv_ne_zero this), smul_add, smul_smul,
+    smul_smul, ← neg_one_mul, mul_assoc, mul_assoc, inv_mul_cancel this, mul_one, neg_one_smul,
     add_neg_eq_zero] at htxy
   convert htxy using 2
   ring
@@ -217,8 +217,8 @@ theorem isPathConnected_compl_zero_of_two_le_dim (hdim : 2 ≤ Module.rank ℝ E
 variable {E F : Type*} [AddCommGroup F] [Module ℝ F] [TopologicalSpace F]
   [AddCommGroup E] [Module ℝ E] [TopologicalSpace E] [TopologicalAddGroup F] [ContinuousSMul ℝ F]
 
-/-- Let `E` be a linear subspace in a real vector space. If `E` has codimension at
-least two then its complement is path-connected. -/
+/-- Let `E` be a linear subspace in a real vector space.
+If `E` has codimension at least two, its complement is path-connected. -/
 theorem isPathConnected_compl_of_two_le_codim {E : Submodule ℝ F}
     (hcodim : 2 ≤ Module.rank ℝ (F ⧸ E)) : IsPathConnected (Eᶜ : Set F) := by
   rcases E.exists_isCompl with ⟨E', hE'⟩
