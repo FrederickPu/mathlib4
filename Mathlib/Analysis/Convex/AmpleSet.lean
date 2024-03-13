@@ -56,7 +56,7 @@ theorem ampleSet_univ {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] :
 
 /-- The empty set in a vector space is ample. -/
 @[simp]
-theorem ampleSet_empty : AmpleSet (∅ : Set F) := fun _ h ↦ False.elim h -- or `by intro _ _; trivial`
+theorem ampleSet_empty : AmpleSet (∅ : Set F) := fun _ h ↦ False.elim h
 
 /-- The union of two ample sets is ample. -/
 theorem AmpleSet.union {s t : Set F} (hs : AmpleSet s) (ht : AmpleSet t) : AmpleSet (s ∪ t) := by

@@ -9,7 +9,7 @@ import Mathlib.Topology.Algebra.Module.Basic
 /-!
 # Continuous affine equivalences
 
-In this file, we define continuous affine equivalences, which are affine equivalences
+In this file, we define continuous affine equivalences, affine equivalences
 which are continuous with continuous inverse.
 
 ## Main definitions
@@ -18,18 +18,15 @@ which are continuous with continuous inverse.
 * `e.trans e'`: composition of two `ContinuousAffineEquiv`s; note that the order
   follows `mathlib`'s `CategoryTheory` convention (apply `e`, then `e'`),
   not the convention used in function composition and compositions of bundled morphisms.
-* `ContinuousLinearEquiv.toContinuousAffineEquiv`: continuous linear equivalences are also
-  continuous affine equivalences
+
+* `e.toHomeomorph`: the continuous affine equivalence `e` has a homeomorphism
+* `ContinuousLinearEquiv.toContinuousAffineEquiv`: a continuous linear equivalence as a continuous
+  affine equivalence
+* `ContinuousAffineEquiv.constVAdd`: `AffineEquiv.constVAdd` as a continuous affine equivalence
 
 ## TODO
-- `AffineEquiv.constVAdd` is a continuous affine equivalence (under suitable hypotheses)
-- equip `AffineEquiv k P P` with a `Group` structure,
+- equip `ContinuousAffineEquiv k P P` with a `Group` structure,
 with multiplication corresponding to composition in `AffineEquiv.group`.
-
-- am I missing further basic API? fix remaining (few) sorries
-
-## Tags
-affine equivalence, continuous
 
 -/
 
@@ -38,8 +35,8 @@ open Function
 /-- A continuous affine equivalence between two affine topological spaces is an affine equivalence
 such that forward and inverse maps are continuous. -/
 structure ContinuousAffineEquiv (k P₁ P₂ : Type*) {V₁ V₂ : Type*} [Ring k]
-  [AddCommGroup V₁] [Module k V₁] [AddTorsor V₁ P₁] [AddCommGroup V₂] [Module k V₂] [AddTorsor V₂ P₂]
-  [TopologicalSpace P₁] [TopologicalSpace P₂] extends P₁ ≃ᵃ[k] P₂ where
+  [AddCommGroup V₁] [Module k V₁] [AddTorsor V₁ P₁] [TopologicalSpace P₁]
+  [AddCommGroup V₂] [Module k V₂] [AddTorsor V₂ P₂] [TopologicalSpace P₂] extends P₁ ≃ᵃ[k] P₂ where
   continuous_toFun : Continuous toFun := by continuity
   continuous_invFun : Continuous invFun := by continuity
 
@@ -53,10 +50,12 @@ variable {k P₁ P₂ P₃ P₄ V₁ V₂ V₃ V₄ : Type*} [Ring k]
   [AddCommGroup V₄] [Module k V₄] [AddTorsor V₄ P₄]
   [TopologicalSpace P₁] [AddCommMonoid P₁] [Module k P₁]
   [TopologicalSpace P₂] [AddCommMonoid P₂] [Module k P₂]
-  [TopologicalSpace P₃] --[AddCommMonoid P₃] [Module k P₃]
-  [TopologicalSpace P₄] --[AddCommMonoid P₄] [Module k P₄]
+  [TopologicalSpace P₃] [TopologicalSpace P₄]
 
 namespace ContinuousAffineEquiv
+
+-- Basic set-up: standard fields, coercions and ext lemmas
+section Basic
 
 -- not needed below, but perhaps still useful?
 -- simpVarHead linter complains, so removed @[simp]
@@ -78,18 +77,55 @@ instance equivLike : EquivLike (P₁ ≃ᵃL[k] P₂) P₁ P₂ where
 instance : CoeFun (P₁ ≃ᵃL[k] P₂) fun _ ↦ P₁ → P₂ :=
   DFunLike.hasCoeToFun
 
+attribute [coe] ContinuousAffineEquiv.toAffineEquiv
+/-- Coerce continuous affine equivalences to affine equivalences. -/
+instance ContinuousAffineEquiv.coe : Coe (P₁ ≃ᵃL[k] P₂) (P₁ ≃ᵃ[k] P₂) := ⟨toAffineEquiv⟩
+
+theorem coe_injective : Function.Injective ((↑) : (P₁ ≃ᵃL[k] P₂) → P₁ ≃ᵃ[k] P₂) := by
+  intro e e' H
+  cases e
+  congr
+
+instance funLike : FunLike (P₁ ≃ᵃL[k] P₂) P₁ P₂ where
+  coe f := f.toAffineEquiv
+  coe_injective' _ _ h := coe_injective (DFunLike.coe_injective h)
+
+@[simp, norm_cast]
+theorem coe_coe (e : P₁ ≃ᵃL[k] P₂) : ⇑(e : P₁ ≃ᵃ[k] P₂) = e :=
+  rfl
+
+@[simp]
+theorem coe_toEquiv (e : P₁ ≃ᵃL[k] P₂) : ⇑e.toEquiv = e :=
+  rfl
+
+-- NOTE(MR): I have omitted `coe_mk`, `coe_mk'`, `coe_inj`, `coeFn_injective` lemmas for now;
+-- happy to add them!
+
+-- NOTE(MR): the next two lines are cargo-culted; please review carefully if they make sense!
+/-- See Note [custom simps projection].
+  We need to specify this projection explicitly in this case,
+  because it is a composition of multiple projections. -/
+def Simps.apply (e : P₁ ≃ᵃL[k] P₂) : P₁ → P₂ :=
+  e
+
+/-- See Note [custom simps projection]. -/
+def Simps.coe (e: P₁ ≃ᵃL[k] P₂) : P₁ ≃ᵃ[k] P₂ :=
+  e
+
+initialize_simps_projections ContinuousLinearMap (toAffineEquiv_toFun → apply, toAffineEquiv → coe)
+
 @[ext]
 theorem ext {e e' : P₁ ≃ᵃL[k] P₂} (h : ∀ x, e x = e' x) : e = e' :=
   DFunLike.ext _ _ h
 
--- linter complains... @[simp]
-theorem coe_toEquiv (e : P₁ ≃ᵃL[k] P₂) : ⇑e.toEquiv = e :=
-  rfl
+theorem ext_iff {e e' : P₁ ≃ᵃL[k] P₂} : e = e' ↔ ∀ x, e x = e' x :=
+  DFunLike.ext_iff
 
--- coe_coe lemma?
+@[continuity]
+protected theorem continuous (e : P₁ ≃ᵃL[k] P₂) : Continuous e :=
+  e.2
 
--- AffineEquiv has lots of lemmas that coercions are injective - needed?
--- AffineEquiv has coe_mk and mk' lemmas; do I need them?
+end Basic
 
 section ReflSymmTrans
 
@@ -221,14 +257,12 @@ theorem symm_trans_self (e : P₁ ≃ᵃL[k] P₂) : e.symm.trans e = refl k P�
 
 end ReflSymmTrans
 
--- TODO: compare with ContinuousLinearEquiv also, add missing lemmas!
+section
 
--- TODO: should toContinuousLinearEquiv.toHomeomorph re-use this?
+-- TODO(MR): should toContinuousLinearEquiv.toHomeomorph re-use this?
 /-- A continuous affine equivalence is a homeomorphism. -/
 def toHomeomorph (e : P₁ ≃ᵃL[k] P₂) : P₁ ≃ₜ P₂ where
   __ := e
-
-section
 
 variable {E F : Type*} [AddCommGroup E] [Module k E] [TopologicalSpace E]
   [AddCommGroup F] [Module k F] [TopologicalSpace F]
@@ -244,6 +278,17 @@ def _root_.ContinuousLinearEquiv.toContinuousAffineEquiv (L : E ≃L[k] F) : E �
 theorem _root_.ContinuousLinearEquiv.coe_toContinuousAffineEquiv (e : E ≃L[k] F) :
     ⇑e.toContinuousAffineEquiv = e :=
   rfl
+
+variable (k P₁) in
+/-- The map `p ↦ v +ᵥ p` as a continuous affine automorphism of an affine space
+  on which addition is continuous. -/
+def constVAdd [ContinuousConstVAdd V₁ P₁] (v : V₁) : P₁ ≃ᵃL[k] P₁ where
+  toAffineEquiv := AffineEquiv.constVAdd k P₁ v
+  continuous_toFun := continuous_const_vadd v
+  continuous_invFun := continuous_const_vadd (-v)
+
+lemma constVAdd_coe [ContinuousConstVAdd V₁ P₁] (v : V₁) :
+    (constVAdd k P₁ v).toAffineEquiv = .constVAdd k P₁ v := rfl
 
 end
 
