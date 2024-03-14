@@ -490,17 +490,6 @@ theorem exists_isometric_embedding (α : Type*) [MetricSpace α] (s : Set α) :
           refine le_csSup_of_le bounded_dist_set ?_ (le_refl |f x - g x|)
           refine ⟨x, ?_⟩
           simp
-          -- have : ∀ f : E(s), sInf {(f z) + dist x z | z : s } = f x := by
-          --   intro f; refine le_antisymm ?_ ?_
-          --   · apply csInf_le
-          --     · refine ⟨0, Set.mem_setOf.mpr ?_⟩
-          --       rintro _ ⟨z, hz, rfl⟩
-          --       exact add_nonneg (katetov_nonneg _ _) (dist_nonneg)
-          --     · refine Set.mem_setOf.mpr ⟨x, by simp⟩
-          --   · apply le_csInf
-          --     · refine ⟨f x + dist x x, Set.mem_setOf.mpr ⟨x, rfl⟩⟩
-          --     · rintro _ ⟨z, hz, rfl⟩
-          --       linarith [le_of_abs_le <| (map_katetov f).abs_sub_le_dist x z]
           have : ∀ f : E(s), sInf {f ⟨a, h⟩ + dist (x : α) a | (a : α) (h : a ∈ s)} = f x:= by
             intro f; refine le_antisymm ?_ ?_
             · apply csInf_le
@@ -513,6 +502,7 @@ theorem exists_isometric_embedding (α : Type*) [MetricSpace α] (s : Set α) :
               · rintro _ ⟨z, hz, rfl⟩
                 rw [show dist (x : α ) z = dist x ⟨z, hz⟩ by aesop]
                 linarith [le_of_abs_le <| (map_katetov f).abs_sub_le_dist x ⟨z, hz⟩]
+          simp_rw [this f, this g]
       · have x₀ := Classical.choice ‹Nonempty α›
         refine ⟨fun _ ↦ katetovKuratowskiEmbedding _ x₀, ?_⟩
         refine Isometry.of_dist_eq (fun f g ↦ ?_)
