@@ -177,7 +177,7 @@ instance : PartialOrder ℚ := by infer_instance
 instance : Preorder ℚ := by infer_instance
 
 protected theorem le_def' {p q : ℚ} : p ≤ q ↔ p.num * q.den ≤ q.num * p.den := by
-  rw [← @num_divInt_den q, ← @num_divInt_den p]
+  rw [← num_divInt_den q, ← num_divInt_den p]
   conv_rhs => simp only [num_divInt_den]
   exact Rat.le_def (mod_cast p.pos) (mod_cast q.pos)
 #align rat.le_def' Rat.le_def'
@@ -245,12 +245,12 @@ theorem lt_one_iff_num_lt_denom {q : ℚ} : q < 1 ↔ q.num < q.den := by simp [
 theorem abs_def (q : ℚ) : |q| = q.num.natAbs /. q.den := by
   rcases le_total q 0 with hq | hq
   · rw [abs_of_nonpos hq]
-    rw [← @num_divInt_den q, ← divInt_zero_one, Rat.le_def (Int.coe_nat_pos.2 q.pos) zero_lt_one, mul_one,
-      zero_mul] at hq
+    rw [← num_divInt_den q, ← divInt_zero_one, Rat.le_def (Int.coe_nat_pos.2 q.pos) zero_lt_one,
+      mul_one, zero_mul] at hq
     rw [Int.ofNat_natAbs_of_nonpos hq, ← neg_def, num_divInt_den]
   · rw [abs_of_nonneg hq]
-    rw [← @num_divInt_den q, ← divInt_zero_one, Rat.le_def zero_lt_one (Int.coe_nat_pos.2 q.pos), mul_one,
-      zero_mul] at hq
+    rw [← num_divInt_den q, ← divInt_zero_one, Rat.le_def zero_lt_one (Int.coe_nat_pos.2 q.pos),
+      mul_one, zero_mul] at hq
     rw [Int.natAbs_of_nonneg hq, num_divInt_den]
 #align rat.abs_def Rat.abs_def
 

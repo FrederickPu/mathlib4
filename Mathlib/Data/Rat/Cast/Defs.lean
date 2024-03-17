@@ -116,7 +116,7 @@ theorem cast_inv_of_ne_zero :
 theorem cast_div_of_ne_zero {m n : ℚ≥0} (md : (m.den : α) ≠ 0) (nn : (n.num : α) ≠ 0)
     (nd : (n.den : α) ≠ 0) : ((m / n : ℚ≥0) : α) = m / n := by
   have : (n⁻¹.den : ℤ) ∣ n.num := by
-    conv in n⁻¹.den => rw [← @num_divInt_den n, inv_def']
+    conv in n⁻¹.den => rw [← num_divInt_den n, inv_def']
     apply den_dvd
   have : (n⁻¹.den : α) = 0 → (n.num : α) = 0 := fun h => by
     let ⟨k, e⟩ := this
@@ -254,7 +254,7 @@ theorem cast_inv_of_ne_zero :
 theorem cast_div_of_ne_zero {m n : ℚ} (md : (m.den : α) ≠ 0) (nn : (n.num : α) ≠ 0)
     (nd : (n.den : α) ≠ 0) : ((m / n : ℚ) : α) = m / n := by
   have : (n⁻¹.den : ℤ) ∣ n.num := by
-    conv in n⁻¹.den => rw [← @num_divInt_den n, inv_def']
+    conv in n⁻¹.den => rw [← num_divInt_den n, inv_def']
     apply den_dvd
   have : (n⁻¹.den : α) = 0 → (n.num : α) = 0 := fun h => by
     let ⟨k, e⟩ := this

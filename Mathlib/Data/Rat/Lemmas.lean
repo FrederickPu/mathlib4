@@ -109,7 +109,7 @@ theorem add_num_den (q r : ℚ) :
     q + r = (q.num * r.den + q.den * r.num : ℤ) /. (↑q.den * ↑r.den : ℤ) := by
   have hqd : (q.den : ℤ) ≠ 0 := Int.coe_nat_ne_zero_iff_pos.2 q.den_pos
   have hrd : (r.den : ℤ) ≠ 0 := Int.coe_nat_ne_zero_iff_pos.2 r.den_pos
-  conv_lhs => rw [← @num_divInt_den q, ← @num_divInt_den r, Rat.add_def'' hqd hrd]
+  conv_lhs => rw [← num_divInt_den q, ← num_divInt_den r, Rat.add_def'' hqd hrd]
   rw [mul_comm r.num q.den]
 #align rat.add_num_denom Rat.add_num_den
 
@@ -174,19 +174,19 @@ theorem substr_num_den' (q r : ℚ) :
 end Casts
 
 theorem inv_def'' {q : ℚ} : q⁻¹ = (q.den : ℚ) / q.num := by
-  conv_lhs => rw [← @num_divInt_den q]
+  conv_lhs => rw [← num_divInt_den q]
   rw [inv_def', divInt_eq_div]; rfl
 #align rat.inv_def' Rat.inv_def''
 
 protected theorem inv_neg (q : ℚ) : (-q)⁻¹ = -q⁻¹ := by
-  rw [← @num_divInt_den q]
+  rw [← num_divInt_den q]
   simp only [Rat.neg_def, Rat.inv_def', eq_self_iff_true, Rat.divInt_neg_den]
 #align rat.inv_neg Rat.inv_neg
 
 @[simp]
 theorem mul_den_eq_num {q : ℚ} : q * q.den = q.num := by
   suffices (q.num /. ↑q.den) * (↑q.den /. 1) = q.num /. 1 by
-    conv => pattern (occs := 1) q; (rw [← @num_divInt_den q])
+    conv => pattern (occs := 1) q; (rw [← num_divInt_den q])
     simp only [coe_int_eq_divInt, coe_nat_eq_divInt, num_divInt_den] at this ⊢; assumption
   have : (q.den : ℤ) ≠ 0 := ne_of_gt (mod_cast q.pos)
   rw [Rat.mul_def' this one_ne_zero, mul_comm (q.den : ℤ) 1, divInt_mul_right this]

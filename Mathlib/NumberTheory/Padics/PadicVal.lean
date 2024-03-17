@@ -347,7 +347,7 @@ protected theorem mul {q r : ℚ} (hq : q ≠ 0) (hr : r ≠ 0) :
   have hp' : Prime (p : ℤ) := Nat.prime_iff_prime_int.1 hp.1
   rw [padicValRat.defn p (mul_ne_zero hq hr) this]
   conv_rhs =>
-    rw [← @Rat.num_divInt_den q, padicValRat.defn p hq', ← @Rat.num_divInt_den r, padicValRat.defn p hr']
+    rw [← @Rat.num_divInt_den q, padicValRat.defn p hq', ← r.num_divInt_den, padicValRat.defn p hr']
   rw [multiplicity.mul' hp', multiplicity.mul' hp', Nat.cast_add, Nat.cast_add]
   ring
   -- Porting note: was

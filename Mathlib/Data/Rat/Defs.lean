@@ -404,7 +404,7 @@ instance semigroup : Semigroup ℚ := by infer_instance
 theorem eq_iff_mul_eq_mul {p q : ℚ} : p = q ↔ p.num * q.den = q.num * p.den := by
   conv =>
     lhs
-    rw [← @num_divInt_den p, ← @num_divInt_den q]
+    rw [← num_divInt_den p, ← num_divInt_den q]
   apply Rat.divInt_eq_iff <;>
     · rw [← Nat.cast_zero, Ne, Int.ofNat_inj]
       apply den_nz
@@ -523,7 +523,7 @@ theorem num_div_den (r : ℚ) : (r.num : ℚ) / (r.den : ℚ) = r := by
 #align rat.num_div_denom Rat.num_div_den
 
 theorem coe_int_num_of_den_eq_one {q : ℚ} (hq : q.den = 1) : (q.num : ℚ) = q := by
-  conv_rhs => rw [← @num_divInt_den q, hq]
+  conv_rhs => rw [← num_divInt_den q, hq]
   rw [coe_int_eq_divInt]
   rfl
 #align rat.coe_int_num_of_denom_eq_one Rat.coe_int_num_of_den_eq_one
