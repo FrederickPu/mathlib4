@@ -94,8 +94,8 @@ instance instNNRatSMul : SMul ℚ≥0 {x : α // 0 ≤ x} where
 
 instance linearOrderedSemifield : LinearOrderedSemifield { x : α // 0 ≤ x } :=
   Subtype.coe_injective.linearOrderedSemifield _ Nonneg.coe_zero Nonneg.coe_one Nonneg.coe_add
-    Nonneg.coe_mul Nonneg.coe_inv Nonneg.coe_div (fun _ _ => rfl) Nonneg.coe_pow Nonneg.coe_zpow
-    Nonneg.coe_nat_cast coe_nnratCast (fun _ _ => rfl) fun _ _ => rfl
+    Nonneg.coe_mul Nonneg.coe_inv Nonneg.coe_div (fun _ _ => rfl) coe_nnqsmul Nonneg.coe_pow
+    Nonneg.coe_zpow Nonneg.coe_nat_cast coe_nnratCast (fun _ _ => rfl) fun _ _ => rfl
 #align nonneg.linear_ordered_semifield Nonneg.linearOrderedSemifield
 
 end LinearOrderedSemifield

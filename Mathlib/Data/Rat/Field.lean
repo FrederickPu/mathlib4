@@ -42,6 +42,8 @@ instance instField : Field ℚ where
   nnratCast_def q := by
     rw [← NNRat.den_coe, ← Int.cast_natCast q.num, ← NNRat.num_coe]; exact(num_div_den _).symm
   ratCast_def a b h1 h2 := (num_div_den _).symm
+  nnqsmul := nnqsmulRec (↑)
+  qsmul := qsmulRec (↑)
 
 -- Extra instances to short-circuit type class resolution
 instance instDivisionRing : DivisionRing ℚ := by infer_instance
@@ -56,3 +58,14 @@ end Rat
 -- instances for performance
 deriving instance CanonicallyLinearOrderedSemifield, LinearOrderedSemifield,
   LinearOrderedCommGroupWithZero for NNRat
+
+namespace NNRat
+
+@[simp, norm_cast] lemma coe_inv (q : ℚ≥0) : ↑(q⁻¹) = (q⁻¹ : ℚ) := rfl
+@[simp, norm_cast] lemma coe_div (q r : ℚ≥0) : ↑(q / r) = (q / r : ℚ) := rfl
+
+lemma inv_def (q : ℚ≥0) : q⁻¹ = divNat q.den q.num := by ext; simp [Rat.inv_def', num_coe, den_coe]
+lemma div_def (q r : ℚ≥0) : q / r = divNat (q.num * r.den) (q.den * r.num) := by
+  ext; simp [Rat.div_def', num_coe, den_coe]
+
+end NNRat

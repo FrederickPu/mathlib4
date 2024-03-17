@@ -65,7 +65,8 @@ protected lemma mul_nonneg : 0 ≤ a → 0 ≤ b → 0 ≤ a * b :=
     numDenCasesOn' b fun n₂ d₂ h₂ => by
       have d₁0 : 0 < (d₁ : ℤ) := mod_cast h₁.bot_lt
       have d₂0 : 0 < (d₂ : ℤ) := mod_cast h₂.bot_lt
-      simp only [d₁0, d₂0, mul_pos, divInt_nonneg_iff_of_pos_right, mul_def' d₁0.ne' d₂0.ne']
+      simp only [d₁0, d₂0, mul_pos, divInt_nonneg_iff_of_pos_right,
+        divInt_mul_divInt _ _ d₁0.ne' d₂0.ne']
       apply mul_nonneg
 #align rat.nonneg_mul Rat.mul_nonneg
 #align rat.mul_nonneg Rat.mul_nonneg

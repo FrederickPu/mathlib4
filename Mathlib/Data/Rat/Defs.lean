@@ -192,22 +192,41 @@ theorem sub_def'' {a b c d : ℤ} (b0 : b ≠ 0) (d0 : d ≠ 0) :
 
 #align rat.mul Rat.mul
 
--- Porting note: there's already an instance for `Mul ℚ` in Std.
 @[simp]
-theorem mul_def' {a b c d : ℤ} (b0 : b ≠ 0) (d0 : d ≠ 0) : a /. b * (c /. d) = a * c /. (b * d) :=
-  divInt_mul_divInt _ _ b0 d0
-#align rat.mul_def Rat.mul_def'
+lemma divInt_mul_divInt' (n₁ d₁ n₂ d₂ : ℤ) : (n₁ /. d₁) * (n₂ /. d₂) = (n₁ * n₂) /. (d₁ * d₂) := by
+  obtain rfl | h₁ := eq_or_ne d₁ 0
+  · simp
+  obtain rfl | h₂ := eq_or_ne d₂ 0
+  · simp
+  exact divInt_mul_divInt _ _ h₁ h₂
+#align rat.mul_def Rat.divInt_mul_divInt'
+
+lemma mul_def' (q r : ℚ) : q * r = mkRat (q.num * r.num) (q.den * r.den) := by
+  rw [mul_def, normalize_eq_mkRat]
+
+@[deprecated] alias mul_num_den := mul_def'
+#align rat.mul_num_denom Rat.mul_num_den
 
 #align rat.inv Rat.inv
 
 instance : Inv ℚ :=
   ⟨Rat.inv⟩
 
--- Porting note: there's already an instance for `Div ℚ` is in Std.
+@[simp] lemma inv_divInt' (a b : ℤ) : (a /. b)⁻¹ = b /. a := inv_divInt ..
+#align rat.inv_def Rat.inv_divInt
 
-@[simp]
-theorem inv_def' {a b : ℤ} : (a /. b)⁻¹ = b /. a := inv_divInt ..
-#align rat.inv_def Rat.inv_def'
+lemma inv_def' (q : ℚ) : q⁻¹ = q.den /. q.num := by rw [← inv_divInt', num_divInt_den]
+#align rat.inv_def' Rat.inv_def'
+
+@[simp] lemma divInt_div_divInt (n₁ d₁ n₂ d₂) :
+    (n₁ /. d₁) / (n₂ /. d₂) = (n₁ * d₂) /. (d₁ * n₂) := by
+  rw [div_def, inv_divInt, divInt_mul_divInt']
+
+lemma div_def' (q r : ℚ) : q / r = (q.num * r.den) /. (q.den * r.num) := by
+  rw [← divInt_div_divInt, num_divInt_den, num_divInt_den]
+
+@[deprecated] alias div_num_den := div_def'
+#align rat.div_num_denom Rat.div_num_den
 
 variable (a b c : ℚ)
 
@@ -294,7 +313,7 @@ protected theorem add_mul : (a + b) * c = a * c + b * c :=
     numDenCasesOn' b fun n₂ d₂ h₂ =>
       numDenCasesOn' c fun n₃ d₃ h₃ => by
         simp only [ne_eq, Nat.cast_eq_zero, h₁, not_false_eq_true, h₂, add_def'', mul_eq_zero,
-          or_self, h₃, mul_def']
+          or_self, h₃, divInt_mul_divInt]
         rw [← divInt_mul_right (Int.coe_nat_ne_zero.2 h₃), add_mul, add_mul]
         ac_rfl
 #align rat.add_mul Rat.add_mul
@@ -459,26 +478,6 @@ theorem divInt_ne_zero_of_ne_zero {n d : ℤ} (h : n ≠ 0) (hd : d ≠ 0) : n /
   (divInt_ne_zero hd).mpr h
 #align rat.mk_ne_zero_of_ne_zero Rat.divInt_ne_zero_of_ne_zero
 
-theorem mul_num_den (q r : ℚ) : q * r = q.num * r.num /. ↑(q.den * r.den) := by
-  have hq' : (↑q.den : ℤ) ≠ 0 := by simp
-  have hr' : (↑r.den : ℤ) ≠ 0 := by simp
-  suffices q.num /. ↑q.den * (r.num /. ↑r.den) = q.num * r.num /. ↑(q.den * r.den) by
-    simpa [num_divInt_den] using this
-  simp [mul_def' hq' hr']
-#align rat.mul_num_denom Rat.mul_num_den
-
-theorem div_num_den (q r : ℚ) : q / r = q.num * r.den /. (q.den * r.num) :=
-  if hr : r.num = 0 then by
-    have hr' : r = 0 := zero_of_num_zero hr
-    simp [*]
-  else
-    calc
-      q / r = q * r⁻¹ := div_eq_mul_inv q r
-      _ = q.num /. q.den * (r.num /. r.den)⁻¹ := by simp [num_divInt_den]
-      _ = q.num /. q.den * (r.den /. r.num) := by rw [inv_def']
-      _ = q.num * r.den /. (q.den * r.num) := mul_def' (by simp) hr
-#align rat.div_num_denom Rat.div_num_den
-
 section Casts
 
 protected theorem add_divInt (a b c : ℤ) : (a + b) /. c = a /. c + b /. c :=
@@ -491,24 +490,24 @@ protected theorem add_divInt (a b c : ℤ) : (a + b) /. c = a /. c + b /. c :=
 theorem divInt_eq_div (n d : ℤ) : n /. d = (n : ℚ) / d := by
   by_cases d0 : d = 0
   · simp [d0, div_zero]
-  simp [division_def, coe_int_eq_divInt, mul_def' one_ne_zero d0]
+  simp [division_def, coe_int_eq_divInt, divInt_mul_divInt _ _ one_ne_zero d0]
 #align rat.mk_eq_div Rat.divInt_eq_div
 
 theorem divInt_mul_divInt_cancel {x : ℤ} (hx : x ≠ 0) (n d : ℤ) : n /. x * (x /. d) = n /. d := by
   by_cases hd : d = 0
   · rw [hd]
     simp
-  rw [mul_def' hx hd, mul_comm x, divInt_mul_right hx]
+  rw [divInt_mul_divInt _ _ hx hd, mul_comm x, divInt_mul_right hx]
 #align rat.mk_mul_mk_cancel Rat.divInt_mul_divInt_cancel
 
 theorem divInt_div_divInt_cancel_left {x : ℤ} (hx : x ≠ 0) (n d : ℤ) :
     n /. x / (d /. x) = n /. d := by
-  rw [div_eq_mul_inv, inv_def', divInt_mul_divInt_cancel hx]
+  rw [div_eq_mul_inv, inv_divInt', divInt_mul_divInt_cancel hx]
 #align rat.mk_div_mk_cancel_left Rat.divInt_div_divInt_cancel_left
 
 theorem divInt_div_divInt_cancel_right {x : ℤ} (hx : x ≠ 0) (n d : ℤ) :
     x /. n / (x /. d) = d /. n := by
-  rw [div_eq_mul_inv, inv_def', mul_comm, divInt_mul_divInt_cancel hx]
+  rw [div_eq_mul_inv, inv_divInt', mul_comm, divInt_mul_divInt_cancel hx]
 #align rat.mk_div_mk_cancel_right Rat.divInt_div_divInt_cancel_right
 
 theorem coe_int_div_eq_divInt {n d : ℤ} : (n : ℚ) / (d) = n /. d := by

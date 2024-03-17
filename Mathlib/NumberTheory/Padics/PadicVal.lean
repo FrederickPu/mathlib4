@@ -347,7 +347,7 @@ protected theorem mul {q r : ℚ} (hq : q ≠ 0) (hr : r ≠ 0) :
   have hp' : Prime (p : ℤ) := Nat.prime_iff_prime_int.1 hp.1
   rw [padicValRat.defn p (mul_ne_zero hq hr) this]
   conv_rhs =>
-    rw [← @Rat.num_divInt_den q, padicValRat.defn p hq', ← r.num_divInt_den, padicValRat.defn p hr']
+    rw [← q.num_divInt_den, padicValRat.defn p hq', ← r.num_divInt_den, padicValRat.defn p hr']
   rw [multiplicity.mul' hp', multiplicity.mul' hp', Nat.cast_add, Nat.cast_add]
   ring
   -- Porting note: was
@@ -407,11 +407,11 @@ theorem le_padicValRat_add_of_le {q r : ℚ} (hqr : q + r ≠ 0)
       have hrd : (r.den : ℤ) ≠ 0 := mod_cast Rat.den_nz _
       have hqreq : q + r = (q.num * r.den + q.den * r.num) /. (q.den * r.den) := Rat.add_num_den _ _
       have hqrd : q.num * r.den + q.den * r.num ≠ 0 := Rat.mk_num_ne_zero_of_ne_zero hqr hqreq
-      conv_lhs => rw [← @Rat.num_divInt_den q]
+      conv_lhs => rw [← q.num_divInt_den]
       rw [hqreq, padicValRat_le_padicValRat_iff hqn hqrd hqd (mul_ne_zero hqd hrd), ←
         multiplicity_le_multiplicity_iff, mul_left_comm,
         multiplicity.mul (Nat.prime_iff_prime_int.1 hp.1), add_mul]
-      rw [← @Rat.num_divInt_den q, ← @Rat.num_divInt_den r, padicValRat_le_padicValRat_iff hqn hrn hqd hrd, ←
+      rw [← q.num_divInt_den, ← r.num_divInt_den, padicValRat_le_padicValRat_iff hqn hrn hqd hrd, ←
         multiplicity_le_multiplicity_iff] at h
       calc
         _ ≤
