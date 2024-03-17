@@ -103,7 +103,7 @@ protected theorem le_iff_sub_nonneg (a b : ℚ) : a ≤ b ↔ 0 ≤ b - a :=
           apply mul_pos <;> rwa [pos_iff_ne_zero]
       · simp only [divInt_ofNat, ← zero_iff_num_zero, mkRat_eq_zero hb] at h'
         simp [h']
-      · simp [Rat.sub_def, normalize_eq]
+      · simp only [Rat.sub_def, normalize_eq]
         refine ⟨fun H => ?_, fun H _ => ?_⟩
         · refine Int.ediv_nonneg ?_ (Nat.cast_nonneg _)
           rw [sub_nonneg]

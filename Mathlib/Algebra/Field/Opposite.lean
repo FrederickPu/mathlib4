@@ -15,8 +15,9 @@ import Mathlib.Data.Int.Cast.Lemmas
 
 open scoped NNRat
 
-namespace MulOpposite
 variable {α : Type*}
+
+namespace MulOpposite
 
 @[to_additive] instance instNNRatCast [NNRatCast α] : NNRatCast αᵐᵒᵖ := ⟨fun q ↦ op q⟩
 @[to_additive] instance instRatCast [RatCast α] : RatCast αᵐᵒᵖ := ⟨fun q ↦ op q⟩
@@ -62,7 +63,6 @@ instance instField [Field α] : Field αᵐᵒᵖ where
 end MulOpposite
 
 namespace AddOpposite
-variable {α : Type*}
 
 instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵃᵒᵖ where
   toSemiring := semiring _

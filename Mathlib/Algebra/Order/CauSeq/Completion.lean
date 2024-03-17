@@ -281,6 +281,9 @@ noncomputable instance Cauchy.divisionRing : DivisionRing (Cauchy abv) where
   ratCast_def n d hd hnd := by
     rw [← ofRat_ratCast, Rat.cast_mk', ofRat_mul, ofRat_inv, ofRat_natCast, ofRat_intCast]
   qsmul := qsmulRec _ -- TODO: fix instance diamond
+  qsmul := (· • ·)
+  qsmul_eq_mul' q x := Quotient.inductionOn x fun f =>
+    congr_arg mk <| ext fun i => DivisionRing.qsmul_eq_mul' _ _
 
 /-- Show the first 10 items of a representative of this equivalence class of cauchy sequences.
 
