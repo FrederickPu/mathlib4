@@ -1404,19 +1404,18 @@ theorem rat_cast_im (q : ℚ) : (q : ℍ[R]).im = 0 :=
 #align quaternion.rat_cast_im Quaternion.rat_cast_im
 
 @[norm_cast]
-theorem coe_rat_cast (q : ℚ) : ↑(q : R) = (q : ℍ[R]) :=
+theorem coe_ratCast (q : ℚ) : ↑(q : R) = (q : ℍ[R]) :=
   rfl
-#align quaternion.coe_rat_cast Quaternion.coe_rat_cast
+#align quaternion.coe_rat_cast Quaternion.coe_ratCast
 
--- Porting note: moved below `coe_rat_cast`, as `coe_rat_cast` is needed in the `rw`s
 instance : DivisionRing ℍ[R] :=
   { Quaternion.instGroupWithZero,
     Quaternion.instRing with
     ratCast_mk := fun n d hd h => by
-      rw [← coe_rat_cast, Rat.cast_mk', coe_mul, coe_int_cast, coe_inv, coe_nat_cast]
+      rw [← coe_ratCast, Rat.cast_mk', coe_mul, coe_int_cast, coe_inv, coe_nat_cast]
     qsmul := (· • ·)
     qsmul_eq_mul' := fun q x => by
-      rw [← coe_rat_cast, coe_mul_eq_smul]
+      rw [← coe_ratCast, coe_mul_eq_smul]
       ext <;> exact DivisionRing.qsmul_eq_mul' _ _ }
 
 --@[simp] Porting note (#10618): `simp` can prove it
@@ -1436,7 +1435,7 @@ theorem normSq_zpow (z : ℤ) : normSq (a ^ z) = normSq a ^ z :=
 
 @[norm_cast]
 theorem normSq_rat_cast (q : ℚ) : normSq (q : ℍ[R]) = (q : ℍ[R]) ^ 2 := by
-  rw [← coe_rat_cast, normSq_coe, coe_pow]
+  rw [← coe_ratCast, normSq_coe, coe_pow]
 #align quaternion.norm_sq_rat_cast Quaternion.normSq_rat_cast
 
 end Field
