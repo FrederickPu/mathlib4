@@ -6,7 +6,6 @@ Authors: Robert Lewis, Leonardo de Moura, Johannes Hölzl, Mario Carneiro
 import Mathlib.Algebra.Field.Defs
 import Mathlib.Algebra.GroupWithZero.Units.Lemmas
 import Mathlib.Algebra.Ring.Commute
-import Mathlib.Algebra.Ring.Hom.Defs
 
 #align_import algebra.field.basic from "leanprover-community/mathlib"@"05101c3df9d9cfe9430edc205860c79b6d660102"
 
@@ -269,7 +268,7 @@ noncomputable def divisionRingOfIsUnitOrEqZero [Ring R] (h : ∀ a : R, IsUnit a
     DivisionRing R where
   __ := ‹Ring R›
   __ := groupWithZeroOfIsUnitOrEqZero h
-  nnqsmul := nnqsmulRec _
+  nnqsmul := _
   qsmul := qsmulRec _
 #align division_ring_of_is_unit_or_eq_zero divisionRingOfIsUnitOrEqZero
 

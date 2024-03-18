@@ -301,22 +301,32 @@ instance Rat.subsingleton_ringHom {R : Type*} [Semiring R] : Subsingleton (ℚ �
   ⟨RingHom.ext_rat⟩
 #align rat.subsingleton_ring_hom Rat.subsingleton_ringHom
 
-section SMul
+/-! ### Scalar multiplication -/
 
-namespace Rat
+namespace NNRat
+variable [DivisionRing α]
 
-variable {K : Type*} [DivisionRing K]
-
-instance (priority := 100) distribSMul : DistribSMul ℚ K where
+instance (priority := 100) instDistribSMul : DistribSMul ℚ≥0 α where
   smul := (· • ·)
   smul_zero a := by rw [smul_def, mul_zero]
   smul_add a x y := by rw [smul_def, smul_def, smul_def, mul_add]
-#align rat.distrib_smul Rat.distribSMul
 
-instance isScalarTower_right : IsScalarTower ℚ K K :=
+instance instIsScalarTowerRight : IsScalarTower ℚ≥0 α α :=
   ⟨fun a x y => by simp only [smul_def, smul_eq_mul, mul_assoc]⟩
-#align rat.is_scalar_tower_right Rat.isScalarTower_right
+
+end NNRat
+
+namespace Rat
+variable [DivisionRing α]
+
+instance (priority := 100) instDistribSMul : DistribSMul ℚ α where
+  smul := (· • ·)
+  smul_zero a := by rw [smul_def, mul_zero]
+  smul_add a x y := by rw [smul_def, smul_def, smul_def, mul_add]
+#align rat.distrib_smul Rat.instDistribSMul
+
+instance instIsScalarTowerRight : IsScalarTower ℚ α α :=
+  ⟨fun a x y => by simp only [smul_def, smul_eq_mul, mul_assoc]⟩
+#align rat.is_scalar_tower_right Rat.instIsScalarTowerRight
 
 end Rat
-
-end SMul

@@ -70,7 +70,7 @@ noncomputable def IsField.toSemifield {R : Type u} [Semiring R] (h : IsField R) 
   inv_zero := dif_pos rfl
   mul_inv_cancel a ha := by
     convert Classical.choose_spec (IsField.mul_inv_cancel h ha); exact dif_neg ha
-  nnqsmul := nnqsmulRec _
+  nnqsmul := _
 #align is_field.to_semifield IsField.toSemifield
 
 /-- Transferring from `IsField` to `Field`. -/
