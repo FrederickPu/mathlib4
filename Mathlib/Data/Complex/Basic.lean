@@ -845,13 +845,15 @@ theorem rat_cast_im (q : ℚ) : (q : ℂ).im = 0 := rfl
 
 /-! ### Field instance and lemmas -/
 
-noncomputable instance instField : Field ℂ :=
-{ qsmul := fun n z => n • z
-  qsmul_eq_mul' := fun n z => ext_iff.2 <| by simp [Rat.smul_def, smul_re, smul_im]
-  ratCast_mk := fun n d hd h2 => by ext <;> simp [Field.ratCast_mk]
+noncomputable instance instField : Field ℂ where
   inv := Inv.inv
   mul_inv_cancel := @Complex.mul_inv_cancel
-  inv_zero := Complex.inv_zero }
+  inv_zero := Complex.inv_zero
+  ratCast_def n d hd h2 := by ext <;> simp [Rat.cast_def, ← div_eq_mul_inv]
+  qsmul := (· • ·)
+  qsmul_def n z := ext_iff.2 <| by simp [Rat.smul_def, smul_re, smul_im]
+  nnqsmul := (· • ·)
+  nnqsmul_def n z := ext_iff.2 <| by simp [NNRat.smul_def, smul_re, smul_im]
 #align complex.field Complex.instField
 
 section

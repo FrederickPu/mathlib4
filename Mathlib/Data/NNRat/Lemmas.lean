@@ -3,6 +3,7 @@ Copyright (c) 2022 Yaël Dillies, Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yaël Dillies, Bhavik Mehta
 -/
+import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Algebra.Function.Indicator
 import Mathlib.Algebra.Order.Nonneg.Field
 import Mathlib.Data.NNRat.Defs
@@ -83,3 +84,4 @@ protected def rec {α : ℚ≥0 → Sort*} (h : ∀ m n : ℕ, α (m / n)) (q : 
 #align nnrat.rec NNRat.rec
 
 end NNRat
+#minimize_imports
