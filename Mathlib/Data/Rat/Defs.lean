@@ -220,7 +220,7 @@ lemma mul_def' (q r : ℚ) : q * r = mkRat (q.num * r.num) (q.den * r.den) := by
   rw [mul_def, normalize_eq_mkRat]
 
 @[deprecated] alias mul_num_den := mul_def'
-#align rat.mul_num_denom Rat.mul_num_den
+#align rat.mul_num_denom Rat.mul_def'
 
 #align rat.inv Rat.inv
 

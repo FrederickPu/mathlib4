@@ -3,10 +3,7 @@ Copyright (c) 2022 Yaël Dillies, Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yaël Dillies, Bhavik Mehta
 -/
-import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Algebra.Function.Indicator
-import Mathlib.Algebra.Order.Nonneg.Field
-import Mathlib.Data.NNRat.Defs
 import Mathlib.Data.Rat.Field
 
 #align_import data.rat.nnrat from "leanprover-community/mathlib"@"b3f4f007a962e3787aa0f3b5c7942a1317f7d88e"
@@ -23,8 +20,6 @@ open scoped NNRat
 
 namespace NNRat
 variable {α : Type*} {p q : ℚ≥0}
-
-instance instDenselyOrdered : DenselyOrdered ℚ≥0 := Nonneg.instDenselyOrdered
 
 /-- A `MulAction` over `ℚ` restricts to a `MulAction` over `ℚ≥0`. -/
 instance [MulAction ℚ α] : MulAction ℚ≥0 α :=
@@ -84,4 +79,3 @@ protected def rec {α : ℚ≥0 → Sort*} (h : ∀ m n : ℕ, α (m / n)) (q : 
 #align nnrat.rec NNRat.rec
 
 end NNRat
-#minimize_imports

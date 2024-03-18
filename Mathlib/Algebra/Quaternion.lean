@@ -1408,15 +1408,13 @@ theorem coe_ratCast (q : ℚ) : ↑(q : R) = (q : ℍ[R]) :=
   rfl
 #align quaternion.coe_rat_cast Quaternion.coe_ratCast
 
-instance : DivisionRing ℍ[R] :=
-  { Quaternion.instGroupWithZero,
-    Quaternion.instRing with
-    ratCast_mk := fun n d hd h => by
-      rw [← coe_ratCast, Rat.cast_mk', coe_mul, coe_int_cast, coe_inv, coe_nat_cast]
-    qsmul := (· • ·)
-    qsmul_eq_mul' := fun q x => by
-      rw [← coe_ratCast, coe_mul_eq_smul]
-      ext <;> exact DivisionRing.qsmul_eq_mul' _ _ }
+instance instDivisionRing : DivisionRing ℍ[R] where
+  __ := Quaternion.instGroupWithZero,
+  __ := Quaternion.instRing with
+  ratCast_def n d hd h := by
+    rw [← coe_ratCast, Rat.cast_mk', coe_mul, coe_int_cast, coe_inv, coe_nat_cast]
+  qsmul := (· • ·)
+  qsmul_def q x := by rw [← coe_ratCast, coe_mul_eq_smul]; ext <;> exact Rat.smul_def _ _
 
 --@[simp] Porting note (#10618): `simp` can prove it
 theorem normSq_inv : normSq a⁻¹ = (normSq a)⁻¹ :=
