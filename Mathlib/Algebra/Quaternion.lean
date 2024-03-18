@@ -1374,45 +1374,37 @@ theorem coe_zpow (x : R) (z : ℤ) : ((x ^ z : R) : ℍ[R]) = (x : ℍ[R]) ^ z :
   map_zpow₀ (algebraMap R ℍ[R]) x z
 #align quaternion.coe_zpow Quaternion.coe_zpow
 
--- Porting note: split from `DivisionRing` instance
-instance : RatCast ℍ[R] where
-  ratCast := fun q => ↑(q : R)
+instance instNNRatCast : NNRatCast ℍ[R] where nnratCast q := (q : R)
+instance instRatCast : RatCast ℍ[R] where ratCast q := (q : R)
 
-@[simp, norm_cast]
-theorem rat_cast_re (q : ℚ) : (q : ℍ[R]).re = q :=
-  rfl
-#align quaternion.rat_cast_re Quaternion.rat_cast_re
+@[simp, norm_cast] lemma re_nnratCast (q : ℚ≥0) : (q : ℍ[R]).re = q := rfl
+@[simp, norm_cast] lemma im_nnratCast (q : ℚ≥0) : (q : ℍ[R]).im = 0 := rfl
+@[simp, norm_cast] lemma imI_nnratCast (q : ℚ≥0) : (q : ℍ[R]).imI = 0 := rfl
+@[simp, norm_cast] lemma imJ_nnratCast (q : ℚ≥0) : (q : ℍ[R]).imJ = 0 := rfl
+@[simp, norm_cast] lemma imK_nnratCast (q : ℚ≥0) : (q : ℍ[R]).imK = 0 := rfl
+@[simp, norm_cast] lemma re_ratCast (q : ℚ) : (q : ℍ[R]).re = q := rfl
+@[simp, norm_cast] lemma im_ratCast (q : ℚ) : (q : ℍ[R]).im = 0 := rfl
+@[simp, norm_cast] lemma imI_ratCast (q : ℚ) : (q : ℍ[R]).imI = 0 := rfl
+@[simp, norm_cast] lemma imJ_ratCast (q : ℚ) : (q : ℍ[R]).imJ = 0 := rfl
+@[simp, norm_cast] lemma imK_ratCast (q : ℚ) : (q : ℍ[R]).imK = 0 := rfl
+#align quaternion.rat_cast_re Quaternion.re_ratCast
+#align quaternion.rat_cast_im Quaternion.im_ratCast
+#align quaternion.rat_cast_im_i Quaternion.imI_ratCast
+#align quaternion.rat_cast_im_j Quaternion.imJ_ratCast
+#align quaternion.rat_cast_im_k Quaternion.imK_ratCast
 
-@[simp, norm_cast]
-theorem rat_cast_imI (q : ℚ) : (q : ℍ[R]).imI = 0 :=
-  rfl
-#align quaternion.rat_cast_im_i Quaternion.rat_cast_imI
-
-@[simp, norm_cast]
-theorem rat_cast_imJ (q : ℚ) : (q : ℍ[R]).imJ = 0 :=
-  rfl
-#align quaternion.rat_cast_im_j Quaternion.rat_cast_imJ
-
-@[simp, norm_cast]
-theorem rat_cast_imK (q : ℚ) : (q : ℍ[R]).imK = 0 :=
-  rfl
-#align quaternion.rat_cast_im_k Quaternion.rat_cast_imK
-
-@[simp, norm_cast]
-theorem rat_cast_im (q : ℚ) : (q : ℍ[R]).im = 0 :=
-  rfl
-#align quaternion.rat_cast_im Quaternion.rat_cast_im
-
-@[norm_cast]
-theorem coe_ratCast (q : ℚ) : ↑(q : R) = (q : ℍ[R]) :=
-  rfl
+@[norm_cast] lemma coe_nnratCast (q : ℚ≥0) : ↑(q : R) = (q : ℍ[R]) := rfl
+@[norm_cast] lemma coe_ratCast (q : ℚ) : ↑(q : R) = (q : ℍ[R]) := rfl
 #align quaternion.coe_rat_cast Quaternion.coe_ratCast
 
 instance instDivisionRing : DivisionRing ℍ[R] where
-  __ := Quaternion.instGroupWithZero,
-  __ := Quaternion.instRing with
+  __ := Quaternion.instGroupWithZero
+  __ := Quaternion.instRing
+  nnratCast_def q := by rw [← coe_nnratCast, NNRat.cast_def, coe_div, coe_nat_cast, coe_nat_cast]
   ratCast_def n d hd h := by
     rw [← coe_ratCast, Rat.cast_mk', coe_mul, coe_int_cast, coe_inv, coe_nat_cast]
+  nnqsmul := (· • ·)
+  nnqsmul_def q x := by rw [← coe_nnratCast, coe_mul_eq_smul]; ext <;> exact NNRat.smul_def _ _
   qsmul := (· • ·)
   qsmul_def q x := by rw [← coe_ratCast, coe_mul_eq_smul]; ext <;> exact Rat.smul_def _ _
 

@@ -1118,11 +1118,12 @@ instance Int.normedCommRing : NormedCommRing ℤ :=
 instance Int.normOneClass : NormOneClass ℤ :=
   ⟨by simp [← Int.norm_cast_real]⟩
 
-instance Rat.normedField : NormedField ℚ :=
-  { Rat.normedAddCommGroup, Rat.field with
-    norm_mul' := fun r₁ r₂ => by simp only [norm, Rat.cast_mul, abs_mul] }
+instance Rat.instNormedField : NormedField ℚ where
+  __ := instField
+  __ := instNormedAddCommGroup
+  norm_mul' := fun r₁ r₂ => by simp only [norm, Rat.cast_mul, abs_mul]
 
-instance Rat.denselyNormedField : DenselyNormedField ℚ where
+instance Rat.instDenselyNormedField : DenselyNormedField ℚ where
   lt_norm_lt r₁ r₂ h₀ hr :=
     let ⟨q, h⟩ := exists_rat_btwn hr
     ⟨q, by rwa [← Rat.norm_cast_real, Real.norm_eq_abs, abs_of_pos (h₀.trans_lt h.1)]⟩
