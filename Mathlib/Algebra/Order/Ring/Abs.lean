@@ -202,4 +202,3 @@ theorem abs_dvd_abs (a b : α) : |a| ∣ |b| ↔ a ∣ b :=
 #align abs_dvd_abs abs_dvd_abs
 
 end
-
