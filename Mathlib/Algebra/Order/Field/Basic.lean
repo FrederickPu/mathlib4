@@ -42,16 +42,6 @@ def OrderIso.mulRight₀ (a : α) (ha : 0 < a) : α ≃o α :=
 #align order_iso.mul_right₀_apply OrderIso.mulRight₀_apply
 
 /-!
-### Lemmas about pos, nonneg, nonpos, neg
--/
-
-lemma NNRat.cast_nonneg (q : ℚ≥0) : 0 ≤ (q : α) := by
-  rw [cast_def]; exact div_nonneg q.num.cast_nonneg q.den.cast_nonneg
-
-lemma nnqsmul_nonneg (q : ℚ≥0) (ha : 0 ≤ a) : 0 ≤ q • a := by
-  rw [NNRat.smul_def]; exact mul_nonneg q.cast_nonneg ha
-
-/-!
 ### Relating one division with another term.
 -/
 

@@ -582,11 +582,11 @@ noncomputable instance instLinearOrderedField : LinearOrderedField ℝ where
       Ne.def, ofCauchy.injEq] at *
     exact CauSeq.Completion.inv_mul_cancel h
   inv_zero := by simp [← ofCauchy_zero, ← ofCauchy_inv]
-  ratCast := (↑)
   ratCast_def n d hd h2 := by
     rw [← ofCauchy_ratCast, Rat.cast_mk', ofCauchy_mul, ofCauchy_inv, ofCauchy_natCast,
       ofCauchy_intCast]
-  qsmul := qsmulRec _
+  qsmul := _
+  nnqsmul := _
 
 -- Extra instances to short-circuit type class resolution
 noncomputable instance : LinearOrderedAddCommGroup ℝ := by infer_instance
