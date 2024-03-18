@@ -109,7 +109,7 @@ theorem add_num_den (q r : ℚ) :
     q + r = (q.num * r.den + q.den * r.num : ℤ) /. (↑q.den * ↑r.den : ℤ) := by
   have hqd : (q.den : ℤ) ≠ 0 := Int.coe_nat_ne_zero_iff_pos.2 q.den_pos
   have hrd : (r.den : ℤ) ≠ 0 := Int.coe_nat_ne_zero_iff_pos.2 r.den_pos
-  conv_lhs => rw [← num_divInt_den q, ← num_divInt_den r, Rat.add_def'' hqd hrd]
+  conv_lhs => rw [← num_divInt_den q, ← num_divInt_den r, divInt_add_divInt _ _ hqd hrd]
   rw [mul_comm r.num q.den]
 #align rat.add_num_denom Rat.add_num_den
 
@@ -133,13 +133,9 @@ theorem mul_num_den' (q r : ℚ) :
   apply mul_eq_mul_left_iff.2
   rw [or_iff_not_imp_right]
   intro
-  have h : _ = s := divInt_mul_divInt q.num r.num (Nat.cast_ne_zero.2 q.pos.ne')
-    (Nat.cast_ne_zero.2 r.pos.ne')
+  have h : _ = s := divInt_mul_divInt q.num r.num (mod_cast q.den_ne_zero) (mod_cast r.den_ne_zero)
   rw [num_divInt_den, num_divInt_den] at h
-  rw [h]
-  rw [mul_comm]
-  apply Rat.eq_iff_mul_eq_mul.mp
-  rw [← divInt_eq_div]
+  rw [h, mul_comm, ← Rat.eq_iff_mul_eq_mul, ← divInt_eq_div]
 #align rat.mul_num_denom' Rat.mul_num_den'
 
 theorem add_num_den' (q r : ℚ) :
@@ -154,9 +150,7 @@ theorem add_num_den' (q r : ℚ) :
   apply mul_eq_mul_left_iff.2
   rw [or_iff_not_imp_right]
   intro
-  have h : _ = s :=
-    @add_def'' q.num q.den r.num r.den (Int.coe_nat_ne_zero_iff_pos.mpr q.pos)
-      (Int.coe_nat_ne_zero_iff_pos.mpr r.pos)
+  have h : _ = s := divInt_add_divInt q.num r.num (mod_cast q.den_ne_zero) (mod_cast r.den_ne_zero)
   rw [num_divInt_den, num_divInt_den] at h
   rw [h]
   rw [mul_comm]
@@ -174,7 +168,7 @@ end Casts
 
 protected theorem inv_neg (q : ℚ) : (-q)⁻¹ = -q⁻¹ := by
   rw [← num_divInt_den q]
-  simp only [Rat.neg_def, Rat.inv_divInt', eq_self_iff_true, Rat.divInt_neg_den]
+  simp only [Rat.neg_divInt, Rat.inv_divInt', eq_self_iff_true, Rat.divInt_neg_den]
 #align rat.inv_neg Rat.inv_neg
 
 @[simp]

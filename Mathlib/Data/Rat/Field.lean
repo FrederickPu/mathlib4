@@ -61,11 +61,13 @@ deriving instance CanonicallyLinearOrderedSemifield, LinearOrderedSemifield,
 
 namespace NNRat
 
-@[simp, norm_cast] lemma coe_inv (q : ℚ≥0) : ↑(q⁻¹) = (q⁻¹ : ℚ) := rfl
-@[simp, norm_cast] lemma coe_div (q r : ℚ≥0) : ↑(q / r) = (q / r : ℚ) := rfl
+@[simp, norm_cast] lemma coe_inv (q : ℚ≥0) : ((q⁻¹ : ℚ≥0) : ℚ) = (q : ℚ)⁻¹ := rfl
+#align nnrat.coe_inv NNRat.coe_inv
+@[simp, norm_cast] lemma coe_div (p q : ℚ≥0) : ((p / q : ℚ≥0) : ℚ) = p / q := rfl
+#align nnrat.coe_div NNRat.coe_div
 
 lemma inv_def (q : ℚ≥0) : q⁻¹ = divNat q.den q.num := by ext; simp [Rat.inv_def', num_coe, den_coe]
-lemma div_def (q r : ℚ≥0) : q / r = divNat (q.num * r.den) (q.den * r.num) := by
+lemma div_def (p q : ℚ≥0) : p / q = divNat (p.num * q.den) (p.den * q.num) := by
   ext; simp [Rat.div_def', num_coe, den_coe]
 
 end NNRat

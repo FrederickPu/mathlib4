@@ -50,14 +50,13 @@ variable {a b c : ℚ}
   simpa using divInt_nonneg ha b.cast_nonneg
 
 protected lemma add_nonneg : 0 ≤ a → 0 ≤ b → 0 ≤ a + b :=
-  numDenCasesOn' a fun n₁ d₁ h₁ =>
-    numDenCasesOn' b fun n₂ d₂ h₂ => by
-      have d₁0 : 0 < (d₁ : ℤ) := mod_cast h₁.bot_lt
-      have d₂0 : 0 < (d₂ : ℤ) := mod_cast h₂.bot_lt
-      simp only [d₁0, d₂0, h₁, h₂, mul_pos, divInt_nonneg_iff_of_pos_right, add_def'', Ne.def,
-        Nat.cast_eq_zero, not_false_iff]
-      intro n₁0 n₂0
-      apply add_nonneg <;> apply mul_nonneg <;> · first |assumption|apply Int.ofNat_zero_le
+  numDenCasesOn' a fun n₁ d₁ h₁ ↦ numDenCasesOn' b fun n₂ d₂ h₂ ↦ by
+    have d₁0 : 0 < (d₁ : ℤ) := mod_cast h₁.bot_lt
+    have d₂0 : 0 < (d₂ : ℤ) := mod_cast h₂.bot_lt
+    simp only [d₁0, d₂0, h₁, h₂, mul_pos, divInt_nonneg_iff_of_pos_right, divInt_add_divInt, Ne.def,
+      Nat.cast_eq_zero, not_false_iff]
+    intro n₁0 n₂0
+    apply add_nonneg <;> apply mul_nonneg <;> · first |assumption|apply Int.ofNat_zero_le
 #align rat.nonneg_add Rat.add_nonneg
 
 protected lemma mul_nonneg : 0 ≤ a → 0 ≤ b → 0 ≤ a * b :=
@@ -124,11 +123,11 @@ protected theorem le_iff_sub_nonneg (a b : ℚ) : a ≤ b ↔ 0 ≤ b - a :=
           apply Nat.gcd_pos_of_pos_right
           apply mul_pos <;> rwa [pos_iff_ne_zero]
 
-protected theorem le_def {a b c d : ℤ} (b0 : 0 < b) (d0 : 0 < d) :
+protected lemma divInt_le_divInt {a b c d : ℤ} (b0 : 0 < b) (d0 : 0 < d) :
     a /. b ≤ c /. d ↔ a * d ≤ c * b := by
   rw [Rat.le_iff_sub_nonneg, ← sub_nonneg (α := ℤ)]
   simp [sub_eq_add_neg, ne_of_gt b0, ne_of_gt d0, mul_pos d0 b0]
-#align rat.le_def Rat.le_def
+#align rat.le_def Rat.divInt_le_divInt
 
 protected lemma le_total : a ≤ b ∨ b ≤ a := by
   simpa only [← Rat.le_iff_sub_nonneg, neg_sub] using Rat.nonneg_total (b - a)
@@ -177,14 +176,14 @@ instance : PartialOrder ℚ := by infer_instance
 
 instance : Preorder ℚ := by infer_instance
 
-protected theorem le_def' {p q : ℚ} : p ≤ q ↔ p.num * q.den ≤ q.num * p.den := by
+protected lemma le_def {p q : ℚ} : p ≤ q ↔ p.num * q.den ≤ q.num * p.den := by
   rw [← num_divInt_den q, ← num_divInt_den p]
   conv_rhs => simp only [num_divInt_den]
-  exact Rat.le_def (mod_cast p.pos) (mod_cast q.pos)
-#align rat.le_def' Rat.le_def'
+  exact Rat.divInt_le_divInt (mod_cast p.pos) (mod_cast q.pos)
+#align rat.le_def' Rat.le_def
 
 protected theorem lt_def {p q : ℚ} : p < q ↔ p.num * q.den < q.num * p.den := by
-  rw [lt_iff_le_and_ne, Rat.le_def']
+  rw [lt_iff_le_and_ne, Rat.le_def]
   suffices p ≠ q ↔ p.num * q.den ≠ q.num * p.den by
     constructor <;> intro h
     · exact lt_iff_le_and_ne.mpr ⟨h.left, this.mp h.right⟩
@@ -235,9 +234,9 @@ theorem div_lt_div_iff_mul_lt_mul {a b c d : ℤ} (b_pos : 0 < b) (d_pos : 0 < d
     (a : ℚ) / b < c / d ↔ a * d < c * b := by
   simp only [lt_iff_le_not_le]
   apply and_congr
-  · simp [div_num_den, Rat.le_def b_pos d_pos]
+  · simp [div_def', Rat.divInt_le_divInt b_pos d_pos]
   · apply not_congr
-    simp [div_num_den, Rat.le_def d_pos b_pos]
+    simp [div_def', Rat.divInt_le_divInt d_pos b_pos]
 #align rat.div_lt_div_iff_mul_lt_mul Rat.div_lt_div_iff_mul_lt_mul
 
 theorem lt_one_iff_num_lt_denom {q : ℚ} : q < 1 ↔ q.num < q.den := by simp [Rat.lt_def]
@@ -246,11 +245,11 @@ theorem lt_one_iff_num_lt_denom {q : ℚ} : q < 1 ↔ q.num < q.den := by simp [
 theorem abs_def (q : ℚ) : |q| = q.num.natAbs /. q.den := by
   rcases le_total q 0 with hq | hq
   · rw [abs_of_nonpos hq]
-    rw [← num_divInt_den q, ← divInt_zero_one, Rat.le_def (Int.coe_nat_pos.2 q.pos) zero_lt_one,
+    rw [← num_divInt_den q, ← zero_divInt, Rat.divInt_le_divInt (mod_cast q.pos) zero_lt_one,
       mul_one, zero_mul] at hq
-    rw [Int.ofNat_natAbs_of_nonpos hq, ← neg_def, num_divInt_den]
+    rw [Int.ofNat_natAbs_of_nonpos hq, ← neg_def]
   · rw [abs_of_nonneg hq]
-    rw [← num_divInt_den q, ← divInt_zero_one, Rat.le_def zero_lt_one (Int.coe_nat_pos.2 q.pos),
+    rw [← num_divInt_den q, ← zero_divInt, Rat.divInt_le_divInt zero_lt_one (mod_cast q.pos),
       mul_one, zero_mul] at hq
     rw [Int.natAbs_of_nonneg hq, num_divInt_den]
 #align rat.abs_def Rat.abs_def
