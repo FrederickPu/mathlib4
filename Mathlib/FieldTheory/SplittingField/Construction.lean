@@ -277,9 +277,9 @@ instance instGroupWithZero : GroupWithZero (SplittingField f) :=
 instance instField : Field (SplittingField f) where
   toCommRing := SplittingField.commRing f
   __ := instGroupWithZero _
-  nnratCast q := algebraMap K _ (q : K)
+  nnratCast q := algebraMap K _ q
   nnratCast_def q := by change algebraMap K _ _ = _; simp_rw [NNRat.cast_def, map_div₀, map_natCast]
-  ratCast q := algebraMap K _ (q : K)
+  ratCast q := algebraMap K _ q
   ratCast_def q := by
     change algebraMap K _ _ = _; rw [Rat.cast_def, map_div₀, map_intCast, map_natCast]
   nnqsmul := (· • ·)
