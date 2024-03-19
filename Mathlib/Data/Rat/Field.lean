@@ -41,7 +41,7 @@ instance instField : Field ℚ where
   nnratCast := (↑)
   nnratCast_def q := by
     rw [← NNRat.den_coe, ← Int.cast_natCast q.num, ← NNRat.num_coe]; exact(num_div_den _).symm
-  ratCast_def a b h1 h2 := (num_div_den _).symm
+  ratCast_def q := (num_div_den _).symm
   nnqsmul := nnqsmulRec (↑)
   qsmul := qsmulRec (↑)
 

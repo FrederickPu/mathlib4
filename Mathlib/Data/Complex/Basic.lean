@@ -847,8 +847,7 @@ noncomputable instance instField : Field ℂ where
   mul_inv_cancel := @Complex.mul_inv_cancel
   inv_zero := Complex.inv_zero
   nnratCast_def q := by ext <;> simp [NNRat.cast_def, re_div, im_div, mul_div_mul_comm]
-  ratCast_def n d hd _ := by
-    ext <;> simp [Rat.cast_def, ← div_eq_mul_inv, re_div, im_div, mul_div_mul_comm, hd]
+  ratCast_def q := by ext <;> simp [Rat.cast_def, re_div, im_div, mul_div_mul_comm]
   nnqsmul := (· • ·)
   nnqsmul_def n z := ext_iff.2 <| by simp [NNRat.smul_def, smul_re, smul_im]
   qsmul := (· • ·)

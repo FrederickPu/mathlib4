@@ -62,11 +62,20 @@ variable {α β K : Type*}
 
 /-- The default definition of the coercion `ℚ≥0 → K` for a division semiring `K`.
 
-`↑q : K` is defined as `(q.num : K) * (q.den : K)⁻¹`.
+`↑q : K` is defined as `(q.num : K) / (q.den : K)`.
 
 Do not use this directly (instances of `DivisionSemiring` are allowed to override that default for
 better definitional properties). Instead, use the coercion. -/
-def NNRat.castRec [NatCast K] [Div K] (q : ℚ≥0) : K := q.num / (q.den : K)
+def NNRat.castRec [NatCast K] [Div K] (q : ℚ≥0) : K := q.num / q.den
+
+/-- The default definition of the coercion `ℚ → K` for a division ring `K`.
+
+`↑q : K` is defined as `(q.num : K) / (q.den : K)`.
+
+Do not use this directly (instances of `DivisionRing` are allowed to override that default for
+better definitional properties). Instead, use the coercion. -/
+def Rat.castRec [NatCast K] [IntCast K] [Div K] (q : ℚ) : K := q.num / q.den
+#align rat.cast_rec Rat.castRec
 
 /-- The default definition of the scalar multiplication by `ℚ≥0` on a division semiring `K`.
 
@@ -75,16 +84,6 @@ def NNRat.castRec [NatCast K] [Div K] (q : ℚ≥0) : K := q.num / (q.den : K)
 Do not use directly (instances of `DivisionSemiring` are allowed to override that default for
 better definitional properties). Instead use the `•` notation. -/
 def nnqsmulRec (coe : ℚ≥0 → K) [Mul K] (a : ℚ≥0) (x : K) : K := coe a * x
-
-/-- The default definition of the coercion `ℚ → K` for a division ring `K`.
-
-`↑q : K` is defined as `(q.num : K) * (q.den : K)⁻¹`.
-
-Do not use this directly (instances of `DivisionRing` are allowed to override that default for
-better definitional properties). Instead, use the coercion. -/
-def Rat.castRec [NatCast K] [IntCast K] [Mul K] [Inv K] : ℚ → K
-  | ⟨a, b, _, _⟩ => ↑a * (↑b)⁻¹
-#align rat.cast_rec Rat.castRec
 
 /-- The default definition of the scalar multiplication by `ℚ` on a division ring `K`.
 
@@ -156,8 +155,7 @@ class DivisionRing (α : Type*)
   /-- However `Rat.cast` is defined, it must be equal to `a * b⁻¹`.
 
   Do not use this lemma directly. Use `Rat.cast_def` instead. -/
-  protected ratCast_def (a : ℤ) (b : ℕ) (h1 h2) : Rat.cast ⟨a, b, h1, h2⟩ = a * (b : α)⁻¹ := by
-    intros; rfl
+  protected ratCast_def (q : ℚ) : (Rat.cast q : α) = q.num / q.den := by intros; rfl
   /-- Scalar multiplication by a rational number.
 
   Set this to `qsmulRec _` unless there is a risk of a `Module ℚ _` instance diamond.
@@ -220,13 +218,11 @@ end NNRat
 namespace Rat
 variable [DivisionRing K] {a b : K}
 
-theorem cast_mk' (a b h1 h2) : ((⟨a, b, h1, h2⟩ : ℚ) : K) = a * (b : K)⁻¹ :=
-  DivisionRing.ratCast_def _ _ _ _
-#align rat.cast_mk' Rat.cast_mk'
-
-theorem cast_def : ∀ r : ℚ, (r : K) = r.num / r.den
-  | ⟨_, _, _, _⟩ => (cast_mk' _ _ _ _).trans (div_eq_mul_inv _ _).symm
+lemma cast_def (q : ℚ) : (q : K) = q.num / q.den := DivisionRing.ratCast_def _
 #align rat.cast_def Rat.cast_def
+
+lemma cast_mk' (a b h1 h2) : ((⟨a, b, h1, h2⟩ : ℚ) : K) = a / b := cast_def _
+#align rat.cast_mk' Rat.cast_mk'
 
 instance (priority := 100) smulDivisionRing : SMul ℚ K :=
   ⟨DivisionRing.qsmul⟩

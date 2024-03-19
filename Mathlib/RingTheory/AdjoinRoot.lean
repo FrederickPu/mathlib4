@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mario Carneiro, Chris Hughes
 -/
 import Mathlib.Algebra.Algebra.Basic
+import Mathlib.Data.NNRat.Lemmas
 import Mathlib.Data.Polynomial.FieldDivision
 import Mathlib.FieldTheory.Minpoly.Basic
 import Mathlib.RingTheory.Adjoin.Basic
@@ -390,17 +391,16 @@ instance span_maximal_of_irreducible [Fact (Irreducible f)] : (span {f}).IsMaxim
   PrincipalIdealRing.isMaximal_of_irreducible <| Fact.out
 #align adjoin_root.span_maximal_of_irreducible AdjoinRoot.span_maximal_of_irreducible
 
+noncomputable instance instGroupWithZero [Fact (Irreducible f)] : GroupWithZero (AdjoinRoot f) :=
+  Quotient.groupWithZero (span {f} : Ideal K[X])
+
 noncomputable instance instField [Fact (Irreducible f)] : Field (AdjoinRoot f) where
   toCommRing := instCommRing f
-  __ := Quotient.groupWithZero (span {f} : Ideal K[X])
-  ratCast := fun a => of f (a : K)
-  ratCast_def := fun a b h1 h2 => by
-    letI : GroupWithZero (AdjoinRoot f) := Ideal.Quotient.groupWithZero _
-    -- Porting note: was
-    -- `rw [Rat.cast_mk' (K := ℚ), _root_.map_mul, _root_.map_intCast, map_inv₀, map_natCast]`
-    convert_to ((Rat.mk' a b h1 h2 : K) : AdjoinRoot f) = ((↑a * (↑b)⁻¹ : K) : AdjoinRoot f)
-    · simp only [_root_.map_mul, map_intCast, map_inv₀, map_natCast]
-    · simp only [Rat.cast_mk', _root_.map_mul, map_intCast, map_inv₀, map_natCast]
+  __ := instGroupWithZero
+  nnratCast_def q := by
+    rw [← map_natCast (of f), ← map_natCast (of f), ← map_div₀, ← NNRat.cast_def]; rfl
+  ratCast_def q := by
+    rw [← map_natCast (of f), ← map_intCast (of f), ← map_div₀, ← Rat.cast_def]; rfl
   nnqsmul := (· • ·)
   nnqsmul_def q x :=
     AdjoinRoot.induction_on (C := fun y ↦ q • y = (of f) q * y) x fun p ↦ by

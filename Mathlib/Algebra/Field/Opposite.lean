@@ -48,7 +48,7 @@ instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵐᵒ�
 instance instDivisionRing [DivisionRing α] : DivisionRing αᵐᵒᵖ where
   toRing := instRing
   __ := instDivisionSemiring
-  ratCast_def a b hb h := unop_injective <| by rw [unop_ratCast, Rat.cast_def, unop_mul, unop_inv,
+  ratCast_def q := unop_injective <| by rw [unop_ratCast, Rat.cast_def, unop_div,
     unop_natCast, unop_intCast, Int.commute_cast, div_eq_mul_inv]
   qsmul := qsmulRec _
 
@@ -74,8 +74,8 @@ instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵃᵒ�
 instance instDivisionRing [DivisionRing α] : DivisionRing αᵃᵒᵖ where
   toRing := instRing
   __ := instDivisionSemiring
-  ratCast_def a b hb h := unop_injective <| by rw [unop_ratCast, Rat.cast_def, unop_mul, unop_inv,
-    unop_natCast, unop_intCast, div_eq_mul_inv]
+  ratCast_def q := unop_injective <| by rw [unop_ratCast, Rat.cast_def, unop_div, unop_natCast,
+    unop_intCast, div_eq_mul_inv]
   qsmul := qsmulRec _
 
 instance instSemifield [Semifield α] : Semifield αᵃᵒᵖ where

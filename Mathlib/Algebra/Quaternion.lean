@@ -1401,8 +1401,7 @@ instance instDivisionRing : DivisionRing ℍ[R] where
   __ := Quaternion.instGroupWithZero
   __ := Quaternion.instRing
   nnratCast_def q := by rw [← coe_nnratCast, NNRat.cast_def, coe_div, coe_nat_cast, coe_nat_cast]
-  ratCast_def n d hd h := by
-    rw [← coe_ratCast, Rat.cast_mk', coe_mul, coe_int_cast, coe_inv, coe_nat_cast]
+  ratCast_def q := by rw [← coe_ratCast, Rat.cast_def, coe_div, coe_int_cast, coe_nat_cast]
   nnqsmul := (· • ·)
   nnqsmul_def q x := by rw [← coe_nnratCast, coe_mul_eq_smul]; ext <;> exact NNRat.smul_def _ _
   qsmul := (· • ·)

@@ -278,8 +278,7 @@ noncomputable instance Cauchy.divisionRing : DivisionRing (Cauchy abv) where
   inv_zero := inv_zero
   mul_inv_cancel x := CauSeq.Completion.mul_inv_cancel
   nnratCast_def q := by simp_rw [← ofRat_nnratCast, NNRat.cast_def, ofRat_div, ofRat_natCast]
-  ratCast_def n d hd hnd := by
-    rw [← ofRat_ratCast, Rat.cast_mk', ofRat_mul, ofRat_inv, ofRat_natCast, ofRat_intCast]
+  ratCast_def q := by rw [← ofRat_ratCast, Rat.cast_def, ofRat_div, ofRat_natCast, ofRat_intCast]
   qsmul := (· • ·)
   qsmul_def q x := Quotient.inductionOn x fun f ↦ congr_arg mk <| ext fun i ↦ Rat.smul_def _ _
   nnqsmul := (· • ·)
