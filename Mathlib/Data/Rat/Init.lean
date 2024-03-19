@@ -81,3 +81,12 @@ namespace NNRat
 @[simp] lemma cast_eq_id : NNRat.cast = id := rfl
 
 end NNRat
+
+namespace Rat
+
+@[norm_cast] lemma cast_id (n : ℚ) : Rat.cast n = n := rfl
+@[simp] lemma cast_eq_id : Rat.cast = id := rfl
+#align rat.cast_id Rat.cast_id
+#align rat.cast_eq_id Rat.cast_eq_id
+
+end Rat

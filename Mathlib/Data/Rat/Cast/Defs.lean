@@ -104,13 +104,6 @@ lemma cast_div_of_ne_zero (hq : (q.den : α) ≠ 0) (hr : (r.num : α) ≠ 0) :
 end NNRat
 
 namespace Rat
-
-@[norm_cast] lemma cast_id (n : ℚ) : Rat.cast n = n := rfl
-#align rat.cast_id Rat.cast_id
-
-@[simp] lemma cast_eq_id : Rat.cast = id := rfl
-#align rat.cast_eq_id Rat.cast_eq_id
-
 variable [DivisionRing α] {p q : ℚ}
 
 @[simp, norm_cast]
