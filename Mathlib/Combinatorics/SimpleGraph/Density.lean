@@ -3,9 +3,10 @@ Copyright (c) 2022 Yaël Dillies, Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yaël Dillies, Bhavik Mehta
 -/
+import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
-import Mathlib.Order.Partition.Finpartition
 import Mathlib.Data.Rat.Cast.Order
+import Mathlib.Order.Partition.Finpartition
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.GCongr

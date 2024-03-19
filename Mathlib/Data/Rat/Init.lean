@@ -5,6 +5,7 @@ Authors: Johannes Hölzl, Mario Carneiro
 -/
 import Mathlib.Data.Nat.Init
 import Mathlib.Mathport.Rename
+import Mathlib.Tactic.Lemma
 import Mathlib.Tactic.ProjectionNotation
 import Mathlib.Tactic.TypeStar
 import Std.Data.Rat.Basic
@@ -72,5 +73,11 @@ namespace NNRat
 /-- The denominator of a nonnegative rational. -/
 @[pp_dot] def den (q : ℚ≥0) : ℕ := (q : ℚ).den
 #align nnrat.denom NNRat.den
+
+@[simp] lemma num_mk (q : ℚ) (hq : 0 ≤ q) : num ⟨q, hq⟩ = q.num.natAbs := rfl
+@[simp] lemma den_mk (q : ℚ) (hq : 0 ≤ q) : den ⟨q, hq⟩ = q.den := rfl
+
+@[norm_cast] lemma cast_id (n : ℚ≥0) : NNRat.cast n = n := rfl
+@[simp] lemma cast_eq_id : NNRat.cast = id := rfl
 
 end NNRat

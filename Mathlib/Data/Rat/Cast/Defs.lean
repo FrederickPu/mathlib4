@@ -29,19 +29,6 @@ rat, rationals, field, ℚ, numerator, denominator, num, denom, cast, coercion, 
 variable {F ι α β : Type*}
 
 namespace NNRat
-
-@[simp] lemma num_mk (q : ℚ) (hq : 0 ≤ q) : num ⟨q, hq⟩ = q.num.natAbs := rfl
-@[simp] lemma den_mk (q : ℚ) (hq : 0 ≤ q) : den ⟨q, hq⟩ = q.den := rfl
-
-@[norm_cast] lemma cast_id (n : ℚ≥0) : NNRat.cast n = n := rfl
-@[simp] lemma cast_eq_id : NNRat.cast = id := rfl
-
-lemma add_def (q r : ℚ≥0) : q + r = divNat (q.num * r.den + r.num * q.den) (q.den * r.den) := by
-  ext; simp [Rat.add_def', Rat.mkRat_eq, num_coe, den_coe]
-
-lemma mul_def (q r : ℚ≥0) : q * r = divNat (q.num * r.num) (q.den * r.den) := by
-  ext; simp [Rat.mul_def', Rat.mkRat_eq, num_coe, den_coe]
-
 variable [DivisionSemiring α] {q r : ℚ≥0}
 
 @[simp, norm_cast] lemma cast_natCast (n : ℕ) : ((n : ℚ≥0) : α) = n := by simp [cast_def]
