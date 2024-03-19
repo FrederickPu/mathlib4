@@ -304,7 +304,7 @@ instance Rat.subsingleton_ringHom {R : Type*} [Semiring R] : Subsingleton (ℚ �
 /-! ### Scalar multiplication -/
 
 namespace NNRat
-variable [DivisionRing α]
+variable [DivisionSemiring α]
 
 instance (priority := 100) instDistribSMul : DistribSMul ℚ≥0 α where
   smul := (· • ·)

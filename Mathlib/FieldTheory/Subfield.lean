@@ -343,6 +343,21 @@ instance : Inv s :=
 instance : Pow s ℤ :=
   ⟨fun x z => ⟨x ^ z, s.zpow_mem x.2 z⟩⟩
 
+-- TODO: Those are just special cases of `SubfieldClass.toDivisionRing`/`SubfieldClass.toField`
+instance toDivisionRing (s : Subfield K) : DivisionRing s :=
+  Subtype.coe_injective.divisionRing ((↑) : s → K) rfl rfl (fun _ _ ↦ rfl) (fun _ _ ↦ rfl)
+    (fun _ ↦ rfl) (fun _ _ ↦ rfl) (fun _ ↦ rfl) (fun _ _ ↦ rfl) (fun _ _ ↦ rfl) (fun _ _ ↦ rfl)
+    (fun _ _ ↦ rfl) (fun _ _ ↦ rfl) (fun _ _ ↦ rfl) (by intros; rfl) (fun _ ↦ rfl) (fun _ ↦ rfl)
+    (by intros; rfl) fun _ ↦ rfl
+
+/-- A subfield inherits a field structure -/
+instance toField {K} [Field K] (s : Subfield K) : Field s :=
+  Subtype.coe_injective.field ((↑) : s → K) rfl rfl (fun _ _ => rfl) (fun _ _ => rfl) (fun _ => rfl)
+    (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+    (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (by intros; rfl)  (fun _ => rfl)
+    (fun _ => rfl) (by intros; rfl) fun _ => rfl
+#align subfield.to_field Subfield.toField
+
 @[simp, norm_cast]
 theorem coe_add (x y : s) : (↑(x + y) : K) = ↑x + ↑y :=
   rfl
