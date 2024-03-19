@@ -103,14 +103,12 @@ theorem coe_nonneg (q : ℚ≥0) : (0 : ℚ) ≤ q :=
   q.2
 #align nnrat.coe_nonneg NNRat.coe_nonneg
 
-@[simp, norm_cast]
-theorem coe_zero : ((0 : ℚ≥0) : ℚ) = 0 :=
-  rfl
+-- eligible for dsimp
+@[simp, nolint simpNF, norm_cast] lemma coe_zero : ((0 : ℚ≥0) : ℚ) = 0 := rfl
 #align nnrat.coe_zero NNRat.coe_zero
 
-@[simp, norm_cast]
-theorem coe_one : ((1 : ℚ≥0) : ℚ) = 1 :=
-  rfl
+-- eligible for dsimp
+@[simp, nolint simpNF, norm_cast] lemma coe_one : ((1 : ℚ≥0) : ℚ) = 1 := rfl
 #align nnrat.coe_one NNRat.coe_one
 
 @[simp, norm_cast]
@@ -187,9 +185,8 @@ def coeHom : ℚ≥0 →+* ℚ where
   map_add' := coe_add
 #align nnrat.coe_hom NNRat.coeHom
 
-@[simp, norm_cast]
-theorem coe_natCast (n : ℕ) : (↑(↑n : ℚ≥0) : ℚ) = n :=
-  rfl
+-- eligible for dsimp
+@[simp, nolint simpNF, norm_cast] lemma coe_natCast (n : ℕ) : (↑(↑n : ℚ≥0) : ℚ) = n := rfl
 #align nnrat.coe_nat_cast NNRat.coe_natCast
 
 -- See note [no_index around OfNat.ofNat]
