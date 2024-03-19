@@ -22,7 +22,6 @@ open CauSeq
 section
 
 variable {α : Type*} [LinearOrderedField α]
-
 variable {β : Type*} [Ring β] (abv : β → α) [IsAbsoluteValue abv]
 
 -- TODO: rename this to `CauSeq.Completion` instead of `CauSeq.Completion.Cauchy`.
@@ -187,7 +186,6 @@ end
 section
 
 variable {α : Type*} [LinearOrderedField α]
-
 variable {β : Type*} [CommRing β] {abv : β → α} [IsAbsoluteValue abv]
 
 instance Cauchy.commRing : CommRing (Cauchy abv) :=
@@ -203,7 +201,6 @@ open scoped Classical
 section
 
 variable {α : Type*} [LinearOrderedField α]
-
 variable {β : Type*} [DivisionRing β] {abv : β → α} [IsAbsoluteValue abv]
 
 instance instNNRatCast : NNRatCast (Cauchy abv) := ⟨fun q ↦ ofRat q⟩
@@ -300,7 +297,6 @@ end
 section
 
 variable {α : Type*} [LinearOrderedField α]
-
 variable {β : Type*} [Field β] {abv : β → α} [IsAbsoluteValue abv]
 
 /-- The Cauchy completion forms a field. -/
@@ -332,7 +328,6 @@ end
 section
 
 variable {β : Type*} [Ring β] {abv : β → α} [IsAbsoluteValue abv]
-
 variable [IsComplete β abv]
 
 theorem complete : ∀ s : CauSeq β abv, ∃ b : β, s ≈ const abv b :=
