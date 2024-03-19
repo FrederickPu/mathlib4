@@ -17,7 +17,7 @@ Also defines isomorphisms to the categorical product and coproduct, respectively
 
 open CategoryTheory.Limits
 
-universe w v u
+universe w' w v u
 
 namespace CategoryTheory.FunctorToTypes
 
@@ -28,7 +28,7 @@ variable (F G : C ⥤ Type w)
 section prod
 
 /-- `prod F G` is the explicit binary product of type-valued functors `F` and `G`. -/
-def prod : C ⥤ Type w where
+def prod (F : C ⥤ Type w) (G : C ⥤ Type w') : C ⥤ Type max w w' where
   obj a := F.obj a × G.obj a
   map f a := (F.map f a.1, G.map f a.2)
 
@@ -157,6 +157,29 @@ lemma prod_ext' (a : C) (z w : (F ⨯ G).obj a)
   aesop
 
 end prod
+
+section terminal
+
+variable (C)
+
+/-- The (limit) cone which shows that the constant functor with value `PUnit` is terminal. -/
+@[simps]
+def terminalCone : Cone (Functor.empty.{w'} (C ⥤ Type w)) where
+  pt := (Functor.const C).obj PUnit.{w + 1}
+  π := Discrete.natTrans (by rintro ⟨⟨⟩⟩)
+
+/-- The constant functor with value `PUnit` is terminal. -/
+def terminalConeLimit : IsLimit (terminalCone.{w', w} C) where
+  lift s :=
+    { app := fun _ _ => PUnit.unit }
+  fac _ := by rintro ⟨⟨⟩⟩
+
+/-- The limit cone corresponding to the terminal object of `C ⥤ Type w`
+given by the constant functor with value `PUnit`. -/
+def functorEmptyLimitCone : LimitCone (Functor.empty.{w'} (C ⥤ Type w)) :=
+  ⟨_, terminalConeLimit C⟩
+
+end terminal
 
 section coprod
 
@@ -290,4 +313,3 @@ def binaryCoproductEquiv (a : C) :
 end coprod
 
 end CategoryTheory.FunctorToTypes
-
