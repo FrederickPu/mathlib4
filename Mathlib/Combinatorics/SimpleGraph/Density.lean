@@ -7,10 +7,9 @@ import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Combinatorics.SimpleGraph.Basic
 import Mathlib.Data.Rat.Cast.Order
 import Mathlib.Order.Partition.Finpartition
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.GCongr
 import Mathlib.Tactic.Positivity
+import Mathlib.Tactic.Ring
 
 #align_import combinatorics.simple_graph.density from "leanprover-community/mathlib"@"a4ec43f53b0bd44c697bcc3f5a62edd56f269ef1"
 
