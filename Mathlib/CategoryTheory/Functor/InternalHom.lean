@@ -17,16 +17,15 @@ namespace CategoryTheory.FunctorToTypes
 
 variable {C : Type u} [Category.{v} C]
 
-variable (F G : C ⥤ Type v)
+variable (F G : Cᵒᵖ ⥤ Type v)
 
-def internalHom : C ⥤ Type max u v where
-  obj a := (prod (coyoneda.obj (.op a)) F) ⟶ G
-  map {X Y} f g := {
-    app := by
-      rintro b ⟨p1, p2⟩
-      exact g.app b ⟨(coyoneda.map (.op f)).app b p1, p2⟩
-    naturality := by
-      intro W Z g
+def internalHom : Cᵒᵖ ⥤ Type max u v where
+  obj a := prod (yoneda.obj a.unop) F ⟶ G
+  map {X Y} f H := {
+    app := fun b p => H.app b ⟨(yoneda.map f.unop).app b p.1, p.2⟩
+    naturality := fun W Z h => by
       ext l
-      sorry
+      have := congr_fun (H.naturality h) (l.1 ≫ f.unop, l.2)
+      simp [prod]
+      aesop
   }
