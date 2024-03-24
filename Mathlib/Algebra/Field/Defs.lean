@@ -54,7 +54,6 @@ assert_not_exists Mathlib.Tactic.LibrarySearch.librarySearch
 assert_not_exists MonoidHom
 
 open Function Set
-open scoped NNRat
 
 universe u
 
@@ -106,7 +105,7 @@ If the division semiring has positive characteristic `p`, our division by zero c
 `nnratCast (1 / p) = 1 / 0 = 0`. -/
 class DivisionSemiring (α : Type*) extends Semiring α, GroupWithZero α, NNRatCast α where
   protected nnratCast := NNRat.castRec
-  /-- However `NNRat.cast` is defined, it must be equal to `a / b`.
+  /-- However `NNRat.cast` is defined, it must be propositionally equal to `a / b`.
 
   Do not use this lemma directly. Use `NNRat.cast_def` instead. -/
   protected nnratCast_def (q : ℚ≥0) : (NNRat.cast q : α) = q.num / q.den := by intros; rfl
@@ -115,7 +114,7 @@ class DivisionSemiring (α : Type*) extends Semiring α, GroupWithZero α, NNRat
   Set this to `nnqsmulRec _` unless there is a risk of a `Module ℚ≥0 _` instance diamond.
   Do not use directly. Instead use the `•` notation. -/
   protected nnqsmul : ℚ≥0 → α → α
-  /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`.
+  /-- However `qsmul` is defined, it must be propositionally equal to multiplication by `Rat.cast`.
 
   Do not use this lemma directly. Use `NNRat.smul_def` instead. -/
   protected nnqsmul_def (q : ℚ≥0) (a : α) : nnqsmul q a = NNRat.cast q * a := by intros; rfl
@@ -152,13 +151,14 @@ class DivisionRing (α : Type*)
   Do not use this lemma directly. Use `NNRat.smul_def` instead. -/
   protected nnqsmul_def (q : ℚ≥0) (a : α) : nnqsmul q a = NNRat.cast q * a := by intros; rfl
   protected ratCast := Rat.castRec
-  /-- However `Rat.cast` is defined, it must be equal to `a * b⁻¹`.
+  /-- However `Rat.cast q` is defined, it must be propositionally equal to `q.num / q.den`.
 
   Do not use this lemma directly. Use `Rat.cast_def` instead. -/
   protected ratCast_def (q : ℚ) : (Rat.cast q : α) = q.num / q.den := by intros; rfl
   /-- Scalar multiplication by a rational number.
 
   Set this to `qsmulRec _` unless there is a risk of a `Module ℚ _` instance diamond.
+
   Do not use directly. Instead use the `•` notation. -/
   protected qsmul : ℚ → α → α
   /-- However `qsmul` is defined, it must be equal to multiplication by `Rat.cast`.
