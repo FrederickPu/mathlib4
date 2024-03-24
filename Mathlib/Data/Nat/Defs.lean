@@ -232,10 +232,12 @@ protected lemma le_of_mul_le_mul_right (h : a * c ≤ b * c) (hc : 0 < c) : a �
   Nat.le_of_mul_le_mul_left (by simpa [Nat.mul_comm]) hc
 
 protected lemma lt_sub_iff_add_lt : a < c - b ↔ a + b < c := ⟨add_lt_of_lt_sub, lt_sub_of_add_lt⟩
-protected lemma lt_sub_iff_add_lt' : a < c - b ↔ b + a < c := by
-  rw [Nat.lt_sub_iff_add_lt, Nat.add_comm]
+protected lemma lt_sub_iff_add_lt' : a < c - b ↔ b + a < c := by omega
+protected lemma sub_lt_iff_lt_add (hba : b ≤ a) : a - b < c ↔ a < b + c := by omega
+protected lemma sub_lt_iff_lt_add' (hba : b ≤ a) : a - b < c ↔ a < c + b := by omega
 
 protected lemma sub_sub_sub_cancel_right (h : c ≤ b) : a - c - (b - c) = a - b := by omega
+protected lemma add_sub_sub_cancel (h : c ≤ a) : a + b - (a - c) = b + c := by omega
 
 -- Moved to Std
 #align nat.succ_eq_one_add Nat.succ_eq_one_add

@@ -3,9 +3,8 @@ Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl
 -/
-import Mathlib.Algebra.BigOperators.Basic
+import Mathlib.Algebra.BigOperators.Ring
 import Mathlib.Data.Nat.Interval
-import Mathlib.Tactic.Linarith
 
 #align_import algebra.big_operators.intervals from "leanprover-community/mathlib"@"f7fc89d5d5ff1db2d1242c7bb0e9062ce47ef47c"
 
@@ -468,5 +467,53 @@ theorem prod_Ico_succ_div_top (hmn : m ≤ n) :
 #align finset.sum_Ico_succ_sub_top Finset.sum_Ico_succ_sub_top
 
 end CommGroup
+
+section NonUnitalNonAssocSemiring
+variable [NonUnitalNonAssocSemiring α]
+
+lemma sum_range_succ_mul_sum_range_succ (m n : ℕ) (f g : ℕ → α) :
+    (∑ i in range (m + 1), f i) * ∑ i in range (n + 1), g i =
+      (∑ i in range m, f i) * ∑ i in range n, g i +
+        f m * ∑ i in range n, g i + (∑ i in range m, f i) * g n + f m * g n := by
+  simp only [add_mul, mul_add, add_assoc, sum_range_succ]
+#align finset.sum_range_succ_mul_sum_range_succ Finset.sum_range_succ_mul_sum_range_succ
+
+end NonUnitalNonAssocSemiring
+
+section CommRing
+variable [CommRing α]
+
+lemma prod_range_cast_nat_sub (n k : ℕ) :
+    ∏ i in range k, (n - i : α) = (∏ i in range k, (n - i) : ℕ) := by
+  rw [prod_natCast]
+  rcases le_or_lt k n with hkn | hnk
+  · exact prod_congr rfl fun i hi => (Nat.cast_sub <| (mem_range.1 hi).le.trans hkn).symm
+  · rw [← mem_range] at hnk
+    rw [prod_eq_zero hnk, prod_eq_zero hnk] <;> simp
+#align finset.prod_range_cast_nat_sub Finset.prod_range_cast_nat_sub
+
+end CommRing
 end Nat
 end Finset
+
+open Finset
+
+/-- It is equivalent to compute the product of a function over `Fin n` or `Finset.range n`. -/
+@[to_additive "It is equivalent to sum a function over `fin n` or `finset.range n`."]
+lemma Fin.prod_univ_eq_prod_range [CommMonoid M] (f : ℕ → M) (n : ℕ) :
+    ∏ i : Fin n, f i = ∏ i in range n, f i :=
+  calc
+    ∏ i : Fin n, f i = ∏ i : { x // x ∈ range n }, f i :=
+      Fintype.prod_equiv (Fin.equivSubtype.trans (Equiv.subtypeEquivRight (by simp))) _ _ (by simp)
+    _ = ∏ i in range n, f i := by rw [← attach_eq_univ, prod_attach]
+#align fin.prod_univ_eq_prod_range Fin.prod_univ_eq_prod_range
+#align fin.sum_univ_eq_sum_range Fin.sum_univ_eq_sum_range
+
+@[to_additive]
+lemma Finset.prod_fin_eq_prod_range [CommMonoid M] {n : ℕ} (f : Fin n → M) :
+    ∏ i, f i = ∏ i in range n, if h : i < n then f ⟨i, h⟩ else 1 := by
+  rw [← Fin.prod_univ_eq_prod_range, Finset.prod_congr rfl]
+  rintro ⟨i, hi⟩ _
+  simp only [hi, dif_pos]
+#align finset.prod_fin_eq_prod_range Finset.prod_fin_eq_prod_range
+#align finset.sum_fin_eq_sum_range Finset.sum_fin_eq_sum_range
