@@ -3,7 +3,11 @@ Copyright (c) 2015 Microsoft Corporation. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mario Carneiro
 -/
-import Mathlib.Data.List.BigOperators.Basic
+import Mathlib.Algebra.BigOperators.List.Order
+import Mathlib.Algebra.GroupPower.Hom
+import Mathlib.Algebra.GroupWithZero.Divisibility
+import Mathlib.Algebra.Order.Monoid.OrderDual
+import Mathlib.Algebra.Ring.Divisibility.Basic
 import Mathlib.Data.Multiset.Basic
 
 #align_import algebra.big_operators.multiset.basic from "leanprover-community/mathlib"@"6c5f73fd6f6cc83122788a80a27cdd54663609f4"
@@ -359,8 +363,6 @@ theorem dvd_sum {a : α} {s : Multiset α} : (∀ x ∈ s, a ∣ x) → a ∣ s.
 end NonUnitalSemiring
 
 /-! ### Order -/
-
-
 section OrderedCommMonoid
 
 variable [OrderedCommMonoid α] {s t : Multiset α} {a : α}
@@ -434,18 +436,18 @@ section OrderedCancelCommMonoid
 
 variable [OrderedCancelCommMonoid α] {s : Multiset ι} {f g : ι → α}
 
-@[to_additive sum_lt_sum]
-theorem prod_lt_prod' (hle : ∀ i ∈ s, f i ≤ g i) (hlt : ∃ i ∈ s, f i < g i) :
-    (s.map f).prod < (s.map g).prod := by
-  obtain ⟨l⟩ := s
-  simp only [Multiset.quot_mk_to_coe'', Multiset.map_coe, Multiset.prod_coe]
-  exact List.prod_lt_prod' f g hle hlt
+-- @[to_additive sum_lt_sum]
+-- theorem prod_lt_prod' (hle : ∀ i ∈ s, f i ≤ g i) (hlt : ∃ i ∈ s, f i < g i) :
+--     (s.map f).prod < (s.map g).prod := by
+--   obtain ⟨l⟩ := s
+--   simp only [Multiset.quot_mk_to_coe'', Multiset.map_coe, Multiset.prod_coe]
+--   exact List.prod_lt_prod' f g hle hlt
 
-@[to_additive sum_lt_sum_of_nonempty]
-theorem prod_lt_prod_of_nonempty' (hs : s ≠ ∅) (hfg : ∀ i ∈ s, f i < g i) :
-    (s.map f).prod < (s.map g).prod := by
-  obtain ⟨i, hi⟩ := exists_mem_of_ne_zero hs
-  exact prod_lt_prod' (fun i hi => le_of_lt (hfg i hi)) ⟨i, hi, hfg i hi⟩
+-- @[to_additive sum_lt_sum_of_nonempty]
+-- theorem prod_lt_prod_of_nonempty' (hs : s ≠ ∅) (hfg : ∀ i ∈ s, f i < g i) :
+--     (s.map f).prod < (s.map g).prod := by
+--   obtain ⟨i, hi⟩ := exists_mem_of_ne_zero hs
+--   exact prod_lt_prod' (fun i hi => le_of_lt (hfg i hi)) ⟨i, hi, hfg i hi⟩
 
 end OrderedCancelCommMonoid
 

@@ -19,6 +19,216 @@ Some lemmas can be generalized using `OrderedGroup`, `CanonicallyOrderedCommMono
 and subsequently be moved upstream to `Data.Finset.LocallyFinite`.
 -/
 
+open Nat
+
+namespace Finset
+variable {α : Type*} {s : Finset α} {n m l : ℕ}
+
+/-- `range n` is the set of natural numbers less than `n`. -/
+def range (n : ℕ) : Finset ℕ := ⟨_, Multiset.nodup_range n⟩
+#align finset.range Finset.range
+
+@[simp]
+theorem range_val (n : ℕ) : (range n).1 = Multiset.range n :=
+  rfl
+#align finset.range_val Finset.range_val
+
+@[simp]
+theorem mem_range : m ∈ range n ↔ m < n :=
+  Multiset.mem_range
+#align finset.mem_range Finset.mem_range
+
+@[simp, norm_cast]
+theorem coe_range (n : ℕ) : (range n : Set ℕ) = Set.Iio n :=
+  Set.ext fun _ => mem_range
+#align finset.coe_range Finset.coe_range
+
+@[simp]
+theorem range_zero : range 0 = ∅ :=
+  rfl
+#align finset.range_zero Finset.range_zero
+
+@[simp]
+theorem range_one : range 1 = {0} :=
+  rfl
+#align finset.range_one Finset.range_one
+
+theorem range_succ : range (succ n) = insert n (range n) :=
+  eq_of_veq <| (Multiset.range_succ n).trans <|
+    (Multiset.ndinsert_of_not_mem Multiset.not_mem_range_self).symm
+#align finset.range_succ Finset.range_succ
+
+theorem range_add_one : range (n + 1) = insert n (range n) :=
+  range_succ
+#align finset.range_add_one Finset.range_add_one
+
+-- Porting note (#10618): @[simp] can prove this
+theorem not_mem_range_self : n ∉ range n :=
+  Multiset.not_mem_range_self
+#align finset.not_mem_range_self Finset.not_mem_range_self
+
+-- Porting note (#10618): @[simp] can prove this
+theorem self_mem_range_succ (n : ℕ) : n ∈ range (n + 1) :=
+  Multiset.self_mem_range_succ n
+#align finset.self_mem_range_succ Finset.self_mem_range_succ
+
+@[simp]
+theorem range_subset {n m} : range n ⊆ range m ↔ n ≤ m :=
+  Multiset.range_subset
+#align finset.range_subset Finset.range_subset
+
+theorem range_mono : Monotone range := fun _ _ => range_subset.2
+#align finset.range_mono Finset.range_mono
+
+@[gcongr] alias ⟨_, _root_.GCongr.finset_range_subset_of_le⟩ := range_subset
+
+theorem mem_range_succ_iff {a b : ℕ} : a ∈ Finset.range b.succ ↔ a ≤ b :=
+  Finset.mem_range.trans Nat.lt_succ_iff
+#align finset.mem_range_succ_iff Finset.mem_range_succ_iff
+
+theorem mem_range_le {n x : ℕ} (hx : x ∈ range n) : x ≤ n :=
+  (mem_range.1 hx).le
+#align finset.mem_range_le Finset.mem_range_le
+
+theorem mem_range_sub_ne_zero {n x : ℕ} (hx : x ∈ range n) : n - x ≠ 0 :=
+  _root_.ne_of_gt <| tsub_pos_of_lt <| mem_range.1 hx
+#align finset.mem_range_sub_ne_zero Finset.mem_range_sub_ne_zero
+
+@[simp, aesop safe apply (rule_sets := [finsetNonempty])]
+theorem nonempty_range_iff : (range n).Nonempty ↔ n ≠ 0 :=
+  ⟨fun ⟨k, hk⟩ => ((_root_.zero_le k).trans_lt <| mem_range.1 hk).ne',
+   fun h => ⟨0, mem_range.2 <| pos_iff_ne_zero.2 h⟩⟩
+#align finset.nonempty_range_iff Finset.nonempty_range_iff
+
+@[simp]
+theorem range_eq_empty_iff : range n = ∅ ↔ n = 0 := by
+  rw [← not_nonempty_iff_eq_empty, nonempty_range_iff, not_not]
+#align finset.range_eq_empty_iff Finset.range_eq_empty_iff
+
+theorem nonempty_range_succ : (range <| n + 1).Nonempty :=
+  nonempty_range_iff.2 n.succ_ne_zero
+#align finset.nonempty_range_succ Finset.nonempty_range_succ
+
+@[simp]
+theorem range_filter_eq {n m : ℕ} : (range n).filter (· = m) = if m < n then {m} else ∅ := by
+  convert filter_eq (range n) m using 2
+  · ext
+    rw [eq_comm]
+  · simp
+#align finset.range_filter_eq Finset.range_filter_eq
+
+lemma range_nontrivial {n : ℕ} (hn : 1 < n) : (Finset.range n).Nontrivial := by
+  rw [Finset.Nontrivial, Finset.coe_range]
+  exact ⟨0, zero_lt_one.trans hn, 1, hn, zero_ne_one⟩
+
+theorem disjoint_range_addLeftEmbedding (a b : ℕ) :
+    Disjoint (range a) (map (addLeftEmbedding a) (range b)) := by
+  refine' disjoint_iff_inf_le.mpr _
+  intro k hk
+  simp only [exists_prop, mem_range, inf_eq_inter, mem_map, addLeftEmbedding, mem_inter]
+    at hk
+  obtain ⟨a, _, ha⟩ := hk.2
+  simpa [← ha] using hk.1
+#align finset.disjoint_range_add_left_embedding Finset.disjoint_range_addLeftEmbedding
+
+theorem disjoint_range_addRightEmbedding (a b : ℕ) :
+    Disjoint (range a) (map (addRightEmbedding a) (range b)) := by
+  refine' disjoint_iff_inf_le.mpr _
+  intro k hk
+  simp only [exists_prop, mem_range, inf_eq_inter, mem_map, addRightEmbedding, mem_inter]
+    at hk
+  obtain ⟨a, _, ha⟩ := hk.2
+  simpa [← ha] using hk.1
+#align finset.disjoint_range_add_right_embedding Finset.disjoint_range_addRightEmbedding
+
+theorem range_add_one' (n : ℕ) :
+    range (n + 1) = insert 0 ((range n).map ⟨fun i => i + 1, fun i j => by simp⟩) := by
+  ext (⟨⟩ | ⟨n⟩) <;> simp [Nat.succ_eq_add_one, Nat.zero_lt_succ n]
+#align finset.range_add_one' Finset.range_add_one'
+
+theorem range_sdiff_zero {n : ℕ} : range (n + 1) \ {0} = (range n).image Nat.succ := by
+  induction' n with k hk
+  · simp
+  conv_rhs => rw [range_succ]
+  rw [range_succ, image_insert, ← hk, insert_sdiff_of_not_mem]
+  simp
+#align finset.range_sdiff_zero Finset.range_sdiff_zero
+
+@[simp]
+theorem card_range (n : ℕ) : (range n).card = n :=
+  Multiset.card_range n
+  #align finset.card_range Finset.card_range
+
+theorem card_eq_of_bijective (f : ∀ i, i < n → α) (hf : ∀ a ∈ s, ∃ i, ∃ h : i < n, f i h = a)
+    (hf' : ∀ i (h : i < n), f i h ∈ s)
+    (f_inj : ∀ i j (hi : i < n) (hj : j < n), f i hi = f j hj → i = j) : s.card = n := by
+  classical
+  have : s = (range n).attach.image fun i => f i.1 (mem_range.1 i.2) := by
+    ext a
+    suffices _ : a ∈ s ↔ ∃ (i : _) (hi : i ∈ range n), f i (mem_range.1 hi) = a by
+      simpa only [mem_image, mem_attach, true_and_iff, Subtype.exists]
+    constructor
+    · intro ha; obtain ⟨i, hi, rfl⟩ := hf a ha; use i, mem_range.2 hi
+    · rintro ⟨i, hi, rfl⟩; apply hf'
+  calc
+    s.card = ((range n).attach.image fun i => f i.1 (mem_range.1 i.2)).card := by rw [this]
+    _      = (range n).attach.card := ?_
+    _      = (range n).card := card_attach
+    _      = n := card_range n
+  apply card_image_of_injective
+  intro ⟨i, hi⟩ ⟨j, hj⟩ eq
+  exact Subtype.eq <| f_inj i j (mem_range.1 hi) (mem_range.1 hj) eq
+#align finset.card_eq_of_bijective Finset.card_eq_of_bijective
+
+theorem le_card_of_inj_on_range (f : ℕ → α) (hf : ∀ i < n, f i ∈ s)
+    (f_inj : ∀ i < n, ∀ j < n, f i = f j → i = j) : n ≤ s.card :=
+  calc
+    n = card (range n) := (card_range n).symm
+    _ ≤ s.card := card_le_card_of_inj_on f (by simpa only [mem_range]) (by simpa only [mem_range])
+#align finset.le_card_of_inj_on_range Finset.le_card_of_inj_on_range
+
+theorem subset_range_sup_succ (s : Finset ℕ) : s ⊆ range (s.sup id).succ := fun _ hn =>
+  mem_range.2 <| Nat.lt_succ_of_le <| @le_sup _ _ _ _ _ id _ hn
+#align finset.subset_range_sup_succ Finset.subset_range_sup_succ
+
+theorem exists_nat_subset_range (s : Finset ℕ) : ∃ n : ℕ, s ⊆ range n :=
+  ⟨_, s.subset_range_sup_succ⟩
+#align finset.exists_nat_subset_range Finset.exists_nat_subset_range
+
+theorem powerset_card_disjiUnion (s : Finset α) :
+    Finset.powerset s = (range (s.card + 1)).disjiUnion (powersetCard · s)
+      (s.pairwise_disjoint_powersetCard.set_pairwise _) := by
+  refine' ext fun a => ⟨fun ha => _, fun ha => _⟩
+  · rw [mem_disjiUnion]
+    exact
+      ⟨a.card, mem_range.mpr (Nat.lt_succ_of_le (card_le_card (mem_powerset.mp ha))),
+        mem_powersetCard.mpr ⟨mem_powerset.mp ha, rfl⟩⟩
+  · rcases mem_disjiUnion.mp ha with ⟨i, _hi, ha⟩
+    exact mem_powerset.mpr (mem_powersetCard.mp ha).1
+#align finset.powerset_card_disj_Union Finset.powerset_card_disjiUnion
+
+theorem powerset_card_biUnion [DecidableEq (Finset α)] (s : Finset α) :
+    Finset.powerset s = (range (s.card + 1)).biUnion fun i => powersetCard i s := by
+  simpa only [disjiUnion_eq_biUnion] using powerset_card_disjiUnion s
+#align finset.powerset_card_bUnion Finset.powerset_card_biUnion
+
+end Finset
+
+namespace Multiset
+
+@[simp] lemma toFinset_range (n : ℕ) : toFinset (range n) = Finset.range n := by ext; simp
+
+theorem sup_powerset_len {α : Type*} [DecidableEq α] (x : Multiset α) :
+    (Finset.sup (Finset.range (card x + 1)) fun k => x.powersetCard k) = x.powerset := by
+  convert bind_powerset_len x using 1
+  rw [Multiset.bind, Multiset.join, ← Finset.range_val, ← Finset.sum_eq_multiset_sum]
+  exact
+    Eq.symm (finset_sum_eq_sup_iff_disjoint.mpr fun _ _ _ _ h => pairwise_disjoint_powersetCard x h)
+#align multiset.sup_powerset_len Multiset.sup_powerset_len
+
+end Multiset
+
+@[simp] lemma List.toFinset_range (n : ℕ) : (range n).toFinset = Finset.range n := by ext; simp
 
 open Finset Nat
 

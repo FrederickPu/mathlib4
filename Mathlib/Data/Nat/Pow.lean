@@ -27,62 +27,8 @@ variable {m n x y : ℕ}
 #align nat.pow_le_pow_of_le_left Nat.pow_le_pow_left
 #align nat.pow_le_pow_of_le_right Nat.pow_le_pow_right
 
-protected theorem pow_lt_pow_left (h : x < y) (hn : n ≠ 0) : x ^ n < y ^ n :=
-  pow_lt_pow_left h (zero_le _) hn
-#align nat.pow_lt_pow_of_lt_left Nat.pow_lt_pow_left
-
 #align nat.pow_lt_pow_of_lt_right pow_lt_pow_right
 #align nat.pow_lt_pow_succ Nat.pow_lt_pow_succ
-
-theorem le_self_pow {n : ℕ} (hn : n ≠ 0) : ∀ m : ℕ, m ≤ m ^ n
-  | 0 => zero_le _
-  | (_ + 1) => _root_.le_self_pow (le_add_left _ _) hn
-#align nat.le_self_pow Nat.le_self_pow
-
-theorem lt_pow_self {p : ℕ} (h : 1 < p) : ∀ n : ℕ, n < p ^ n
-  | 0 => by simp [zero_lt_one]
-  | n + 1 =>
-    calc
-      n + 1 < p ^ n + 1 := Nat.add_lt_add_right (lt_pow_self h _) _
-      _ ≤ p ^ (n + 1) := Nat.pow_lt_pow_succ h
-#align nat.lt_pow_self Nat.lt_pow_self
-
-theorem lt_two_pow (n : ℕ) : n < 2 ^ n :=
-  lt_pow_self (by decide) n
-#align nat.lt_two_pow Nat.lt_two_pow
-
-theorem one_le_pow (n m : ℕ) (h : 0 < m) : 1 ≤ m ^ n := by
-  rw [← one_pow n]
-  exact Nat.pow_le_pow_of_le_left h n
-#align nat.one_le_pow Nat.one_le_pow
-
-theorem one_le_pow' (n m : ℕ) : 1 ≤ (m + 1) ^ n :=
-  one_le_pow n (m + 1) (succ_pos m)
-#align nat.one_le_pow' Nat.one_le_pow'
-
-#align nat.one_le_two_pow Nat.one_le_two_pow
-
-theorem one_lt_pow (n m : ℕ) (h₀ : n ≠ 0) (h₁ : 1 < m) : 1 < m ^ n := by
-  rw [← one_pow n]
-  exact Nat.pow_lt_pow_left h₁ h₀
-#align nat.one_lt_pow Nat.one_lt_pow
-
-theorem two_pow_succ (n : ℕ) : 2^(n + 1) = 2^n + 2^n := by simp [Nat.pow_succ, mul_two]
-
-theorem one_lt_pow' (n m : ℕ) : 1 < (m + 2) ^ (n + 1) :=
-  one_lt_pow (n + 1) (m + 2) n.succ_ne_zero (Nat.lt_of_sub_eq_succ rfl)
-#align nat.one_lt_pow' Nat.one_lt_pow'
-
-@[simp]
-theorem one_lt_pow_iff {k n : ℕ} (h : k ≠ 0) : 1 < n ^ k ↔ 1 < n :=
-  one_lt_pow_iff_of_nonneg (zero_le _) h
-#align nat.one_lt_pow_iff Nat.one_lt_pow_iff
-
-#align nat.one_lt_two_pow Nat.one_lt_two_pow
-
-theorem one_lt_two_pow' (n : ℕ) : 1 < 2 ^ (n + 1) :=
-  one_lt_pow (n + 1) 2 n.succ_ne_zero (by decide)
-#align nat.one_lt_two_pow' Nat.one_lt_two_pow'
 
 #align nat.pow_right_strict_mono pow_right_strictMono
 #align nat.pow_le_iff_lt_right pow_le_pow_iff_right

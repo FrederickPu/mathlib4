@@ -235,9 +235,9 @@ theorem get?_rotate {l : List α} {n m : ℕ} (hml : m < l.length) :
     (l.rotate n).get? m = l.get? ((m + n) % l.length) := by
   rw [rotate_eq_drop_append_take_mod]
   rcases lt_or_le m (l.drop (n % l.length)).length with hm | hm
-  · rw [get?_append hm, get?_drop, add_comm m, ← mod_add_mod]
-    rw [length_drop, lt_tsub_iff_left] at hm
-    rw [mod_eq_of_lt hm]
+  · rw [get?_append hm, get?_drop, ← add_mod_mod]
+    rw [length_drop, Nat.lt_sub_iff_add_lt] at hm
+    rw [mod_eq_of_lt hm, add_comm]
   · have hlt : n % length l < length l := mod_lt _ (m.zero_le.trans_lt hml)
     rw [get?_append_right hm, get?_take, length_drop]
     · congr 1

@@ -3,6 +3,7 @@ Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Floris van Doorn, Sébastien Gouëzel, Alex J. Best
 -/
+import Mathlib.Algebra.BigOperators.List.Order
 import Mathlib.Algebra.Group.Opposite
 import Mathlib.Algebra.GroupPower.Basic
 import Mathlib.Algebra.GroupWithZero.Commute
@@ -12,7 +13,6 @@ import Mathlib.Algebra.Ring.Basic
 import Mathlib.Algebra.Ring.Commute
 import Mathlib.Algebra.Ring.Divisibility.Basic
 import Mathlib.Data.Int.Units
-import Mathlib.Data.List.BigOperators.Basic
 
 #align_import data.list.big_operators.lemmas from "leanprover-community/mathlib"@"f694c7dead66f5d4c80f446c796a5aad14707f0e"
 
@@ -74,7 +74,7 @@ by the sum of the elements. -/
 theorem length_le_sum_of_one_le (L : List ℕ) (h : ∀ i ∈ L, 1 ≤ i) : L.length ≤ L.sum := by
   induction' L with j L IH h; · simp
   rw [sum_cons, length, add_comm]
-  exact add_le_add (h _ (mem_cons_self _ _)) (IH fun i hi => h i (mem_cons.2 (Or.inr hi)))
+  exact Nat.add_le_add (h _ (mem_cons_self _ _)) (IH fun i hi => h i (mem_cons.2 (Or.inr hi)))
 #align list.length_le_sum_of_one_le List.length_le_sum_of_one_le
 
 theorem dvd_prod [CommMonoid M] {a} {l : List M} (ha : a ∈ l) : a ∣ l.prod := by

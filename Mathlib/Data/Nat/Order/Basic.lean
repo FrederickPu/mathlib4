@@ -25,6 +25,7 @@ Move most of the theorems to `Data.Nat.Defs` by modifying their proofs.
 universe u v
 
 namespace Nat
+variable {m n : ℕ}
 
 /-! ### instances -/
 
@@ -103,28 +104,6 @@ theorem eq_zero_of_mul_le (hb : 2 ≤ n) (h : n * m ≤ m) : m = 0 :=
 
 #align nat.zero_max Nat.zero_max
 
-@[simp]
-theorem min_eq_zero_iff : min m n = 0 ↔ m = 0 ∨ n = 0 := min_eq_bot
-#align nat.min_eq_zero_iff Nat.min_eq_zero_iff
-
-@[simp]
-theorem max_eq_zero_iff : max m n = 0 ↔ m = 0 ∧ n = 0 := max_eq_bot
-#align nat.max_eq_zero_iff Nat.max_eq_zero_iff
-
-theorem add_eq_max_iff : m + n = max m n ↔ m = 0 ∨ n = 0 := by
-  rw [← min_eq_zero_iff]
-  rcases le_total m n with H | H <;> simp [H]
-#align nat.add_eq_max_iff Nat.add_eq_max_iff
-
-theorem add_eq_min_iff : m + n = min m n ↔ m = 0 ∧ n = 0 := by
-  rw [← max_eq_zero_iff]
-  rcases le_total m n with H | H <;> simp [H]
-#align nat.add_eq_min_iff Nat.add_eq_min_iff
-
-theorem one_le_of_lt (h : n < m) : 1 ≤ m :=
-  lt_of_le_of_lt (Nat.zero_le _) h
-#align nat.one_le_of_lt Nat.one_le_of_lt
-
 theorem eq_one_of_mul_eq_one_right (H : m * n = 1) : m = 1 :=
   eq_one_of_dvd_one ⟨n, H.symm⟩
 #align nat.eq_one_of_mul_eq_one_right Nat.eq_one_of_mul_eq_one_right
@@ -132,20 +111,6 @@ theorem eq_one_of_mul_eq_one_right (H : m * n = 1) : m = 1 :=
 theorem eq_one_of_mul_eq_one_left (H : m * n = 1) : n = 1 :=
   eq_one_of_mul_eq_one_right (by rwa [mul_comm])
 #align nat.eq_one_of_mul_eq_one_left Nat.eq_one_of_mul_eq_one_left
-
-/-! ### `succ` -/
-
-
-theorem two_le_iff : ∀ n, 2 ≤ n ↔ n ≠ 0 ∧ n ≠ 1
-  | 0 => by simp
-  | 1 => by simp
-  | n + 2 => by simp
-#align nat.two_le_iff Nat.two_le_iff
-
-@[simp]
-theorem lt_one_iff {n : ℕ} : n < 1 ↔ n = 0 :=
-  Nat.lt_succ_iff.trans nonpos_iff_eq_zero
-#align nat.lt_one_iff Nat.lt_one_iff
 
 /-! ### `add` -/
 

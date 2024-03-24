@@ -132,6 +132,111 @@ lemma one_lt_iff_ne_zero_and_ne_one : ∀ {n : ℕ}, 1 < n ↔ n ≠ 0 ∧ n ≠
 
 lemma le_one_iff_eq_zero_or_eq_one : ∀ {n : ℕ}, n ≤ 1 ↔ n = 0 ∨ n = 1 := by simp [le_succ_iff]
 
+attribute [simp] le_add_left le_add_right Nat.lt_add_left_iff_pos Nat.lt_add_right_iff_pos
+  Nat.add_le_add_iff_left Nat.add_le_add_iff_right Nat.add_lt_add_iff_left Nat.add_lt_add_iff_right
+  not_lt_zero
+
+@[simp] protected alias add_left_inj := Nat.add_right_cancel_iff
+@[simp] protected alias add_right_inj := Nat.add_left_cancel_iff
+
+@[simp] lemma mul_mod_mod (a b c : ℕ) : (a * (b % c)) % c = a * b % c := by
+  rw [mul_mod, mod_mod, ← mul_mod]
+
+@[simp] lemma mod_mul_mod (a b c : ℕ) : (a % c * b) % c = a * b % c := by
+  rw [mul_mod, mod_mod, ← mul_mod]
+
+@[simp] lemma lt_one_iff : n < 1 ↔ n = 0 := Nat.lt_succ_iff.trans $ by rw [le_zero_eq]
+#align nat.lt_one_iff Nat.lt_one_iff
+
+lemma one_le_of_lt (h : n < m) : 1 ≤ m := lt_of_le_of_lt (Nat.zero_le _) h
+#align nat.one_le_of_lt Nat.one_le_of_lt
+
+lemma two_le_iff : ∀ n, 2 ≤ n ↔ n ≠ 0 ∧ n ≠ 1
+  | 0 => by simp
+  | 1 => by simp
+  | n + 2 => by simp
+#align nat.two_le_iff Nat.two_le_iff
+
+protected lemma pow_lt_pow_left (h : a < b) : ∀ {n : ℕ}, n ≠ 0 → a ^ n < b ^ n
+  | 1, _ => by simpa
+  | n + 2, _ => Nat.mul_lt_mul_of_lt_of_le (Nat.pow_lt_pow_left h n.succ_ne_zero) (Nat.le_of_lt h)
+    (zero_lt_of_lt h)
+#align nat.pow_lt_pow_of_lt_left Nat.pow_lt_pow_left
+
+lemma le_self_pow (hn : n ≠ 0) : ∀ a : ℕ, a ≤ a ^ n
+  | 0 => zero_le _
+  | a + 1 => by simpa using Nat.pow_le_pow_right a.succ_pos (Nat.one_le_iff_ne_zero.2 hn)
+#align nat.le_self_pow Nat.le_self_pow
+
+lemma lt_pow_self {p : ℕ} (h : 1 < p) : ∀ n : ℕ, n < p ^ n
+  | 0 => by simp
+  | n + 1 =>
+    calc
+      n + 1 < p ^ n + 1 := Nat.add_lt_add_right (lt_pow_self h _) _
+      _ ≤ p ^ (n + 1) := Nat.pow_lt_pow_succ h
+#align nat.lt_pow_self Nat.lt_pow_self
+
+lemma lt_two_pow (n : ℕ) : n < 2 ^ n :=
+  lt_pow_self (by decide) n
+#align nat.lt_two_pow Nat.lt_two_pow
+
+lemma one_le_pow (n m : ℕ) (h : 0 < m) : 1 ≤ m ^ n := by
+  rw [← Nat.one_pow n]
+  exact Nat.pow_le_pow_of_le_left h n
+#align nat.one_le_pow Nat.one_le_pow
+
+lemma one_le_pow' (n m : ℕ) : 1 ≤ (m + 1) ^ n :=
+  one_le_pow n (m + 1) (succ_pos m)
+#align nat.one_le_pow' Nat.one_le_pow'
+
+#align nat.one_le_two_pow Nat.one_le_two_pow
+
+lemma one_lt_pow (hn : n ≠ 0) (ha : 1 < a) : 1 < a ^ n := by simpa using Nat.pow_lt_pow_left ha hn
+#align nat.one_lt_pow Nat.one_lt_pow
+
+lemma two_pow_succ (n : ℕ) : 2 ^ (n + 1) = 2 ^ n + 2 ^ n := by simp [Nat.pow_succ, Nat.mul_two]
+
+lemma one_lt_pow' (n m : ℕ) : 1 < (m + 2) ^ (n + 1) :=
+  one_lt_pow n.succ_ne_zero (Nat.lt_of_sub_eq_succ rfl)
+#align nat.one_lt_pow' Nat.one_lt_pow'
+
+@[simp] lemma one_lt_pow_iff {n : ℕ} (hn : n ≠ 0) : ∀ {a}, 1 < a ^ n ↔ 1 < a
+ | 0 => by simp [Nat.zero_pow (Nat.pos_of_ne_zero hn)]
+ | 1 => by simp
+ | a + 2 => by simp [one_lt_pow hn]
+  -- one_lt_pow_iff_of_nonneg (zero_le _) h
+#align nat.one_lt_pow_iff Nat.one_lt_pow_iff
+
+#align nat.one_lt_two_pow Nat.one_lt_two_pow
+
+lemma one_lt_two_pow' (n : ℕ) : 1 < 2 ^ (n + 1) := one_lt_pow n.succ_ne_zero (by decide)
+#align nat.one_lt_two_pow' Nat.one_lt_two_pow'
+
+@[simp] protected lemma lt_mul_iff_one_lt_left (hb : 0 < b) : b < a * b ↔ 1 < a := by
+  simpa using Nat.mul_lt_mul_right (b := 1) hb
+
+@[simp] protected lemma lt_mul_iff_one_lt_right (ha : 0 < a) : a < a * b ↔ 1 < b := by
+  simpa using Nat.mul_lt_mul_left (b := 1) ha
+
+@[simp] lemma min_eq_zero_iff : min m n = 0 ↔ m = 0 ∨ n = 0 := by omega
+@[simp] lemma max_eq_zero_iff : max m n = 0 ↔ m = 0 ∧ n = 0 := by omega
+#align nat.min_eq_zero_iff Nat.min_eq_zero_iff
+#align nat.max_eq_zero_iff Nat.max_eq_zero_iff
+
+lemma add_eq_max_iff : m + n = max m n ↔ m = 0 ∨ n = 0 := by omega
+lemma add_eq_min_iff : m + n = min m n ↔ m = 0 ∧ n = 0 := by omega
+#align nat.add_eq_max_iff Nat.add_eq_max_iff
+#align nat.add_eq_min_iff Nat.add_eq_min_iff
+
+protected lemma le_of_mul_le_mul_right (h : a * c ≤ b * c) (hc : 0 < c) : a ≤ b :=
+  Nat.le_of_mul_le_mul_left (by simpa [Nat.mul_comm]) hc
+
+protected lemma lt_sub_iff_add_lt : a < c - b ↔ a + b < c := ⟨add_lt_of_lt_sub, lt_sub_of_add_lt⟩
+protected lemma lt_sub_iff_add_lt' : a < c - b ↔ b + a < c := by
+  rw [Nat.lt_sub_iff_add_lt, Nat.add_comm]
+
+protected lemma sub_sub_sub_cancel_right (h : c ≤ b) : a - c - (b - c) = a - b := by omega
+
 -- Moved to Std
 #align nat.succ_eq_one_add Nat.succ_eq_one_add
 #align nat.one_add Nat.one_add
