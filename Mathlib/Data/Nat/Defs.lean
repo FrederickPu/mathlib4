@@ -136,8 +136,9 @@ attribute [simp] le_add_left le_add_right Nat.lt_add_left_iff_pos Nat.lt_add_rig
   Nat.add_le_add_iff_left Nat.add_le_add_iff_right Nat.add_lt_add_iff_left Nat.add_lt_add_iff_right
   not_lt_zero
 
-@[simp] protected alias add_left_inj := Nat.add_right_cancel_iff
-@[simp] protected alias add_right_inj := Nat.add_left_cancel_iff
+-- We want to use these two lemmas earlier than the lemmas simp can prove them with
+@[simp, nolint simpNF] protected alias add_left_inj := Nat.add_right_cancel_iff
+@[simp, nolint simpNF] protected alias add_right_inj := Nat.add_left_cancel_iff
 
 @[simp] lemma mul_mod_mod (a b c : ℕ) : (a * (b % c)) % c = a * b % c := by
   rw [mul_mod, mod_mod, ← mul_mod]
