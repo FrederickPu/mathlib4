@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import Mathlib.Data.Countable.Basic
-import Mathlib.Data.Nat.Intervals
+import Mathlib.Data.Nat.Interval
 import Mathlib.Logic.Encodable.Basic
 import Mathlib.Order.LocallyFinite
 import Mathlib.Order.SuccPred.Basic
