@@ -17,6 +17,8 @@ intervals as finsets and fintypes.
 
 Some lemmas can be generalized using `OrderedGroup`, `CanonicallyOrderedCommMonoid` or `SuccOrder`
 and subsequently be moved upstream to `Data.Finset.LocallyFinite`.
+
+Remove `Finset.range` in favour of `Finset.Iio`
 -/
 
 open Nat
@@ -145,6 +147,38 @@ theorem range_add_one' (n : ℕ) :
     range (n + 1) = insert 0 ((range n).map ⟨fun i => i + 1, fun i j => by simp⟩) := by
   ext (⟨⟩ | ⟨n⟩) <;> simp [Nat.succ_eq_add_one, Nat.zero_lt_succ n]
 #align finset.range_add_one' Finset.range_add_one'
+
+lemma mem_range_iff_mem_finset_range_of_mod_eq' [DecidableEq α] {f : ℕ → α} {a : α} {n : ℕ}
+    (hn : 0 < n) (h : ∀ i, f (i % n) = f i) :
+    a ∈ Set.range f ↔ a ∈ (Finset.range n).image fun i => f i := by
+  constructor
+  · rintro ⟨i, hi⟩
+    simp only [mem_image, exists_prop, mem_range]
+    exact ⟨i % n, Nat.mod_lt i hn, (rfl.congr hi).mp (h i)⟩
+  · rintro h
+    simp only [mem_image, exists_prop, Set.mem_range, mem_range] at *
+    rcases h with ⟨i, _, ha⟩
+    exact ⟨i, ha⟩
+#align finset.mem_range_iff_mem_finset_range_of_mod_eq' Finset.mem_range_iff_mem_finset_range_of_mod_eq'
+
+lemma mem_range_iff_mem_finset_range_of_mod_eq [DecidableEq α] {f : ℤ → α} {a : α} {n : ℕ}
+    (hn : 0 < n) (h : ∀ i, f (i % n) = f i) :
+    a ∈ Set.range f ↔ a ∈ (Finset.range n).image (fun (i : ℕ) => f i) :=
+  suffices (∃ i, f (i % n) = a) ↔ ∃ i, i < n ∧ f ↑i = a by simpa [h]
+  have hn' : 0 < (n : ℤ) := Int.ofNat_lt.mpr hn
+  Iff.intro
+    (fun ⟨i, hi⟩ =>
+      have : 0 ≤ i % ↑n := Int.emod_nonneg _ (ne_of_gt hn')
+      ⟨Int.toNat (i % n), by
+        rw [← Int.ofNat_lt, Int.toNat_of_nonneg this]; exact ⟨Int.emod_lt_of_pos i hn', hi⟩⟩)
+    fun ⟨i, hi, ha⟩ =>
+    ⟨i, by rw [Int.emod_eq_of_lt (Int.ofNat_zero_le _) (Int.ofNat_lt_ofNat_of_lt hi), ha]⟩
+#align finset.mem_range_iff_mem_finset_range_of_mod_eq Finset.mem_range_iff_mem_finset_range_of_mod_eq
+
+lemma range_add (a b : ℕ) : range (a + b) = range a ∪ (range b).map (addLeftEmbedding a) := by
+  rw [← val_inj, union_val]
+  exact Multiset.range_add_eq_union a b
+#align finset.range_add Finset.range_add
 
 theorem range_sdiff_zero {n : ℕ} : range (n + 1) \ {0} = (range n).image Nat.succ := by
   induction' n with k hk
