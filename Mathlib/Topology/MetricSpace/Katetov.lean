@@ -31,18 +31,23 @@ the Kuratowski embedding.
 * [melleray_urysohn_2008]
 -/
 
-variable {α : Type _} [MetricSpace α]
+-- universe u
+variable {α : Type*} [MetricSpace α]
 
-/-- A real valued function from a metric space is katetov if
-  it satisfies the following inequalities: -/
+/-- A real valued function from a metric space is Katetov if it satisfies
+    the following inequalities: -/
 @[mk_iff]
 structure IsKatetov (f : α → ℝ) : Prop where
-  /-- Proposition that `f` is 1-Lipschitz -/
+  /-- `f` is 1-Lipschitz -/
   abs_sub_le_dist : ∀ x y, |f x - f y| ≤ dist x y
-  /-- Second defining inequality of a Katetov map  -/
+  /-- `f` obeys the Katetov "triangle inequality"  -/
   dist_le_add : ∀ x y, dist x y ≤ f x + f y
 
-/-- The type of Katetov maps from `α` -/
+/-- The type of Katetov maps from `α`.
+    We are essentially stating that given a type α with a metric structure,
+    We can make a new types whose "elements" are functions α → ℝ that satisfy
+    the Katetov conditions.
+-/
 structure KatetovMap (α : Type*) [MetricSpace α] where
   /-- The function `α → ℝ` -/
   protected toFun : α → ℝ
@@ -53,7 +58,6 @@ structure KatetovMap (α : Type*) [MetricSpace α] where
 notation "E(" α ")" => KatetovMap α
 
 section
-
 
 /-- `KatetovMapClass F α` states that `F` is a type of Katetov maps. -/
 class KatetovMapClass (F : Type*) (α : Type*) [MetricSpace α] [FunLike F α  ℝ] : Prop where
@@ -86,11 +90,13 @@ instance funLike : FunLike E(α) α ℝ where
 instance toKatetovMapClass : KatetovMapClass E(α) α where
   map_katetov := KatetovMap.IsKatetovtoFun
 
+-- set_option trace.Meta.synthInstance true
+example : PseudoMetricSpace ℝ := by infer_instance
+
 @[simp]
 theorem toFun_eq_coe {f : E(α)} : f.toFun = (f : α → ℝ) := rfl
 
 instance : CanLift (α → ℝ) E(α) DFunLike.coe IsKatetov := ⟨fun f hf ↦ ⟨⟨f, hf⟩, rfl⟩⟩
-
 /-- See Topology/ContinuousFunction.Basic -/
 def Simps.apply (f : E(α)) : α → ℝ := f
 
@@ -130,18 +136,19 @@ theorem coe_mk (f : α → ℝ) (h : IsKatetov f) : ⇑(⟨f, h⟩ : E(α)) = f 
 
 end KatetovMap
 
-lemma abs_sub_dist_le (x₀ : α) (f : E(α)) (x : α) : |f x - dist x x₀| ≤ f x₀ := by
+lemma abs_sub_dist_le {f : E(α)} {x y: α} : |f x - dist x y| ≤ f y := by
   refine abs_le.mpr ⟨?_, ?_⟩
-  · linarith [(map_katetov f).dist_le_add x x₀]
-  · linarith [le_of_abs_le <| (map_katetov f).abs_sub_le_dist x x₀]
+  · exact neg_le_sub_iff_le_add.mpr <| (map_katetov f).dist_le_add x y
+  · exact sub_le_comm.mpr <| le_of_abs_le <| (map_katetov f).abs_sub_le_dist x y
 
-theorem bounded_dist_set {f g : E(α)} : BddAbove {|f x - g x| | x : α} := by
+theorem bounded_sub {f g : E(α)} : BddAbove {|f x - g x| | x : α} := by
   by_cases hn : Nonempty α
-  · have x₀ := Classical.choice ‹Nonempty α›
+  · let x₀ := Classical.choice ‹Nonempty α›
     refine ⟨f x₀ + g x₀, fun _ ⟨x, hx⟩ ↦ ?_⟩; rw [← hx]
-    have h : |f x - g x| ≤ |f x - dist x x₀| + |g x - dist x x₀|:= by
-      rw [← abs_sub_comm (dist x x₀) (g x)]; apply abs_sub_le (f x) (dist x x₀) (g x)
-    apply le_trans h <| add_le_add (abs_sub_dist_le x₀ f x) (abs_sub_dist_le x₀ g x)
+    calc
+    _ ≤ |f x - dist x x₀| + |dist x x₀ - g x| := abs_sub_le (f x) (dist x x₀) (g x)
+    _ = |f x - dist x x₀| + |g x - dist x x₀| := by rw [← abs_sub_comm _ (g x)]
+    _ ≤ f x₀ + g x₀ := add_le_add abs_sub_dist_le abs_sub_dist_le
   · refine ⟨0, fun _ ⟨x, _⟩ ↦ False.elim (hn ⟨x⟩)⟩
 
 lemma eq_zero_of_sSup_eq_zero (s : Set ℝ) (hb : BddAbove s) (snonneg : ∀ x ∈ s, 0 ≤ x)
@@ -158,7 +165,7 @@ theorem empty_sSup_of_empty (h : IsEmpty α) (f g : E(α)) :
   obtain ⟨_, x, _⟩ := hc
   exact IsEmpty.false x
 
-noncomputable instance: MetricSpace E(α) where
+noncomputable instance : MetricSpace E(α) where
   dist f g := sSup {|f x - g x| | x : α}
   dist_self f := by
     by_cases h : Nonempty α
@@ -175,14 +182,14 @@ noncomputable instance: MetricSpace E(α) where
       · rintro val ⟨x, rfl⟩
         rw [← csSup_add]
         · apply le_trans <| abs_sub_le (f x) (g x) (h x)
-          apply le_csSup (by apply BddAbove.add <;> apply bounded_dist_set)
+          apply le_csSup (by apply BddAbove.add <;> apply bounded_sub)
           refine Set.mem_add.mpr ⟨|f x - g x|, (by simp), (by simp)⟩
         · have x₀ := Classical.choice ‹Nonempty α›
           use |f x₀ - g x₀|; simp
-        · apply bounded_dist_set
+        · apply bounded_sub
         · have x₀ := Classical.choice ‹Nonempty α›
           use |g x₀ - h x₀|; simp
-        · apply bounded_dist_set
+        · apply bounded_sub
       · apply add_nonneg <;>
         { apply Real.sSup_nonneg; rintro val ⟨x, rfl⟩; apply abs_nonneg}
     · simp [dist, sSup]
@@ -196,26 +203,23 @@ noncomputable instance: MetricSpace E(α) where
     simp [dist] at h
     apply eq_zero_of_sSup_eq_zero at h
     · ext x; exact eq_of_sub_eq_zero <| abs_eq_zero.mp (h |f x - g x| ⟨x, rfl⟩)
-    · apply bounded_dist_set
+    · apply bounded_sub
     · rintro _ ⟨x, rfl⟩; exact abs_nonneg _
   edist_dist x y:= by exact ENNReal.coe_nnreal_eq _
 
-#check Complex.mk
-
 theorem dist_coe_le_dist (f g : E(α)) (x : α) : dist (f x) (g x) ≤ dist f g :=
-  by refine le_csSup bounded_dist_set (by simp [dist])
+  by refine le_csSup bounded_sub (by simp [dist])
 
 theorem dist_le {C :ℝ} (C0 : (0 : ℝ) ≤ C) (f g : E(α)):
     dist f g ≤ C ↔ ∀ x : α, dist (f x) (g x) ≤ C := by
   refine ⟨fun h x => le_trans (dist_coe_le_dist _ _ x) h, fun H ↦ ?_⟩
   simp [dist]; apply Real.sSup_le (by simp [*] at *; assumption) (C0)
 
-
 noncomputable instance : CompleteSpace E(α) :=
   Metric.complete_of_cauchySeq_tendsto fun (u : ℕ → E(α)) (hf : CauchySeq u) => by
     rcases cauchySeq_iff_le_tendsto_0.1 hf with ⟨b, b0, b_bound, b_lim⟩
     have u_bdd := fun x n m N hn hm => le_trans (dist_coe_le_dist _ _ x) (b_bound n m N hn hm)
-    have ux_cau : ∀ x, CauchySeq fun n => u n x :=
+    have ux_cau : ∀ x : α, CauchySeq fun n => u n x :=
       fun x => cauchySeq_iff_le_tendsto_0.2 ⟨b, b0, u_bdd x, b_lim⟩
     choose f hf using fun x => cauchySeq_tendsto_of_complete (ux_cau x)
     have fF_bdd : ∀ x N, dist (u N x) (f x) ≤ b N :=
@@ -241,9 +245,9 @@ noncomputable instance : CompleteSpace E(α) :=
               linarith [(map_katetov (u N)).abs_sub_le_dist x y]
         · calc
           _ ≤ u N x + u N y := (map_katetov (u N)).dist_le_add x y
-          _ = _ := by rw [← add_zero (u N y), show 0 = f x - f x + f y - f y by ring]
-          _ = f x + f y + (u N x - f x) + (u N y - f y) := by ring
-          _ ≤ _ := by linarith [le_of_lt (lt_of_abs_lt hNx), le_of_lt (lt_of_abs_lt hNy)]
+          _ = f x + f y + (u N x - f x) + (u N y - f y) := by
+              rw [← add_zero (u N y), show 0 = f x - f x + f y - f y by ring]; ring_nf
+          _ ≤ f x + f y + 2*ε := by linarith [le_of_lt (lt_of_abs_lt hNx), le_of_lt (lt_of_abs_lt hNy)]
       constructor <;>
         { refine fun x y ↦ le_of_forall_pos_le_add (fun ε εpos ↦ ?_)
           linarith [h x y (ε/2) (half_pos εpos)]}
@@ -261,7 +265,6 @@ def instKatetovMapOfEmpty (α : Type*) [MetricSpace α] [IsEmpty α] : E(α) := 
 theorem empty_unique [IsEmpty α] (f g : E(α)) : f = g := by
   ext x; exact (IsEmpty.false x).elim
 
-
 theorem exists_isometric_embedding (α : Type*) [MetricSpace α] : ∃ f : α → E(α), Isometry f := by
     by_cases h : Nonempty α
     · refine ⟨fun x : α ↦ ⟨fun y ↦ dist x y, ?_⟩, ?_⟩
@@ -272,7 +275,7 @@ theorem exists_isometric_embedding (α : Type*) [MetricSpace α] : ∃ f : α �
         · refine Real.sSup_le ?_ dist_nonneg
           · simp only [Set.mem_setOf_eq, forall_exists_index, forall_apply_eq_imp_iff]
             refine fun z ↦ abs_dist_sub_le x y z
-        · refine (Real.le_sSup_iff bounded_dist_set ?_).mpr  ?_
+        · refine (Real.le_sSup_iff bounded_sub ?_).mpr  ?_
           · have x₀ := Classical.choice ‹Nonempty α›
             use |dist x x₀ - dist y x₀|; simp
           · simp only [KatetovMap.coe_mk, Set.mem_setOf_eq, exists_exists_eq_and]
@@ -295,7 +298,6 @@ protected theorem katetovKuratowskiEmbedding.isometry (α : Type*) [MetricSpace 
     Isometry (katetovKuratowskiEmbedding α) :=
     Classical.choose_spec <| exists_isometric_embedding α
 
-
 namespace KatetovExtension
 
 open Pointwise
@@ -310,7 +312,7 @@ lemma abs_inf_dist_le_sup {α : Type*} {f g : α → ℝ} (hα : Nonempty α)
           · have z₀ := Classical.choice hα
             refine ⟨f z₀, by simp⟩
           · rintro _ ⟨x, rfl⟩
-            refine @csInf_le_of_le _ _ ({x | ∃ x_1, g x_1 = x} - {x | ∃ x_1, |f x_1 - g x_1| = x})
+            refine @csInf_le_of_le _ _ ({g x | x} - {|f x - g x| | x})
               (f x) (g x - |f x - g x|) ?_ ?_ ?_
             · simp_rw [sub_eq_add_neg]
               apply BddBelow.add ?_ (BddAbove.neg hb)
@@ -350,65 +352,58 @@ lemma abs_inf_dist_le_sup {α : Type*} {f g : α → ℝ} (hα : Nonempty α)
           refine ⟨|f z₀ - g z₀|, by simp⟩
       linarith [this]
 
--- if s empty return dist?
-noncomputable def katetovExtension {α : Type*} (s : Set α) [MetricSpace α]
-    (f : E(s)) : E(α) := by
-  by_cases hs : Nonempty s
-  · refine ⟨fun x ↦ sInf {(f z) + dist x z | z : s }, ?_⟩
+noncomputable def extend {α β : Type*} [MetricSpace α] [MetricSpace β] (ρ : β → α)
+  (hρ : Isometry ρ) (f : E(β)) : E(α) := by
+  by_cases hs : Nonempty β
+  · refine ⟨fun x ↦ sInf {(f z) + dist x (ρ z) | z : β}, ?_⟩
     constructor <;> intro x y
-    · --rw [sub_eq_add_neg, ← csSup_neg]
-      calc
-      _ ≤ sSup {|f z + dist x z - (f z + dist y z)| | z : s} := by
+    · calc
+      _ ≤ sSup {|f z + dist x (ρ z) - (f z + dist y (ρ z))| | z : β} := by
         refine abs_inf_dist_le_sup hs ?_ ?_ ?_
         · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
         · refine fun x ↦ add_nonneg (katetov_nonneg f x) (dist_nonneg)
         · use dist x y
           rintro _ ⟨z, rfl⟩
-          have : |(fun z ↦ f z + dist x z) - fun z ↦ f z + dist y z| z
-            = |(f z + dist x z) - (f z + dist y z)| := by rfl
-          rw [this]
-          ring_nf
-          apply abs_dist_sub_le
-      _ = sSup {|dist x (z : α) - dist y (z : α)| | z : s} := by ring_nf
+          simp [show |(fun z ↦ f z + dist x (ρ z)) - fun z ↦ f z + dist y (ρ z)| z
+            = |(f z + dist x (ρ z)) - (f z + dist y (ρ z))| by rfl, abs_dist_sub_le]
+      _ = sSup {|dist x (ρ z) - dist y (ρ z)| | z : β} := by ring_nf
       _ ≤ _ := by
-        apply Real.sSup_le
+        refine Real.sSup_le ?_ dist_nonneg
         · rintro _ ⟨z, hz, rfl⟩
-          apply abs_dist_sub_le x y z
-        · exact dist_nonneg
+          apply abs_dist_sub_le x y (ρ z)
     · rw [← csInf_add]
-      · set c : ℝ := sInf {dist x z + dist z z₁ + dist z₁ y | (z ∈ s) (z₁ ∈ s)} with hc
+      · set c : ℝ := sInf {dist x  (ρ z) + dist z z₁ + dist (ρ z₁) y | (z : β) (z₁ : β)} with hc
         calc
         _ ≤ c := by
           apply le_csInf
           · have z₀ := Classical.choice hs
-            refine ⟨dist x z₀ + dist z₀ z₀ + (dist (z₀ : α) y),
-              Set.mem_setOf.mpr ⟨z₀, Subtype.coe_prop z₀, ⟨z₀, Subtype.coe_prop z₀, rfl⟩⟩⟩
-          · rintro b ⟨z, hz, z₁, hz₁, rfl⟩
+            refine ⟨dist x (ρ z₀) + dist z₀ z₀ + (dist (ρ z₀) y),
+              Set.mem_setOf.mpr ⟨z₀,⟨z₀, by simp⟩⟩⟩
+          · rintro b ⟨z, z₁, rfl⟩
             repeat apply (dist_triangle ..).trans; gcongr; try exact dist_triangle _ _
-            exact dist_triangle x _ _
+            rw [hρ.dist_eq]
         _ ≤ _ := by
           apply le_csInf
           · have z₀ := Classical.choice hs
-            refine ⟨(f z₀) + dist x z₀ + (f z₀) + dist y z₀,
-              Set.mem_add.mpr ⟨(f z₀) + dist x z₀, by aesop, ⟨(f z₀) + dist y z₀, by aesop, by ring⟩⟩⟩
+            refine ⟨(f z₀) + dist x (ρ z₀) + (f z₀) + dist y (ρ z₀),
+              Set.mem_add.mpr ⟨(f z₀) + dist x (ρ z₀), by aesop, ⟨(f z₀) + dist y (ρ z₀), by aesop, by ring⟩⟩⟩
           · rintro b ⟨_, ⟨z, rfl⟩, _, ⟨z₁, rfl⟩, rfl⟩
-            dsimp
-            rw [hc]
-            refine @csInf_le_of_le _ _ _ (f z + dist x ↑z + (f z₁ + dist y ↑z₁))
-              (dist x z + dist z z₁ + dist (z₁ : α) y) ?_ ?_ ?_
+            simp [hc]
+            refine @csInf_le_of_le _ _ _ (f z + dist x (ρ z) + (f z₁ + dist y (ρ z₁)))
+              (dist x (ρ z) + dist z z₁ + dist (ρ z₁) y) ?_ ?_ ?_
             · refine ⟨0, Set.mem_setOf.mpr ?_⟩
               rintro a ⟨z, hz, z₁, hz₁, rfl⟩
               apply add_nonneg (add_nonneg dist_nonneg dist_nonneg) dist_nonneg
             · aesop
-            · rw [dist_comm y z₁]
+            · rw [dist_comm y (ρ z₁)]
               linarith [(map_katetov f).dist_le_add z z₁]
       · have z₀ := Classical.choice hs
-        refine ⟨(f z₀) + dist x z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
+        refine ⟨(f z₀) + dist x (ρ z₀), Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
       · refine ⟨0, Set.mem_setOf.mpr ?_⟩
         rintro a ⟨z, rfl⟩
         apply add_nonneg (katetov_nonneg _ _) dist_nonneg
       · have z₀ := Classical.choice hs
-        refine ⟨(f z₀) + dist y z₀, Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
+        refine ⟨(f z₀) + dist y (ρ z₀), Set.mem_setOf.mpr ⟨z₀, rfl⟩⟩
       · refine ⟨0, Set.mem_setOf.mpr ?_⟩
         rintro a ⟨z, rfl⟩
         apply add_nonneg (katetov_nonneg _ _) dist_nonneg
@@ -417,67 +412,51 @@ noncomputable def katetovExtension {α : Type*} (s : Set α) [MetricSpace α]
       exact katetovKuratowskiEmbedding α z₀
     · exact @instKatetovMapOfEmpty _ _ (not_nonempty_iff.mp hα)
 
-def restrict {α : Type*} (s : Set α) [MetricSpace α] (f : E(α)) : E(s) := by
-  refine ⟨fun x ↦ f x, ?_⟩
-  constructor <;> intro x y
-  · exact (map_katetov f).abs_sub_le_dist x y
-  · exact (map_katetov f).dist_le_add x y
 
-theorem eq_restrict_support {α : Type*} (s : Set α) [MetricSpace α] (f : E(s)) :
-  restrict s (katetovExtension s f) = f := by
+def restrict {α β: Type*} [MetricSpace α][MetricSpace β] (ρ : β → α) (hρ : Isometry ρ)
+    (f : E(α)) : E(β) := by
+  refine ⟨fun x ↦ f (ρ x), ?_⟩
+  constructor <;> intro x y
+  · rw [← hρ.dist_eq]; exact (map_katetov f).abs_sub_le_dist (ρ x) (ρ y)
+  · rw [← hρ.dist_eq]; exact (map_katetov f).dist_le_add (ρ x) (ρ y)
+
+theorem eq_restrict_support {α β: Type} [MetricSpace α][MetricSpace β] (ρ : β → α)
+  (hρ : Isometry ρ) (f : E(β)) :
+    restrict ρ hρ (extend ρ hρ f) = f := by
   ext x
-  simp [katetovExtension, restrict]
-  by_cases hs : Nonempty s
+  simp [extend, restrict]
+  by_cases hs : Nonempty β
   · simp [hs]
     apply le_antisymm
-    · apply csInf_le
+    · refine csInf_le ?_ ⟨x, by simp⟩
       · refine ⟨f x + dist x x, Set.mem_setOf.mpr ?_⟩
-        simp
-        rintro _ z hz rfl
-        rw [show dist (x : α ) z = dist x ⟨z, hz⟩ by aesop]
-        linarith [le_trans (le_abs_self _) ((map_katetov f).abs_sub_le_dist x ⟨z, hz⟩)]
-      · refine ⟨x, ?_⟩
-        simp only [Subtype.coe_eta, dist_self, add_zero, Subtype.coe_prop, exists_const]
-    · apply le_csInf
-      · refine ⟨f x + dist x x, Set.mem_setOf.mpr ?_⟩
-        simp
-        refine ⟨x, ?_⟩
-        simp only [Subtype.coe_eta, dist_self, add_zero, Subtype.coe_prop, exists_const]
-      · simp
-        rintro _ z hz rfl
-        rw [show dist (x : α ) z = dist x ⟨z, hz⟩ by aesop]
-        linarith [le_trans (le_abs_self _) ((map_katetov f).abs_sub_le_dist x ⟨z, hz⟩)]
+        simp [hρ.dist_eq]
+        intro z
+        linarith [le_trans (le_abs_self _) ((map_katetov f).abs_sub_le_dist x z)]
+    · refine le_csInf ⟨f x + dist x x, Set.mem_setOf.mpr ⟨x, by simp⟩⟩ ?_
+      · simp [hρ.dist_eq]
+        intro z
+        linarith [le_trans (le_abs_self _) ((map_katetov f).abs_sub_le_dist x z)]
   · exact False.elim (hs ⟨x⟩)
 
--- structure FinsuppKatetovMap (α : Type*) [MetricSpace α] extends KatetovMap α  where
---   kat_ext: ∃ s : Set α, Set.Finite s ∧
---     ⟨toFun, IsKatetovtoFun⟩  = katetovExtension s (restrict s ⟨toFun, IsKatetovtoFun⟩)
-
--- /-- The type of Katetov maps from `α`. -/
--- notation "E(" α ", ω)" => FinsuppKatetovMap α
-
--- theorem embed_finsupp (α : Type*) [MetricSpace α] : E(α, ω) ↪ E(α) := by
---   refine ⟨fun f ↦ ⟨f.toFun, f.IsKatetovtoFun⟩ , ?_⟩
---   intro f g h
-
-theorem exists_isometric_embedding (α : Type*) [MetricSpace α] (s : Set α) :
-  ∃ f : E(s) → E(α), Isometry f := by
+theorem exists_isometric_embedding_of_subset (α β : Type) [MetricSpace α][MetricSpace β] (ρ : β → α)
+  (hρ : Isometry ρ) :
+  ∃ f : E(β) → E(α), Isometry f := by
     by_cases hα  : Nonempty α
-    · by_cases  hs : Nonempty s
-      · refine ⟨fun f ↦ katetovExtension s f, ?_⟩
+    · by_cases  hs : Nonempty β
+      · refine ⟨fun f ↦ extend ρ hρ f, ?_⟩
         refine Isometry.of_dist_eq (fun f g ↦ le_antisymm ?_ ?_)
         · refine Real.sSup_le ?_ dist_nonneg
           simp only [Set.mem_setOf_eq, forall_exists_index, forall_apply_eq_imp_iff]
           refine fun x ↦ ?_
-          simp [katetovExtension]
-          simp [hs]
-          have hpos : ∀ f : E(s),∀ z : s, 0 ≤ f z + dist x z := by
+          simp [extend, hs]
+          have hpos : ∀ f : E(β), ∀ z : β, 0 ≤ f z + dist x (ρ z) := by
             refine fun f z ↦ add_nonneg (katetov_nonneg _ _) (dist_nonneg)
-          have : (fun z ↦ f z + dist x z) - (fun z ↦ g z + dist x z) = fun z ↦ f z - g z := by
+          have : (fun z ↦ f z + dist x (ρ z)) - (fun z ↦ g z + dist x (ρ z)) = fun z ↦ f z - g z := by
               aesop
-          have hb : BddAbove (Set.range |(fun z ↦ f z + dist x z) - (fun z ↦ g z + dist x z)|) := by
+          have hb : BddAbove (Set.range |(fun z ↦ f z + dist x (ρ z)) - (fun z ↦ g z + dist x (ρ z))|) := by
             simp_rw [this]
-            exact bounded_dist_set
+            exact bounded_sub
           have := abs_inf_dist_le_sup hs (hpos f) (hpos g) hb
           refine le_trans (by simp) (le_trans this ?_)
           ring_nf
@@ -485,12 +464,12 @@ theorem exists_isometric_embedding (α : Type*) [MetricSpace α] (s : Set α) :
         · refine Real.sSup_le ?_ dist_nonneg
           simp only [Set.mem_setOf_eq, forall_exists_index, forall_apply_eq_imp_iff]
           refine fun x ↦ ?_
-          simp [katetovExtension]
+          simp [extend]
           simp [hs]
-          refine le_csSup_of_le bounded_dist_set ?_ (le_refl |f x - g x|)
-          refine ⟨x, ?_⟩
+          refine le_csSup_of_le bounded_sub ?_ (le_refl |f x - g x|)
+          refine ⟨(ρ x), ?_⟩
           simp
-          have : ∀ f : E(s), sInf {f ⟨a, h⟩ + dist (x : α) a | (a : α) (h : a ∈ s)} = f x:= by
+          have : ∀ f : E(β), sInf {f z + dist (ρ x) (ρ z) | (z : β)} = f x:= by
             intro f; refine le_antisymm ?_ ?_
             · apply csInf_le
               · refine ⟨0, Set.mem_setOf.mpr ?_⟩
@@ -498,84 +477,257 @@ theorem exists_isometric_embedding (α : Type*) [MetricSpace α] (s : Set α) :
                 exact add_nonneg (katetov_nonneg _ _) (dist_nonneg)
               · refine Set.mem_setOf.mpr ⟨x, by simp⟩
             · apply le_csInf
-              · refine ⟨f x + dist (x : α) (x : α), Set.mem_setOf.mpr ⟨(x : α), by simp⟩⟩
+              · refine ⟨f x + dist (ρ x) (ρ x), Set.mem_setOf.mpr ⟨x, by simp⟩⟩
               · rintro _ ⟨z, hz, rfl⟩
-                rw [show dist (x : α ) z = dist x ⟨z, hz⟩ by aesop]
-                linarith [le_of_abs_le <| (map_katetov f).abs_sub_le_dist x ⟨z, hz⟩]
+                rw [hρ.dist_eq]
+                linarith [le_of_abs_le <| (map_katetov f).abs_sub_le_dist x z]
           simp_rw [this f, this g]
       · have x₀ := Classical.choice ‹Nonempty α›
         refine ⟨fun _ ↦ katetovKuratowskiEmbedding _ x₀, ?_⟩
         refine Isometry.of_dist_eq (fun f g ↦ ?_)
         simp
-        have : IsEmpty s := by aesop
+        have : IsEmpty β := by aesop
         exact empty_unique f g
     · have : IsEmpty α := by aesop
       refine ⟨fun _ ↦ instKatetovMapOfEmpty α, ?_⟩
       refine Isometry.of_dist_eq (fun f g ↦ ?_)
-      have : IsEmpty s := by aesop
+      have : IsEmpty β := by
+        by_contra h
+        exact IsEmpty.false <| ρ <| Classical.choice (not_isEmpty_iff.mp h)
       simp
       exact empty_unique f g
 
+
+def FinSuppKatetovMaps : Set E(α) :=
+  {φ : E(α) | ∃ (β : Type) (hβ : MetricSpace β) (hf : Fintype β) (ρ : β → α) (hρ : Isometry ρ) (ψ : E(β)), φ = extend ρ hρ ψ}
+
+def bar : Set E(α) := ⋃ s : Finset α, Set.range (extend (fun (x : s) ↦ x) (isometry_id))
+
+theorem eq_union (α : Type*) [MetricSpace α] : @FinSuppKatetovMaps α _ = @bar α _ := by
+  ext f
+  constructor
+  · intro hf
+    simp [bar]
+    obtain ⟨β, hβ, hβfin, ρ, hρ, φ, hφ⟩ := hf
+    set s := Finset.map ⟨ρ, hρ.injective⟩ hβfin.elems with s_def
+    refine ⟨s, ?_⟩
+    rw [hφ]
+    set φ₁ : E(s) := by
+      refine ⟨fun x ↦ ?_, ?_⟩
+      · obtain ⟨x, hx⟩ := x
+        rw [s_def] at hx
+        simp at hx
+        choose y hy using hx
+        exact (φ y)
+      · simp
+        constructor <;> intro x y
+        obtain ⟨x, hx⟩ := x
+        rw [s_def] at hx
+        simp at hx
+        choose x hx using hx
+        simp_rw [← hx.2]
+        obtain ⟨y, hy⟩ := y
+        rw [s_def] at hy
+        simp at hy
+        choose y hy using hy
+        simp_rw [← hy.2]
+        simp_rw [dist_eq]
+
+
+
+
+  · intro hf
+    sorry
+
+
+
+/-- The type of Katetov maps from `α`. -/
+notation "E(" α ", ω)" => @FinSuppKatetovMaps α _
+-- variable (α : Type) [MetricSpace α]
+
+noncomputable instance : MetricSpace E(α, ω) := by infer_instance
+
+theorem exists_isometric_embedding (α : Type) [MetricSpace α] : ∃ f : α → E(α, ω), Isometry f := by
+    by_cases h : Nonempty α
+    · refine ⟨fun x : α ↦ ⟨⟨fun y ↦ dist x y, ?_⟩, ?_⟩, ?_⟩
+      · constructor <;> (intro y z; rw [dist_comm x y])
+        · rw [dist_comm x z]; exact abs_dist_sub_le y z x
+        · exact dist_triangle y x z
+      · refine ⟨({x} : Set α), ?_⟩
+        refine ⟨by infer_instance, Set.fintypeSingleton x, by exact fun _ ↦ x, by exact
+          isometry_subsingleton,
+        ⟨fun _ ↦ 0, ?_⟩, ?_⟩
+        · constructor <;> intro z y
+          · simp; exact dist_nonneg
+          · aesop
+        · ext y
+          simp [extend, dist_comm]
+      · refine Isometry.of_dist_eq (fun x y ↦ le_antisymm ?_ ?_)
+        · refine Real.sSup_le ?_ dist_nonneg
+          · simp only [Set.mem_setOf_eq, forall_exists_index, forall_apply_eq_imp_iff]
+            refine fun z ↦ abs_dist_sub_le x y z
+        · refine (Real.le_sSup_iff bounded_sub ?_).mpr  ?_
+          · have x₀ := Classical.choice ‹Nonempty α›
+            use |dist x x₀ - dist y x₀|; simp
+          · simp only [KatetovMap.coe_mk, Set.mem_setOf_eq, exists_exists_eq_and]
+            refine fun ε εpos ↦ ⟨x, ?_⟩
+            rw [dist_self, zero_sub, abs_neg, dist_comm, abs_of_nonneg (dist_nonneg)]
+            exact add_lt_of_neg_right (dist y x) εpos
+    · refine ⟨fun _ ↦ ⟨@instKatetovMapOfEmpty _ _ (not_nonempty_iff.mp h), ?_⟩, fun y ↦ ?_⟩
+      · exact ((not_nonempty_iff.mp h).false ‹α›).elim
+      · exact ((not_nonempty_iff.mp h).false y).elim
+
+noncomputable def embedding (α : Type) [MetricSpace α] : α ↪ E(α, ω) := by
+  choose f h using exists_isometric_embedding α; refine ⟨f, h.injective⟩
+
+protected theorem embedding.isometry (α : Type) [MetricSpace α] :
+    Isometry (embedding α) :=
+    Classical.choose_spec <| exists_isometric_embedding α
+
+
 end KatetovExtension
 
+open Set TopologicalSpace
+
+instance (α : Type*) [MetricSpace α] [SeparableSpace α] [Countable α] : SeparableSpace E(α, ω) := by
+    rw [KatetovExtension.FinSuppKatetovMaps]
+--  TopologicalSpace.isSeparable_iUnion (by extend finsets) (and finset is bij. R^finset)
+
+
+-- instance [SeparableSpace α] : SeparableSpace E(α, ω) := by
+--     obtain ⟨s, hsc, hds⟩ := TopologicalSpace.exists_countable_dense α
+-- now take E(s, ω), and for f : E(α, ω), get ε sup-approx in s of βᶠ, and extend to E(α, ω). this is ε close
 
 
 
 
--- /-- The type of finitely supported Katetov maps from `α` -/
--- structure FinsuppKatetovMap (α : Type*) [MetricSpace α] extends KatetovMap α, Finsupp α ℝ
+  -- choose φ h using exists_isometric_embedding₂ α
+  -- obtain ⟨s, hsc, hds⟩ := TopologicalSpace.exists_countable_dense α
+  -- refine ⟨φ '' s, ?_⟩
+  -- constructor
+  -- · refine Countable.image hsc φ
+  -- · intro x
+  --   apply Metric.mem_closure_iff.mpr
+  --   intro ε εpos
+  --   obtain ⟨f, β, hβ, hβfin, ρ, hρ, g, heq⟩ := x
+  --   have : ∀ z : β, ∃ y ∈ s, dist (ρ z) y < ε := by
+  --     intro z
+  --     choose y hy using Metric.dense_iff.mp hds (ρ z) ε εpos
+  --     obtain ⟨hzy, hys⟩ := hy
+  --     refine ⟨y, hys, ?_⟩
+  --     exact Metric.mem_ball'.mp hzy
+  --   choose j hj using this
+  --   have j' : β → s := fun x ↦ ⟨j x, (hj x).1⟩
+  --   set supp := {j' f | f : β} with supp_def
+  --   have : Fintype supp := by
+  --     have : Finite supp := by sorry
+  --     exact Set.Finite.fintype this
+  --   set ρ₁ : supp → α := fun x ↦ x with p₁_def
+  --   have hρ₁ : Isometry ρ₁ := by
+  --     exact_mod_cast isometry_id
+  --   set g' : E(supp) := restrict₂ ρ₁ hρ₁ f with g'_def
+  --   set f' : E(α, ω) := by
+  --     refine ⟨katetovExtension₂ ρ₁ hρ₁ g', ?_⟩
+  --     constructor
+  --     -- aesop
+  --     sorry
+  --   refine ⟨f', ?_⟩
+  --   constructor
+  --   · simp
+
+  --   · sorry
 
 
 
 
--- -- example (F : Type*) (α : Type*) [MetricSpace α] [FunLike F α  ℝ] [FinsuppKatetovMapClass F α] :
--- --   (FinsuppKatetovMapClass.toKatetovMapClass) = FinsuppKatetovMapClass.toFinsupp := rfl
 
--- namespace FinsuppKatetovMap
 
--- variable {α : Type*} [MetricSpace α]
 
--- instance funLike : FunLike E(α, ω) α ℝ where
---   coe := FinsuppKatetovMap.toFun
---   coe_injective' f g h := by cases f; cases g; congr
 
+
+-- noncomputable def KatetovSeq (α : Type u) [MetricSpace α]: ℕ → Type u  := fun n ↦
+--   match n with
+--   | 0 => α
+--   | n + 1 => α
+-- theorem eq_zero : KatetovSeq α 0 = α := by rfl
+
+-- theorem eq_succ (n : ℕ) : KatetovSeq α (n+1) = α := by rfl
+
+-- theorem h {α : Type} [MetricSpace α]: ∀ n : ℕ, MetricSpace (KatetovSeq α n) := by
+--   intro n
+--   induction' n with n ih
+--   · rw [eq_zero]
+--     infer_instance
+--   · rw [eq_succ]
+
+
+
+-- structure FinSuppKatetovMap (α : Type) (β : Type) [MetricSpace α]
+--     [MetricSpace β] extends KatetovMap α where
+--   map_bounded' : ∃ C, ∀ x y, dist (toFun x) (toFun y) ≤ C
+
+-- -- mathport name: bounded_continuous_function
+-- scoped[BoundedContinuousFunction] infixr:25 " →ᵇ " => BoundedContinuousFunction
+
+-- section
+
+-- -- Porting note: Changed type of `α β` from `Type` to `outParam <| Type`.
+-- /-- `BoundedContinuousMapClass F α β` states that `F` is a type of bounded continuous maps.
+
+-- You should also extend this typeclass when you extend `BoundedContinuousFunction`. -/
+-- class BoundedContinuousMapClass (F : Type) (α β : outParam <| Type) [TopologicalSpace α]
+--     [PseudoMetricSpace β] [FunLike F α β] extends ContinuousMapClass F α β : Prop where
+--   map_bounded (f : F) : ∃ C, ∀ x y, dist (f x) (f y) ≤ C
+-- #align bounded_continuous_map_class BoundedContinuousMapClass
+
+-- end
+
+-- export BoundedContinuousMapClass (map_bounded)
+
+-- namespace BoundedContinuousFunction
+
+-- section Basics
+
+-- variable [TopologicalSpace α] [PseudoMetricSpace β] [PseudoMetricSpace γ]
+
+-- variable {f g : α →ᵇ β} {x : α} {C : ℝ}
+
+-- instance : FunLike (α →ᵇ β) α β where
+--   coe f := f.toFun
+--   coe_injective' f g h := by
+--     obtain ⟨⟨_, _⟩, _⟩ := f
+--     obtain ⟨⟨_, _⟩, _⟩ := g
+--     congr
+
+-- instance : BoundedContinuousMapClass (α →ᵇ β) α β where
+--   map_continuous f := f.continuous_toFun
+--   map_bounded f := f.map_bounded'
+
+-- instance [FunLike F α β] [BoundedContinuousMapClass F α β] : CoeTC F (α →ᵇ β) :=
+--   ⟨fun f =>
+--     { toFun := f
+--       continuous_toFun := map_continuous f
+--       map_bounded' := map_bounded f }⟩
 
 -- @[simp]
--- theorem toFun_eq_coe {f : E(α, ω)} : f.toFun = (f : α → ℝ) := rfl
+-- theorem coe_to_continuous_fun (f : α →ᵇ β) : (f.toContinuousMap : α → β) = f := rfl
+-- #align bounded_continuous_function.coe_to_continuous_fun BoundedContinuousFunction.coe_to_continuous_fun
 
--- instance : CanLift (α → ℝ) E(α) DFunLike.coe IsKatetov := ⟨fun f hf ↦ ⟨⟨f, hf⟩, rfl⟩⟩
+-- /-- See Note [custom simps projection]. We need to specify this projection explicitly in this case,
+--   because it is a composition of multiple projections. -/
+-- def Simps.apply (h : α →ᵇ β) : α → β := h
+-- #align bounded_continuous_function.simps.apply BoundedContinuousFunction.Simps.apply
 
--- /-- See Topology/ContinuousFunction.Basic -/
--- def Simps.apply (f : E(α)) : α → ℝ := f
+-- initialize_simps_projections BoundedContinuousFunction (toContinuousMap_toFun → apply)
 
--- initialize_simps_projections KatetovMap (toFun → apply)
+-- protected theorem bounded (f : α →ᵇ β) : ∃ C, ∀ x y : α, dist (f x) (f y) ≤ C :=
+--   f.map_bounded'
+-- #align bounded_continuous_function.bounded BoundedContinuousFunction.bounded
+
+-- protected theorem continuous (f : α →ᵇ β) : Continuous f :=
+--   f.toContinuousMap.continuous
+-- #align bounded_continuous_function.continuous BoundedContinuousFunction.continuous
 
 -- @[ext]
--- theorem ext {f g : E(α)} (h : ∀ a, f a = g a) : f = g := DFunLike.ext _ _ h
-
--- /-- Copy of a `KatetovMap` with a new `toFun` equal to the old one. Useful to fix definitional
--- equalities. See Topology/ContinuousFunction.Basic -/
--- protected def copy (f : E(α)) (f' : α → ℝ) (h : f' = f) : E(α) where
---   toFun := f'
---   IsKatetovtoFun := h.symm ▸ f.IsKatetovtoFun
-
--- @[simp]
--- theorem coe_copy (f : E(α)) (f' : α → ℝ) (h : f' = f) : ⇑(f.copy f' h) = f' :=
---   rfl
-
--- theorem copy_eq (f : E(α)) (f' : α → ℝ) (h : f' = f) : f.copy f' h = f :=
---   DFunLike.ext' h
-
--- variable {f g : E(α)}
-
--- theorem katetov_set_coe (s : Set E(α)) (f : s) : IsKatetov (f : α → ℝ) :=
---   f.1.IsKatetovtoFun
-
--- theorem coe_injective : @Function.Injective E(α) (α → ℝ) (↑) :=
---   fun f g h ↦ by cases f; cases g; congr
-
--- @[simp]
--- theorem coe_mk (f : α → ℝ) (h : IsKatetov f) : ⇑(⟨f, h⟩ : E(α)) = f :=
---   rfl
-
--- end FinsuppKatetovMap
+-- theorem ext (h : ∀ x, f x = g x) : f = g :=
+--   DFunLike.ext _ _ h
