@@ -314,7 +314,8 @@ lemma prod_range_succ (f : ℕ → M) (n : ℕ) :
 #align finset.sum_range_succ Finset.sum_range_succ
 
 @[to_additive]
-lemma prod_range_succ' (f : ℕ → M) : ∀ n, ∏ k in range (n + 1), f k = (∏ k in range n, f (k + 1)) * f 0
+lemma prod_range_succ' (f : ℕ → M) :
+    ∀ n, ∏ k in range (n + 1), f k = (∏ k in range n, f (k + 1)) * f 0
   | 0 => prod_range_succ _ _
   | n + 1 => by rw [prod_range_succ _ n, mul_right_comm, ← prod_range_succ' _ n, prod_range_succ]
 #align finset.prod_range_succ' Finset.prod_range_succ'
@@ -495,25 +496,3 @@ lemma prod_range_cast_nat_sub (n k : ℕ) :
 end CommRing
 end Nat
 end Finset
-
-open Finset
-
-/-- It is equivalent to compute the product of a function over `Fin n` or `Finset.range n`. -/
-@[to_additive "It is equivalent to sum a function over `fin n` or `finset.range n`."]
-lemma Fin.prod_univ_eq_prod_range [CommMonoid M] (f : ℕ → M) (n : ℕ) :
-    ∏ i : Fin n, f i = ∏ i in range n, f i :=
-  calc
-    ∏ i : Fin n, f i = ∏ i : { x // x ∈ range n }, f i :=
-      Fintype.prod_equiv (Fin.equivSubtype.trans (Equiv.subtypeEquivRight (by simp))) _ _ (by simp)
-    _ = ∏ i in range n, f i := by rw [← attach_eq_univ, prod_attach]
-#align fin.prod_univ_eq_prod_range Fin.prod_univ_eq_prod_range
-#align fin.sum_univ_eq_sum_range Fin.sum_univ_eq_sum_range
-
-@[to_additive]
-lemma Finset.prod_fin_eq_prod_range [CommMonoid M] {n : ℕ} (f : Fin n → M) :
-    ∏ i, f i = ∏ i in range n, if h : i < n then f ⟨i, h⟩ else 1 := by
-  rw [← Fin.prod_univ_eq_prod_range, Finset.prod_congr rfl]
-  rintro ⟨i, hi⟩ _
-  simp only [hi, dif_pos]
-#align finset.prod_fin_eq_prod_range Finset.prod_fin_eq_prod_range
-#align finset.sum_fin_eq_sum_range Finset.sum_fin_eq_sum_range
