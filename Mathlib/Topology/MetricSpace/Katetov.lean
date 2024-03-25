@@ -497,49 +497,7 @@ theorem exists_isometric_embedding_of_subset (α β : Type) [MetricSpace α][Met
       simp
       exact empty_unique f g
 
-
-def FinSuppKatetovMaps : Set E(α) :=
-  {φ : E(α) | ∃ (β : Type) (hβ : MetricSpace β) (hf : Fintype β) (ρ : β → α) (hρ : Isometry ρ) (ψ : E(β)), φ = extend ρ hρ ψ}
-
-def bar : Set E(α) := ⋃ s : Finset α, Set.range (extend (fun (x : s) ↦ x) (isometry_id))
-
-theorem eq_union (α : Type*) [MetricSpace α] : @FinSuppKatetovMaps α _ = @bar α _ := by
-  ext f
-  constructor
-  · intro hf
-    simp [bar]
-    obtain ⟨β, hβ, hβfin, ρ, hρ, φ, hφ⟩ := hf
-    set s := Finset.map ⟨ρ, hρ.injective⟩ hβfin.elems with s_def
-    refine ⟨s, ?_⟩
-    rw [hφ]
-    set φ₁ : E(s) := by
-      refine ⟨fun x ↦ ?_, ?_⟩
-      · obtain ⟨x, hx⟩ := x
-        rw [s_def] at hx
-        simp at hx
-        choose y hy using hx
-        exact (φ y)
-      · simp
-        constructor <;> intro x y
-        obtain ⟨x, hx⟩ := x
-        rw [s_def] at hx
-        simp at hx
-        choose x hx using hx
-        simp_rw [← hx.2]
-        obtain ⟨y, hy⟩ := y
-        rw [s_def] at hy
-        simp at hy
-        choose y hy using hy
-        simp_rw [← hy.2]
-        simp_rw [dist_eq]
-
-
-
-
-  · intro hf
-    sorry
-
-
+def FinSuppKatetovMaps : Set E(α) := ⋃ s : Finset α, Set.range (extend (fun (x : s) ↦ x) (isometry_id))
 
 /-- The type of Katetov maps from `α`. -/
 notation "E(" α ", ω)" => @FinSuppKatetovMaps α _
@@ -547,20 +505,25 @@ notation "E(" α ", ω)" => @FinSuppKatetovMaps α _
 
 noncomputable instance : MetricSpace E(α, ω) := by infer_instance
 
+theorem distance_isKatetov {α : Type*} [MetricSpace α] (x : α) : IsKatetov (fun y ↦ dist x y) := by
+  constructor <;> (intro y z; rw [dist_comm x y])
+  · rw [dist_comm x z]; exact abs_dist_sub_le y z x
+  · exact dist_triangle y x z
+
 theorem exists_isometric_embedding (α : Type) [MetricSpace α] : ∃ f : α → E(α, ω), Isometry f := by
     by_cases h : Nonempty α
     · refine ⟨fun x : α ↦ ⟨⟨fun y ↦ dist x y, ?_⟩, ?_⟩, ?_⟩
       · constructor <;> (intro y z; rw [dist_comm x y])
         · rw [dist_comm x z]; exact abs_dist_sub_le y z x
         · exact dist_triangle y x z
-      · refine ⟨({x} : Set α), ?_⟩
-        refine ⟨by infer_instance, Set.fintypeSingleton x, by exact fun _ ↦ x, by exact
-          isometry_subsingleton,
-        ⟨fun _ ↦ 0, ?_⟩, ?_⟩
-        · constructor <;> intro z y
-          · simp; exact dist_nonneg
-          · aesop
-        · ext y
+      · apply Set.mem_iUnion.mpr
+        refine ⟨{x}, ?_⟩
+        apply Set.mem_range.mpr
+        refine ⟨⟨fun y ↦ dist x y, ?_⟩, ?_⟩
+        · constructor <;> (intro y z; rw [dist_comm x y])
+          · rw [dist_comm x z]; exact abs_dist_sub_le (y : α) (z : α) x
+          · exact dist_triangle (y : α) x z
+        · ext z
           simp [extend, dist_comm]
       · refine Isometry.of_dist_eq (fun x y ↦ le_antisymm ?_ ?_)
         · refine Real.sSup_le ?_ dist_nonneg
@@ -591,6 +554,7 @@ open Set TopologicalSpace
 
 instance (α : Type*) [MetricSpace α] [SeparableSpace α] [Countable α] : SeparableSpace E(α, ω) := by
     rw [KatetovExtension.FinSuppKatetovMaps]
+
 --  TopologicalSpace.isSeparable_iUnion (by extend finsets) (and finset is bij. R^finset)
 
 
