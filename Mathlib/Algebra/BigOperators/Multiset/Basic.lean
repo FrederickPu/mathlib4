@@ -204,12 +204,6 @@ theorem prod_map_mul : (m.map fun i => f i * g i).prod = (m.map f).prod * (m.map
 #align multiset.prod_map_mul Multiset.prod_map_mul
 #align multiset.sum_map_add Multiset.sum_map_add
 
-@[simp]
-theorem prod_map_neg [HasDistribNeg α] (s : Multiset α) :
-    (s.map Neg.neg).prod = (-1) ^ card s * s.prod :=
-  Quotient.inductionOn s (by simp)
-#align multiset.prod_map_neg Multiset.prod_map_neg
-
 @[to_additive]
 theorem prod_map_pow {n : ℕ} : (m.map fun i => f i ^ n).prod = (m.map f).prod ^ n :=
   m.prod_hom' (powMonoidHom n : α →* α) f
@@ -279,30 +273,6 @@ theorem coe_sumAddMonoidHom : (sumAddMonoidHom : Multiset α → α) = sum :=
 #align multiset.coe_sum_add_monoid_hom Multiset.coe_sumAddMonoidHom
 
 end AddCommMonoid
-
-section CommMonoidWithZero
-
-variable [CommMonoidWithZero α]
-
-theorem prod_eq_zero {s : Multiset α} (h : (0 : α) ∈ s) : s.prod = 0 := by
-  rcases Multiset.exists_cons_of_mem h with ⟨s', hs'⟩
-  simp [hs', Multiset.prod_cons]
-#align multiset.prod_eq_zero Multiset.prod_eq_zero
-
-variable [NoZeroDivisors α] [Nontrivial α] {s : Multiset α}
-
-@[simp]
-theorem prod_eq_zero_iff : s.prod = 0 ↔ (0 : α) ∈ s :=
-  Quotient.inductionOn s fun l => by
-    rw [quot_mk_to_coe, prod_coe]
-    exact List.prod_eq_zero_iff
-#align multiset.prod_eq_zero_iff Multiset.prod_eq_zero_iff
-
-theorem prod_ne_zero (h : (0 : α) ∉ s) : s.prod ≠ 0 :=
-  mt prod_eq_zero_iff.1 h
-#align multiset.prod_ne_zero Multiset.prod_ne_zero
-
-end CommMonoidWithZero
 
 section DivisionCommMonoid
 
