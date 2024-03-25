@@ -3,12 +3,10 @@ Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Floris van Doorn, Sébastien Gouëzel, Alex J. Best
 -/
-import Mathlib.Algebra.Group.Units
-import Mathlib.Algebra.GroupWithZero.NeZero
+import Mathlib.Algebra.Group.Commute.Defs
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.List.BigOperators.Defs
 import Mathlib.Data.List.Forall2
-import Mathlib.Order.MinMax
 
 #align_import data.list.big_operators.basic from "leanprover-community/mathlib"@"6c5f73fd6f6cc83122788a80a27cdd54663609f4"
 
@@ -22,6 +20,14 @@ counterparts. These are defined in [`Data.List.BigOperators.Defs`](./Defs).
 
 -- Make sure we haven't imported `Data.Nat.Order.Basic`
 assert_not_exists OrderedSub
+
+-- Make sure we haven't imported `Algebra.Ring.Basic`
+assert_not_exists vieta_formula_quadratic
+-- TODO
+-- assert_not_exists Ring
+
+assert_not_exists NeZero
+
 
 variable {ι α M N P M₀ G R : Type*}
 
@@ -147,39 +153,12 @@ theorem prod_map_mul {α : Type*} [CommMonoid α] {l : List ι} {f g : ι → α
 #align list.prod_map_mul List.prod_map_mul
 #align list.sum_map_add List.sum_map_add
 
-@[simp]
-theorem prod_map_neg {α} [CommMonoid α] [HasDistribNeg α] (l : List α) :
-    (l.map Neg.neg).prod = (-1) ^ l.length * l.prod := by
-  simpa only [id_eq, neg_mul, one_mul, map_const', prod_replicate, map_id]
-    using @prod_map_mul α α _ l (fun _ => -1) id
-#align list.prod_map_neg List.prod_map_neg
-
 @[to_additive]
 theorem prod_map_hom (L : List ι) (f : ι → M) {G : Type*} [FunLike G M N] [MonoidHomClass G M N]
     (g : G) :
     (L.map (g ∘ f)).prod = g (L.map f).prod := by rw [← prod_hom, map_map]
 #align list.prod_map_hom List.prod_map_hom
 #align list.sum_map_hom List.sum_map_hom
-
-@[to_additive]
-theorem prod_isUnit : ∀ {L : List M}, (∀ m ∈ L, IsUnit m) → IsUnit L.prod
-  | [], _ => by simp
-  | h :: t, u => by
-    simp only [List.prod_cons]
-    exact IsUnit.mul (u h (mem_cons_self h t)) (prod_isUnit fun m mt => u m (mem_cons_of_mem h mt))
-#align list.prod_is_unit List.prod_isUnit
-#align list.sum_is_add_unit List.sum_isAddUnit
-
-@[to_additive]
-theorem prod_isUnit_iff {α : Type*} [CommMonoid α] {L : List α} :
-    IsUnit L.prod ↔ ∀ m ∈ L, IsUnit m := by
-  refine' ⟨fun h => _, prod_isUnit⟩
-  induction' L with m L ih
-  · exact fun m' h' => False.elim (not_mem_nil m' h')
-  rw [prod_cons, IsUnit.mul_iff] at h
-  exact fun m' h' => Or.elim (eq_or_mem_of_mem_cons h') (fun H => H.substr h.1) fun H => ih h.2 _ H
-#align list.prod_is_unit_iff List.prod_isUnit_iff
-#align list.sum_is_add_unit_iff List.sum_isAddUnit_iff
 
 @[to_additive (attr := simp)]
 theorem prod_take_mul_prod_drop : ∀ (L : List M) (i : ℕ), (L.take i).prod * (L.drop i).prod = L.prod
@@ -277,38 +256,6 @@ theorem _root_.Commute.list_prod_left (l : List M) (y : M) (h : ∀ x ∈ l, Com
 #align add_commute.list_sum_left AddCommute.list_sum_left
 
 end Monoid
-
-section MonoidWithZero
-
-variable [MonoidWithZero M₀]
-
-/-- If zero is an element of a list `L`, then `List.prod L = 0`. If the domain is a nontrivial
-monoid with zero with no divisors, then this implication becomes an `iff`, see
-`List.prod_eq_zero_iff`. -/
-theorem prod_eq_zero {L : List M₀} (h : (0 : M₀) ∈ L) : L.prod = 0 := by
-  induction' L with a L ihL
-  · exact absurd h (not_mem_nil _)
-  · rw [prod_cons]
-    cases' mem_cons.1 h with ha hL
-    exacts [mul_eq_zero_of_left ha.symm _, mul_eq_zero_of_right _ (ihL hL)]
-#align list.prod_eq_zero List.prod_eq_zero
-
-/-- Product of elements of a list `L` equals zero if and only if `0 ∈ L`. See also
-`List.prod_eq_zero` for an implication that needs weaker typeclass assumptions. -/
-@[simp]
-theorem prod_eq_zero_iff [Nontrivial M₀] [NoZeroDivisors M₀] {L : List M₀} :
-    L.prod = 0 ↔ (0 : M₀) ∈ L := by
-  induction' L with a L ihL
-  · simp only [prod_nil, one_ne_zero, not_mem_nil]
-  · rw [prod_cons, mul_eq_zero, ihL, mem_cons, eq_comm]
-#align list.prod_eq_zero_iff List.prod_eq_zero_iff
-
-theorem prod_ne_zero [Nontrivial M₀] [NoZeroDivisors M₀] {L : List M₀} (hL : (0 : M₀) ∉ L) :
-    L.prod ≠ 0 :=
-  mt prod_eq_zero_iff.1 hL
-#align list.prod_ne_zero List.prod_ne_zero
-
-end MonoidWithZero
 
 section Group
 
@@ -410,15 +357,6 @@ theorem exists_mem_ne_one_of_prod_ne_one [Monoid M] {l : List M} (h : l.prod ≠
     ∃ x ∈ l, x ≠ (1 : M) := by simpa only [not_forall, exists_prop] using mt prod_eq_one h
 #align list.exists_mem_ne_one_of_prod_ne_one List.exists_mem_ne_one_of_prod_ne_one
 #align list.exists_mem_ne_zero_of_sum_ne_zero List.exists_mem_ne_zero_of_sum_ne_zero
-
--- TODO: develop theory of tropical rings
-theorem sum_le_foldr_max [AddMonoid M] [AddMonoid N] [LinearOrder N] (f : M → N) (h0 : f 0 ≤ 0)
-    (hadd : ∀ x y, f (x + y) ≤ max (f x) (f y)) (l : List M) : f l.sum ≤ (l.map f).foldr max 0 := by
-  induction' l with hd tl IH
-  · simpa using h0
-  simp only [List.sum_cons, List.foldr_map, List.foldr] at IH ⊢
-  exact (hadd _ _).trans (max_le_max le_rfl IH)
-#align list.sum_le_foldr_max List.sum_le_foldr_max
 
 @[to_additive]
 theorem prod_erase_of_comm [DecidableEq M] [Monoid M] {a} {l : List M} (ha : a ∈ l)

@@ -3,6 +3,7 @@ Copyright (c) 2024 Yakov Pechersky. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yakov Pechersky
 -/
+import Mathlib.Algebra.Order.Monoid.OrderDual
 import Mathlib.Algebra.Order.Ring.Canonical
 import Mathlib.Data.List.BigOperators.Basic
 
@@ -13,7 +14,6 @@ import Mathlib.Data.List.BigOperators.Basic
 variable {ι α M N P M₀ G R : Type*}
 
 namespace List
-
 section Monoid
 variable [Monoid M]
 
@@ -98,6 +98,14 @@ theorem prod_le_pow_card [Preorder M] [CovariantClass M M (Function.swap (· * �
 #align list.prod_le_pow_card List.prod_le_pow_card
 #align list.sum_le_card_nsmul List.sum_le_card_nsmul
 
+@[to_additive card_nsmul_le_sum]
+theorem pow_card_le_prod [Monoid M] [Preorder M]
+    [CovariantClass M M (Function.swap (· * ·)) (· ≤ ·)] [CovariantClass M M (· * ·) (· ≤ ·)]
+    (l : List M) (n : M) (h : ∀ x ∈ l, n ≤ x) : n ^ l.length ≤ l.prod :=
+  @prod_le_pow_card Mᵒᵈ _ _ _ _ l n h
+#align list.pow_card_le_prod List.pow_card_le_prod
+#align list.card_nsmul_le_sum List.card_nsmul_le_sum
+
 @[to_additive exists_lt_of_sum_lt]
 theorem exists_lt_of_prod_lt' [LinearOrder M] [CovariantClass M M (Function.swap (· * ·)) (· ≤ ·)]
     [CovariantClass M M (· * ·) (· ≤ ·)] {l : List ι} (f g : ι → M)
@@ -130,6 +138,15 @@ theorem one_le_prod_of_one_le [Preorder M] [CovariantClass M M (· * ·) (· ≤
 #align list.sum_nonneg List.sum_nonneg
 
 end Monoid
+
+-- TODO: develop theory of tropical rings
+theorem sum_le_foldr_max [AddMonoid M] [AddMonoid N] [LinearOrder N] (f : M → N) (h0 : f 0 ≤ 0)
+    (hadd : ∀ x y, f (x + y) ≤ max (f x) (f y)) (l : List M) : f l.sum ≤ (l.map f).foldr max 0 := by
+  induction' l with hd tl IH
+  · simpa using h0
+  simp only [List.sum_cons, List.foldr_map, List.foldr] at IH ⊢
+  exact (hadd _ _).trans (max_le_max le_rfl IH)
+#align list.sum_le_foldr_max List.sum_le_foldr_max
 
 @[to_additive]
 theorem monotone_prod_take [CanonicallyOrderedCommMonoid M] (L : List M) :
