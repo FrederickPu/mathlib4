@@ -512,3 +512,9 @@ lemma prod_range_cast_nat_sub (n k : ℕ) :
 end CommRing
 end Nat
 end Finset
+
+lemma Multiset.sup_powersetCard {α : Type*} [DecidableEq α] (x : Multiset α) :
+    (Finset.range (card x + 1)).sup x.powersetCard = x.powerset := by
+  convert bind_powerset_len x using 1
+  rw [Multiset.bind, Multiset.join, ← Finset.range_val, ← Finset.sum_eq_multiset_sum, eq_comm]
+  exact finset_sum_eq_sup_iff_disjoint.mpr fun _ _ _ _ h ↦ pairwise_disjoint_powersetCard x h#align multiset.sup_powerset_len Multiset.sup_powersetCard

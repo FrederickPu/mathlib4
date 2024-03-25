@@ -249,19 +249,7 @@ theorem powerset_card_biUnion [DecidableEq (Finset α)] (s : Finset α) :
 
 end Finset
 
-namespace Multiset
-
-@[simp] lemma toFinset_range (n : ℕ) : toFinset (range n) = Finset.range n := by ext; simp
-
-theorem sup_powerset_len {α : Type*} [DecidableEq α] (x : Multiset α) :
-    (Finset.sup (Finset.range (card x + 1)) fun k => x.powersetCard k) = x.powerset := by
-  convert bind_powerset_len x using 1
-  rw [Multiset.bind, Multiset.join, ← Finset.range_val, ← Finset.sum_eq_multiset_sum]
-  exact
-    Eq.symm (finset_sum_eq_sup_iff_disjoint.mpr fun _ _ _ _ h => pairwise_disjoint_powersetCard x h)
-#align multiset.sup_powerset_len Multiset.sup_powerset_len
-
-end Multiset
+@[simp] lemma Multiset.toFinset_range (n : ℕ) : toFinset (range n) = Finset.range n := by ext; simp
 
 @[simp] lemma List.toFinset_range (n : ℕ) : (range n).toFinset = Finset.range n := by ext; simp
 
