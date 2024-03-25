@@ -31,7 +31,6 @@ the Kuratowski embedding.
 * [melleray_urysohn_2008]
 -/
 
--- universe u
 variable {α : Type*} [MetricSpace α]
 
 /-- A real valued function from a metric space is Katetov if it satisfies
@@ -43,10 +42,7 @@ structure IsKatetov (f : α → ℝ) : Prop where
   /-- `f` obeys the Katetov "triangle inequality"  -/
   dist_le_add : ∀ x y, dist x y ≤ f x + f y
 
-/-- The type of Katetov maps from `α`.
-    We are essentially stating that given a type α with a metric structure,
-    We can make a new types whose "elements" are functions α → ℝ that satisfy
-    the Katetov conditions.
+/-- The type of Katetov maps from `α`
 -/
 structure KatetovMap (α : Type*) [MetricSpace α] where
   /-- The function `α → ℝ` -/
@@ -265,6 +261,7 @@ def instKatetovMapOfEmpty (α : Type*) [MetricSpace α] [IsEmpty α] : E(α) := 
 theorem empty_unique [IsEmpty α] (f g : E(α)) : f = g := by
   ext x; exact (IsEmpty.false x).elim
 
+-- to change to have dis
 theorem exists_isometric_embedding (α : Type*) [MetricSpace α] : ∃ f : α → E(α), Isometry f := by
     by_cases h : Nonempty α
     · refine ⟨fun x : α ↦ ⟨fun y ↦ dist x y, ?_⟩, ?_⟩
@@ -634,24 +631,28 @@ open Set TopologicalSpace
 
 #check TopologicalSpace.instSeparableSpaceForAllTopologicalSpace
 
-instance (α : Type*) [MetricSpace α] (hα : Fintype α) : SeparableSpace (α → ℝ):= by
+set_option trace.Meta.synthInstance true
+instance : TopologicalSpace (α → ℝ) := by infer_instance
+
+
+instance inst_silly (α : Type*) [MetricSpace α] (hα : Fintype α)  : SeparableSpace (α → ℝ):= by
   apply TopologicalSpace.instSeparableSpaceForAllTopologicalSpace
 
-instance (α : Type*) [MetricSpace α] (hα : Fintype α) : SeparableSpace E(α):= by
+instance sep_inst {α : Type*} [MetricSpace α] (hα : Fintype α) : SeparableSpace E(α):= by
   sorry
 
-instance (α : Type*) [MetricSpace α] (s : Finset α) :
-  SeparableSpace (@range E(α) E(s) (KatetovExtension.extend (fun x ↦ ↑x) isometry_id)) := by
+instance sep_range (α : Type*) [MetricSpace α] (s : Finset α) :
+  IsSeparable (@range E(α) E(s) (KatetovExtension.extend (fun x ↦ ↑x) isometry_id)) := by
+  have : SeparableSpace E(s) := by exact sep_inst (by infer_instance)
+  apply TopologicalSpace.isSeparable_range
   sorry
-  -- extend is isometry see above
+
 
 instance (α : Type*) [MetricSpace α] [Countable α] : SeparableSpace E(α, ω) := by
     rw [KatetovExtension.FinSuppKatetovMaps]
     have := Set.countable_setOf_finite_subset (@Set.countable_univ α _)
-    simp at this
     apply TopologicalSpace.IsSeparable.separableSpace
-    -- apply_mod_cast (@TopologicalSpace.IsSeparable.iUnion α _ _ this)
-    sorry
+    apply TopologicalSpace.IsSeparable.iUnion (fun i ↦ @sep_range α _ i)
 
 -- instance [SeparableSpace α] : SeparableSpace E(α, ω) := by
 --     obtain ⟨s, hsc, hds⟩ := TopologicalSpace.exists_countable_dense α
