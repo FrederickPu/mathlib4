@@ -14,6 +14,8 @@ The operations here ignore multiplicities,
 and preparatory for defining the corresponding operations on `Finset`.
 -/
 
+-- Make sure we haven't imported `Data.Nat.Order.Basic`
+assert_not_exists NeZero.one_le
 
 namespace Multiset
 

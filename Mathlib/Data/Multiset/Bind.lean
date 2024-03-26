@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mario Carneiro
 -/
 import Mathlib.Algebra.BigOperators.Multiset.Basic
-import Mathlib.Data.Nat.Order.Basic
 import Mathlib.GroupTheory.GroupAction.Defs
 
 #align_import data.multiset.bind from "leanprover-community/mathlib"@"f694c7dead66f5d4c80f446c796a5aad14707f0e"
@@ -21,6 +20,9 @@ This file defines a few basic operations on `Multiset`, notably the monadic bind
 * `Multiset.product`: Cartesian product of two multisets.
 * `Multiset.sigma`: Disjoint sum of multisets in a sigma type.
 -/
+
+-- Make sure we haven't imported `Data.Nat.Order.Basic`
+assert_not_exists NeZero.one_le
 
 universe v
 
@@ -212,12 +214,10 @@ theorem count_bind [DecidableEq α] {m : Multiset β} {f : β → Multiset α} {
 theorem le_bind {α β : Type*} {f : α → Multiset β} (S : Multiset α) {x : α} (hx : x ∈ S) :
     f x ≤ S.bind f := by
   classical
-    rw [le_iff_count]
-    intro a
-    rw [count_bind]
-    apply le_sum_of_mem
-    rw [mem_map]
-    exact ⟨x, hx, rfl⟩
+  refine le_iff_count.2 fun a ↦ ?_
+  obtain ⟨m', hm'⟩ := exists_cons_of_mem $ mem_map_of_mem (fun b ↦ count a (f b)) hx
+  rw [count_bind, hm', sum_cons]
+  exact Nat.le_add_right _ _
 #align multiset.le_bind Multiset.le_bind
 
 -- Porting note (#11119): @[simp] removed because not in normal form

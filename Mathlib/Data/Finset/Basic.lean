@@ -133,6 +133,9 @@ finite sets, finset
 assert_not_exists List.sublistsLen
 assert_not_exists Multiset.powerset
 
+-- Make sure we haven't imported `Data.Nat.Order.Basic`
+assert_not_exists NeZero.one_le
+
 open Multiset Subtype Nat Function
 
 universe u
@@ -2952,9 +2955,9 @@ def notMemRangeEquiv (k : ℕ) : { n // n ∉ range k } ≃ ℕ where
   invFun j := ⟨j + k, by simp⟩
   left_inv j := by
     rw [Subtype.ext_iff_val]
-    apply tsub_add_cancel_of_le
+    apply Nat.sub_add_cancel
     simpa using j.2
-  right_inv j := add_tsub_cancel_right _ _
+  right_inv j := Nat.add_sub_cancel_right _ _
 #align not_mem_range_equiv notMemRangeEquiv
 
 @[simp]

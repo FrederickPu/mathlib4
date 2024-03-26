@@ -15,6 +15,8 @@ import Mathlib.Init.Classical
 # The `Nodup` predicate for multisets without duplicate elements.
 -/
 
+-- Make sure we haven't imported `Data.Nat.Order.Basic`
+assert_not_exists NeZero.one_le
 
 namespace Multiset
 
@@ -262,7 +264,7 @@ theorem mem_sub_of_nodup [DecidableEq α] {a : α} {s t : Multiset α} (d : Nodu
   ⟨fun h =>
     ⟨mem_of_le tsub_le_self h, fun h' => by
       refine' count_eq_zero.1 _ h
-      rw [count_sub a s t, tsub_eq_zero_iff_le]
+      rw [count_sub a s t, Nat.sub_eq_zero_iff_le]
       exact le_trans (nodup_iff_count_le_one.1 d _) (count_pos.2 h')⟩,
     fun ⟨h₁, h₂⟩ => Or.resolve_right (mem_add.1 <| mem_of_le le_tsub_add h₁) h₂⟩
 #align multiset.mem_sub_of_nodup Multiset.mem_sub_of_nodup
