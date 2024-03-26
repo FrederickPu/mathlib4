@@ -358,7 +358,8 @@ theorem chain'_iff_get {R} : ∀ {l : List α}, Chain' R l ↔
     rw [← and_forall_succ, chain'_cons, chain'_iff_get]
     simp only [length_cons, get_cons_succ, Fin.zero_eta, get_cons_zero, zero_add, Fin.mk_one,
       get_cons_cons_one, succ_sub_succ_eq_sub, Nat.le_zero, add_eq_zero_iff, and_false,
-      Nat.sub_zero, Nat.add_pos_iff_pos_or_pos, Nat.zero_lt_one, or_true, forall_true_left, and_congr_right_iff]
+      Nat.sub_zero, Nat.add_pos_iff_pos_or_pos, Nat.zero_lt_one, or_true, forall_true_left,
+      and_congr_right_iff]
     dsimp [succ_sub_one]
     exact fun _ => ⟨fun h i hi => h i (Nat.lt_of_succ_lt_succ hi),
                     fun h i hi => h i (Nat.succ_lt_succ hi)⟩
