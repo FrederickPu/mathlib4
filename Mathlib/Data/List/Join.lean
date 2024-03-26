@@ -159,6 +159,9 @@ theorem sum_take_map_length_lt1 (L : List (List α)) {i j : ℕ} (hi : i < L.len
   simp [hi, sum_take_succ, hj]
 #align list.sum_take_map_length_lt1 List.sum_take_map_length_lt1
 
+#noalign list.sum_take_map_length_lt2
+#noalign list.nth_le_join
+
 /-- Two lists of sublists are equal iff their joins coincide, as well as the lengths of the
 sublists. -/
 theorem eq_iff_join_eq (L L' : List (List α)) :
