@@ -227,6 +227,8 @@ theorem attach_bind_coe (s : Multiset α) (f : α → Multiset β) :
   congr_arg join <| attach_map_val' _ _
 #align multiset.attach_bind_coe Multiset.attach_bind_coe
 
+variable {f s t}
+
 @[simp] lemma nodup_bind :
     Nodup (bind s f) ↔ (∀ a ∈ s, Nodup (f a)) ∧ s.Pairwise fun a b => Disjoint (f a) (f b) := by
   have : ∀ a, ∃ l : List β, f a = l := fun a => Quot.induction_on (f a) fun l => ⟨l, rfl⟩
