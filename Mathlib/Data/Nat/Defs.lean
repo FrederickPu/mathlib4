@@ -25,10 +25,21 @@ This file contains:
   * `strong_rec'`: recursion based on strong inequalities
 * decidability instances on predicates about the natural numbers
 
-Many theorems that used to live in this file have been moved to `Data.Nat.Order`, so that
-this file requires fewer imports. For each section here there is a corresponding section in
-that file with additional results. It may be possible to move some of these results here,
-by tweaking their proofs.
+## Implementation note
+
+Std has a home-baked development of the algebraic and order theoretic theory of `ℕ` which, in
+particular, is not typeclass-mediated. This is useful to set up the algebra and finiteness libraries
+in mathlib (naturals show up as indices in lists, cardinality in finsets, powers in groups, ...).
+This home-baked development is pursued in this file.
+
+Less basic uses of `ℕ` should however use the typeclass-mediated development. `Data.Nat.Basic` gives
+access to the algebraic instances. `Data.Nat.Order.Basic` is the one giving access to the algebraic
+order instances.
+
+## TODO
+
+The names of this file, `Data.Nat.Basic` and `Data.Nat.Order.Basic` are archaic and don't match up
+with reality anymore. Rename them.
 -/
 
 open Function
@@ -645,6 +656,9 @@ protected lemma pow_lt_pow_left (h : a < b) : ∀ {n : ℕ}, n ≠ 0 → a ^ n <
   | n + 2, _ => Nat.mul_lt_mul_of_lt_of_le (Nat.pow_lt_pow_left h n.succ_ne_zero) (Nat.le_of_lt h)
     (zero_lt_of_lt h)
 #align nat.pow_lt_pow_of_lt_left Nat.pow_lt_pow_left
+
+protected lemma pow_lt_pow_right (ha : 1 < a) (h : m < n) : a ^ m < a ^ n :=
+  (Nat.pow_lt_pow_iff_right ha).2 h
 
 protected lemma pow_le_pow_iff_left {n : ℕ} (hn : n ≠ 0) : a ^ n ≤ b ^ n ↔ a ≤ b where
   mp := by simpa only [← Nat.not_le, not_imp_not] using (Nat.pow_lt_pow_left · hn)

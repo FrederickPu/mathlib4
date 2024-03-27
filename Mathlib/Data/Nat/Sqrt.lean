@@ -83,7 +83,7 @@ theorem sqrt_le_add (n : ℕ) : n ≤ sqrt n * sqrt n + sqrt n + sqrt n := by
 
 theorem le_sqrt {m n : ℕ} : m ≤ sqrt n ↔ m * m ≤ n :=
   ⟨fun h => le_trans (mul_self_le_mul_self h) (sqrt_le n),
-   fun h => le_of_lt_succ <| mul_self_lt_mul_self_iff.1 <| lt_of_le_of_lt h (lt_succ_sqrt n)⟩
+    fun h => le_of_lt_succ <| Nat.mul_self_lt_mul_self_iff.1 <| lt_of_le_of_lt h (lt_succ_sqrt n)⟩
 #align nat.le_sqrt Nat.le_sqrt
 
 theorem le_sqrt' {m n : ℕ} : m ≤ sqrt n ↔ m ^ 2 ≤ n := by simpa only [pow_two] using le_sqrt

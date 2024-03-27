@@ -5,22 +5,30 @@ Authors: Floris van Doorn, Leonardo de Moura, Jeremy Avigad, Mario Carneiro
 -/
 import Mathlib.Algebra.Order.Ring.Canonical
 import Mathlib.Data.Nat.Basic
-import Mathlib.Init.Data.Nat.Bitwise
 
 #align_import data.nat.order.basic from "leanprover-community/mathlib"@"3ed3f98a1e836241990d3d308f1577e434977130"
 
-
 /-!
-# The natural numbers as a linearly ordered commutative semiring
+# Algebraic order instances for the natural numbers
 
-We also have a variety of lemmas which have been deferred from `Data.Nat.Basic` because it is
-easier to prove them with this ordered semiring instance available.
+This file contains algebraic order instances on the natural numbers and a few lemmas about them.
 
-### TODO
+## Implementation note
 
-Move most of the theorems to `Data.Nat.Defs` by modifying their proofs.
+Std has a home-baked development of the algebraic and order theoretic theory of `ℕ` which, in
+particular, is not typeclass-mediated. This is useful to set up the algebra and finiteness libraries
+in mathlib (naturals show up as indices in lists, cardinality in finsets, powers in groups, ...).
+This home-baked development is pursued in `Data.Nat.Defs`.
+
+Less basic uses of `ℕ` should however use the typeclass-mediated development. `Data.Nat.Basic` gives
+access to the algebraic instances. The current file is the one giving access to the algebraic
+order instances.
+
+## TODO
+
+The names of this file, `Data.Nat.Defs` and `Data.Nat.Basic` are archaic and don't match up with
+reality anymore. Rename them.
 -/
-
 
 universe u v
 
@@ -79,17 +87,6 @@ instance canonicallyOrderedCommSemiring : CanonicallyOrderedCommSemiring ℕ :=
 instance canonicallyLinearOrderedAddCommMonoid : CanonicallyLinearOrderedAddCommMonoid ℕ :=
   { (inferInstance : CanonicallyOrderedAddCommMonoid ℕ), Nat.linearOrder with }
 
-variable {m n k l : ℕ}
-
-/-! ### Equalities and inequalities involving zero and one -/
-
-theorem _root_.NeZero.one_le [NeZero n] : 1 ≤ n := one_le_iff_ne_zero.mpr (NeZero.ne n)
-
-/-! ### `sub`
-
-Most lemmas come from the `OrderedSub` instance on `ℕ`. -/
-
-
 instance : OrderedSub ℕ := by
   constructor
   intro m n k
@@ -97,100 +94,6 @@ instance : OrderedSub ℕ := by
   · simp
   · simp only [sub_succ, pred_le_iff, ih, succ_add, add_succ]
 
-/-! ### `bit0` and `bit1` -/
-section Bit
-
-set_option linter.deprecated false
-
-protected theorem bit0_le {n m : ℕ} (h : n ≤ m) : bit0 n ≤ bit0 m :=
-  add_le_add h h
-#align nat.bit0_le Nat.bit0_le
-
-protected theorem bit1_le {n m : ℕ} (h : n ≤ m) : bit1 n ≤ bit1 m :=
-  succ_le_succ (add_le_add h h)
-#align nat.bit1_le Nat.bit1_le
-
-theorem bit_le : ∀ (b : Bool) {m n : ℕ}, m ≤ n → bit b m ≤ bit b n
-  | true, _, _, h => Nat.bit1_le h
-  | false, _, _, h => Nat.bit0_le h
-#align nat.bit_le Nat.bit_le
-
-theorem bit0_le_bit : ∀ (b) {m n : ℕ}, m ≤ n → bit0 m ≤ bit b n
-  | true, _, _, h => le_of_lt <| Nat.bit0_lt_bit1 h
-  | false, _, _, h => Nat.bit0_le h
-#align nat.bit0_le_bit Nat.bit0_le_bit
-
-theorem bit_le_bit1 : ∀ (b) {m n : ℕ}, m ≤ n → bit b m ≤ bit1 n
-  | false, _, _, h => le_of_lt <| Nat.bit0_lt_bit1 h
-  | true, _, _, h => Nat.bit1_le h
-#align nat.bit_le_bit1 Nat.bit_le_bit1
-
-theorem bit_lt_bit0 : ∀ (b) {m n : ℕ}, m < n → bit b m < bit0 n
-  | true, _, _, h => Nat.bit1_lt_bit0 h
-  | false, _, _, h => Nat.bit0_lt h
-#align nat.bit_lt_bit0 Nat.bit_lt_bit0
-
-theorem bit_lt_bit (a b) (h : m < n) : bit a m < bit b n :=
-  lt_of_lt_of_le (bit_lt_bit0 _ h) (bit0_le_bit _ le_rfl)
-#align nat.bit_lt_bit Nat.bit_lt_bit
-
-@[simp]
-theorem bit0_le_bit1_iff : bit0 m ≤ bit1 n ↔ m ≤ n :=
-  ⟨fun h => by
-    rwa [← Nat.lt_succ_iff, n.bit1_eq_succ_bit0,
-    ← n.bit0_succ_eq, bit0_lt_bit0, Nat.lt_succ_iff] at h,
-    fun h => le_of_lt (Nat.bit0_lt_bit1 h)⟩
-#align nat.bit0_le_bit1_iff Nat.bit0_le_bit1_iff
-
-@[simp]
-theorem bit0_lt_bit1_iff : bit0 m < bit1 n ↔ m ≤ n :=
-  ⟨fun h => bit0_le_bit1_iff.1 (le_of_lt h), Nat.bit0_lt_bit1⟩
-#align nat.bit0_lt_bit1_iff Nat.bit0_lt_bit1_iff
-
-@[simp]
-theorem bit1_le_bit0_iff : bit1 m ≤ bit0 n ↔ m < n :=
-  ⟨fun h => by rwa [m.bit1_eq_succ_bit0, succ_le_iff, bit0_lt_bit0] at h, fun h =>
-    le_of_lt (Nat.bit1_lt_bit0 h)⟩
-#align nat.bit1_le_bit0_iff Nat.bit1_le_bit0_iff
-
-@[simp]
-theorem bit1_lt_bit0_iff : bit1 m < bit0 n ↔ m < n :=
-  ⟨fun h => bit1_le_bit0_iff.1 (le_of_lt h), Nat.bit1_lt_bit0⟩
-#align nat.bit1_lt_bit0_iff Nat.bit1_lt_bit0_iff
-
--- Porting note: temporarily porting only needed portions
-/-
-@[simp]
-theorem one_le_bit0_iff : 1 ≤ bit0 n ↔ 0 < n := by
-  convert bit1_le_bit0_iff
-  rfl
-#align nat.one_le_bit0_iff Nat.one_le_bit0_iff
-
-@[simp]
-theorem one_lt_bit0_iff : 1 < bit0 n ↔ 1 ≤ n := by
-  convert bit1_lt_bit0_iff
-  rfl
-#align nat.one_lt_bit0_iff Nat.one_lt_bit0_iff
-
-@[simp]
-theorem bit_le_bit_iff : ∀ {b : Bool}, bit b m ≤ bit b n ↔ m ≤ n
-  | false => bit0_le_bit0
-  | true => bit1_le_bit1
-#align nat.bit_le_bit_iff Nat.bit_le_bit_iff
-
-@[simp]
-theorem bit_lt_bit_iff : ∀ {b : Bool}, bit b m < bit b n ↔ m < n
-  | false => bit0_lt_bit0
-  | true => bit1_lt_bit1
-#align nat.bit_lt_bit_iff Nat.bit_lt_bit_iff
-
-@[simp]
-theorem bit_le_bit1_iff : ∀ {b : Bool}, bit b m ≤ bit1 n ↔ m ≤ n
-  | false => bit0_le_bit1_iff
-  | true => bit1_le_bit1
-#align nat.bit_le_bit1_iff Nat.bit_le_bit1_iff
--/
-
-end Bit
+theorem _root_.NeZero.one_le {n : ℕ} [NeZero n] : 1 ≤ n := one_le_iff_ne_zero.mpr (NeZero.ne n)
 
 end Nat
