@@ -47,8 +47,8 @@ theorem equitabilise_aux (hs : a * m + b * (m + 1) = s.card) :
   -- Get rid of the easy case `m = 0`
   obtain rfl | m_pos := m.eq_zero_or_pos
   · refine' ⟨⊥, by simp, _, by simpa using hs.symm⟩
-    simp only [nonpos_iff_eq_zero, card_eq_zero, mem_biUnion, exists_prop, mem_filter, id.def,
-      and_assoc, sdiff_eq_empty_iff_subset, subset_iff]
+    simp only [Nat.le_zero, card_eq_zero, mem_biUnion, exists_prop, mem_filter, id.def, and_assoc,
+      sdiff_eq_empty_iff_subset, subset_iff]
     exact fun x hx a ha =>
       ⟨{a}, mem_map_of_mem _ (P.le hx ha), singleton_subset_iff.2 ha, mem_singleton_self _⟩
   -- Prove the case `m > 0` by strong induction on `s`
