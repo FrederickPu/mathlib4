@@ -28,6 +28,8 @@ import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.BigOperators.Finprod
 import Mathlib.Algebra.BigOperators.Finsupp
 import Mathlib.Algebra.BigOperators.Intervals
+import Mathlib.Algebra.BigOperators.List.Basic
+import Mathlib.Algebra.BigOperators.List.Lemmas
 import Mathlib.Algebra.BigOperators.List.Order
 import Mathlib.Algebra.BigOperators.Module
 import Mathlib.Algebra.BigOperators.Multiset.Basic
@@ -1768,9 +1770,6 @@ import Mathlib.Data.Int.Units
 import Mathlib.Data.LazyList.Basic
 import Mathlib.Data.List.AList
 import Mathlib.Data.List.Basic
-import Mathlib.Data.List.BigOperators.Basic
-import Mathlib.Data.List.BigOperators.Defs
-import Mathlib.Data.List.BigOperators.Lemmas
 import Mathlib.Data.List.Card
 import Mathlib.Data.List.Chain
 import Mathlib.Data.List.Count
@@ -3094,6 +3093,7 @@ import Mathlib.Order.Filter.Archimedean
 import Mathlib.Order.Filter.AtTopBot
 import Mathlib.Order.Filter.Bases
 import Mathlib.Order.Filter.Basic
+import Mathlib.Order.Filter.CardinalInter
 import Mathlib.Order.Filter.Cofinite
 import Mathlib.Order.Filter.CountableInter
 import Mathlib.Order.Filter.CountableSeparatingOn

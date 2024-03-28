@@ -3,11 +3,12 @@ Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Floris van Doorn, Sébastien Gouëzel, Alex J. Best
 -/
-import Mathlib.Algebra.BigOperators.List.Order
+import Mathlib.Algebra.BigOperators.List.Basic
 import Mathlib.Algebra.Group.Opposite
 import Mathlib.Algebra.GroupPower.Basic
 import Mathlib.Algebra.GroupWithZero.Commute
 import Mathlib.Algebra.GroupWithZero.Divisibility
+import Mathlib.Algebra.Order.Monoid.OrderDual
 import Mathlib.Algebra.Ring.Basic
 import Mathlib.Algebra.Ring.Commute
 import Mathlib.Algebra.Ring.Divisibility.Basic
@@ -41,49 +42,6 @@ end Commute
 
 namespace List
 
-@[to_additive]
-theorem prod_eq_one_iff [CanonicallyOrderedCommMonoid M] (l : List M) :
-    l.prod = 1 ↔ ∀ x ∈ l, x = (1 : M) :=
-  ⟨all_one_of_le_one_le_of_prod_eq_one fun _ _ => one_le _, fun h => by
-    rw [List.eq_replicate.2 ⟨_, h⟩, prod_replicate, one_pow]; exact (length l); rfl⟩
-#align list.prod_eq_one_iff List.prod_eq_one_iff
-#align list.sum_eq_zero_iff List.sum_eq_zero_iff
-
-section Monoid
-variable [Monoid α]
-
-@[simp] lemma prod_map_neg [HasDistribNeg α] (l : List α) :
-    (l.map Neg.neg).prod = (-1) ^ l.length * l.prod := by
-  induction l <;> simp [*, pow_succ, ((Commute.neg_one_left _).pow_left _).left_comm]
-#align list.prod_map_neg List.prod_map_neg
-
-@[to_additive]
-theorem prod_isUnit : ∀ {L : List α}, (∀ m ∈ L, IsUnit m) → IsUnit L.prod
-  | [], _ => by simp
-  | h :: t, u => by
-    simp only [List.prod_cons]
-    exact IsUnit.mul (u h (mem_cons_self h t)) (prod_isUnit fun m mt => u m (mem_cons_of_mem h mt))
-#align list.prod_is_unit List.prod_isUnit
-#align list.sum_is_add_unit List.sum_isAddUnit
-
-end Monoid
-
-section CommMonoid
-variable [CommMonoid α]
-
-@[to_additive]
-theorem prod_isUnit_iff {α : Type*} [CommMonoid α] {L : List α} :
-    IsUnit L.prod ↔ ∀ m ∈ L, IsUnit m := by
-  refine' ⟨fun h => _, prod_isUnit⟩
-  induction' L with m L ih
-  · exact fun m' h' => False.elim (not_mem_nil m' h')
-  rw [prod_cons, IsUnit.mul_iff] at h
-  exact fun m' h' => Or.elim (eq_or_mem_of_mem_cons h') (fun H => H.substr h.1) fun H => ih h.2 _ H
-#align list.prod_is_unit_iff List.prod_isUnit_iff
-#align list.sum_is_add_unit_iff List.sum_isAddUnit_iff
-
-end CommMonoid
-
 /-- If a product of integers is `-1`, then at least one factor must be `-1`. -/
 theorem neg_one_mem_of_prod_eq_neg_one {l : List ℤ} (h : l.prod = -1) : (-1 : ℤ) ∈ l := by
   obtain ⟨x, h₁, h₂⟩ := exists_mem_ne_one_of_prod_ne_one (ne_of_eq_of_ne h (by decide))
@@ -100,7 +58,7 @@ by the sum of the elements. -/
 theorem length_le_sum_of_one_le (L : List ℕ) (h : ∀ i ∈ L, 1 ≤ i) : L.length ≤ L.sum := by
   induction' L with j L IH h; · simp
   rw [sum_cons, length, add_comm]
-  exact Nat.add_le_add (h _ (mem_cons_self _ _)) (IH fun i hi => h i (mem_cons.2 (Or.inr hi)))
+  exact add_le_add (h _ (mem_cons_self _ _)) (IH fun i hi => h i (mem_cons.2 (Or.inr hi)))
 #align list.length_le_sum_of_one_le List.length_le_sum_of_one_le
 
 theorem dvd_prod [CommMonoid M] {a} {l : List M} (ha : a ∈ l) : a ∣ l.prod := by
@@ -144,37 +102,6 @@ theorem alternatingProd_reverse :
 #align list.alternating_sum_reverse List.alternatingSum_reverse
 
 end Alternating
-
-section MonoidWithZero
-variable [MonoidWithZero M₀]
-
-/-- If zero is an element of a list `L`, then `List.prod L = 0`. If the domain is a nontrivial
-monoid with zero with no divisors, then this implication becomes an `iff`, see
-`List.prod_eq_zero_iff`. -/
-theorem prod_eq_zero {L : List M₀} (h : (0 : M₀) ∈ L) : L.prod = 0 := by
-  induction' L with a L ihL
-  · exact absurd h (not_mem_nil _)
-  · rw [prod_cons]
-    cases' mem_cons.1 h with ha hL
-    exacts [mul_eq_zero_of_left ha.symm _, mul_eq_zero_of_right _ (ihL hL)]
-#align list.prod_eq_zero List.prod_eq_zero
-
-/-- Product of elements of a list `L` equals zero if and only if `0 ∈ L`. See also
-`List.prod_eq_zero` for an implication that needs weaker typeclass assumptions. -/
-@[simp]
-theorem prod_eq_zero_iff [Nontrivial M₀] [NoZeroDivisors M₀] {L : List M₀} :
-    L.prod = 0 ↔ (0 : M₀) ∈ L := by
-  induction' L with a L ihL
-  · simp only [prod_nil, one_ne_zero, not_mem_nil]
-  · rw [prod_cons, mul_eq_zero, ihL, mem_cons, eq_comm]
-#align list.prod_eq_zero_iff List.prod_eq_zero_iff
-
-theorem prod_ne_zero [Nontrivial M₀] [NoZeroDivisors M₀] {L : List M₀} (hL : (0 : M₀) ∉ L) :
-    L.prod ≠ 0 :=
-  mt prod_eq_zero_iff.1 hL
-#align list.prod_ne_zero List.prod_ne_zero
-
-end MonoidWithZero
 
 theorem sum_map_mul_left [NonUnitalNonAssocSemiring R] (L : List ι) (f : ι → R) (r : R) :
     (L.map fun b => r * f b).sum = r * (L.map f).sum :=

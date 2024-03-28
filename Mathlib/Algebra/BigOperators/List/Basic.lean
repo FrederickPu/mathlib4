@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Floris van Doorn, Sébastien Gouëzel, Alex J. Best
 -/
 import Mathlib.Algebra.Group.Commute.Defs
+import Mathlib.Algebra.BigOperators.List.Defs
 import Mathlib.Data.Int.Basic
-import Mathlib.Data.List.BigOperators.Defs
 import Mathlib.Data.List.Forall2
 import Mathlib.Data.Nat.Basic
 
@@ -16,7 +16,7 @@ import Mathlib.Data.Nat.Basic
 
 This file provides basic results about `List.prod`, `List.sum`, which calculate the product and sum
 of elements of a list and `List.alternatingProd`, `List.alternatingSum`, their alternating
-counterparts. These are defined in [`Data.List.BigOperators.Defs`](./Defs).
+counterparts. These are defined in [`Algebra.BigOperators.List.Defs`](./Defs).
 -/
 
 -- Make sure we haven't imported `Data.Nat.Order.Basic`
