@@ -4,10 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Leonardo de Moura, Jeremy Avigad, Minchao Wu, Mario Carneiro
 -/
 import Mathlib.Data.Finset.Attr
-import Mathlib.Data.Multiset.Bind
 import Mathlib.Data.Multiset.FinsetOps
 import Mathlib.Order.Directed
-import Mathlib.Order.SetNotation
 
 #align_import data.finset.basic from "leanprover-community/mathlib"@"442a83d738cb208d3600056c489be16900ba701d"
 
@@ -86,9 +84,6 @@ In Lean, we use lattice notation to talk about things involving unions and inter
   See `Finset.sup`/`Finset.biUnion` for finite unions.
 * `Finset.instInterFinset`: Defines `s ∩ t` (or `s ⊓ t`) as the intersection of `s` and `t`.
   See `Finset.inf` for finite intersections.
-* `Finset.disjUnion`: Given a hypothesis `h` which states that finsets `s` and `t` are disjoint,
-  `s.disjUnion t h` is the set such that `a ∈ disjUnion s t h` iff `a ∈ s` or `a ∈ t`; this does
-  not require decidable equality on the type `α`.
 
 ### Operations on two or more finsets
 
@@ -101,21 +96,12 @@ In Lean, we use lattice notation to talk about things involving unions and inter
 * `Finset.instSDiffFinset`: Defines the set difference `s \ t` for finsets `s` and `t`.
 * `Finset.product`: Given finsets of `α` and `β`, defines finsets of `α × β`.
   For arbitrary dependent products, see `Mathlib.Data.Finset.Pi`.
-* `Finset.biUnion`: Finite unions of finsets; given an indexing function `f : α → Finset β` and an
-  `s : Finset α`, `s.biUnion f` is the union of all finsets of the form `f a` for `a ∈ s`.
-* `Finset.bInter`: TODO: Implement finite intersections.
-
-### Maps constructed using finsets
-
-* `Finset.piecewise`: Given two functions `f`, `g`, `s.piecewise f g` is a function which is equal
-  to `f` on `s` and `g` on the complement.
 
 ### Predicates on finsets
 
 * `Disjoint`: defined via the lattice structure on finsets; two sets are disjoint if their
   intersection is empty.
-* `Finset.Nonempty`: A finset is nonempty if it has elements.
-  This is equivalent to saying `s ≠ ∅`. TODO: Decide on the simp normal form.
+* `Finset.Nonempty`: A finset is nonempty if it has elements. This is equivalent to saying `s ≠ ∅`.
 
 ### Equivalences between finsets
 
@@ -3391,6 +3377,36 @@ theorem pairwise_cons {a : α} (ha : a ∉ s) (r : α → α → Prop) :
 end Pairwise
 
 end Finset
+
+namespace Equiv
+variable [DecidableEq α] {s t : Finset α}
+
+open Finset
+
+/-- The disjoint union of finsets is a sum -/
+def Finset.union (s t : Finset α) (h : Disjoint s t) :
+    s ⊕ t ≃ (s ∪ t : Finset α) :=
+  Equiv.Set.ofEq (coe_union _ _) |>.trans (Equiv.Set.union (disjoint_coe.mpr h).le_bot) |>.symm
+
+@[simp]
+theorem Finset.union_symm_inl (h : Disjoint s t) (x : s) :
+    Equiv.Finset.union s t h (Sum.inl x) = ⟨x, Finset.mem_union.mpr <| Or.inl x.2⟩ :=
+  rfl
+
+@[simp]
+theorem Finset.union_symm_inr (h : Disjoint s t) (y : t) :
+    Equiv.Finset.union s t h (Sum.inr y) = ⟨y, Finset.mem_union.mpr <| Or.inr y.2⟩ :=
+  rfl
+
+/-- The type of dependent functions on the disjoint union of finsets `s ∪ t` is equivalent to the
+  type of pairs of functions on `s` and on `t`. This is similar to `Equiv.sumPiEquivProdPi`. -/
+def piFinsetUnion {ι} [DecidableEq ι] (α : ι → Type*) {s t : Finset ι} (h : Disjoint s t) :
+    ((∀ i : s, α i) × ∀ i : t, α i) ≃ ∀ i : (s ∪ t : Finset ι), α i :=
+  let e := Equiv.Finset.union s t h
+  sumPiEquivProdPi (fun b ↦ α (e b)) |>.symm.trans (.piCongrLeft (fun i : ↥(s ∪ t) ↦ α i) e)
+
+end Equiv
+
 
 namespace Multiset
 

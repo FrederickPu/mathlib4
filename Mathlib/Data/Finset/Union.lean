@@ -5,20 +5,28 @@ Authors: Mario Carneiro
 -/
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Multiset.Bind
+import Mathlib.Order.SetNotation
 
 /-!
 # Unions of finite sets
 
 This file defines the union of a family `t : α → Finset β` of finsets bounded by a finset
-`s : Finset α`. We define both `Finset.biUnion` which requires decidable equality on `β` and
-`Finset.disjiUnion` which instead assumes the `t a` are pairwise disjoint.
+`s : Finset α`.
+
+## Main declarations
+
+* `Finset.disjUnion`: Given a hypothesis `h` which states that finsets `s` and `t` are disjoint,
+  `s.disjUnion t h` is the set such that `a ∈ disjUnion s t h` iff `a ∈ s` or `a ∈ t`; this does
+  not require decidable equality on the type `α`.
+* `Finset.biUnion`: Finite unions of finsets; given an indexing function `f : α → Finset β` and an
+  `s : Finset α`, `s.biUnion f` is the union of all finsets of the form `f a` for `a ∈ s`.
 
 ## TODO
 
 Remove `Finset.biUnion` in favour of `Finset.sup`.
 -/
 
-variable {α β : Type*} {s s₁ s₂ : Finset α} {t t₁ t₂ : α → Finset β}
+variable {α β γ : Type*} {s s₁ s₂ : Finset α} {t t₁ t₂ : α → Finset β}
 
 namespace Finset
 section DisjiUnion
@@ -40,7 +48,7 @@ lemma disjiUnion_val (s : Finset α) (t : α → Finset β) (h) :
 #align finset.disj_Union_empty Finset.disjiUnion_empty
 
 @[simp] lemma mem_disjiUnion {b : β} {h} : b ∈ s.disjiUnion t h ↔ ∃ a ∈ s, b ∈ t a := by
-  simp only [mem_def, disjiUnion_val, mem_bind, exists_prop]
+  simp only [mem_def, disjiUnion_val, Multiset.mem_bind, exists_prop]
 #align finset.mem_disj_Union Finset.mem_disjiUnion
 
 @[simp, norm_cast]
@@ -110,7 +118,7 @@ protected def biUnion (s : Finset α) (t : α → Finset β) : Finset β :=
 #align finset.bUnion_empty Finset.biUnion_empty
 
 @[simp] lemma mem_biUnion {b : β} : b ∈ s.biUnion t ↔ ∃ a ∈ s, b ∈ t a := by
-  simp only [mem_def, biUnion_val, mem_dedup, mem_bind, exists_prop]
+  simp only [mem_def, biUnion_val, Multiset.mem_dedup, Multiset.mem_bind, exists_prop]
 #align finset.mem_bUnion Finset.mem_biUnion
 
 @[simp, norm_cast]
