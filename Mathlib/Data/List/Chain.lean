@@ -6,8 +6,6 @@ Authors: Mario Carneiro, Kenny Lau, Yury Kudryashov
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.Forall2
 import Mathlib.Data.List.Lex
-import Mathlib.Algebra.Order.Ring.Canonical
-import Mathlib.Data.Nat.Basic
 import Mathlib.Init.Data.Nat.Bitwise
 
 #align_import data.list.chain from "leanprover-community/mathlib"@"dd71334db81d0bd444af1ee339a29298bef40734"
@@ -356,8 +354,8 @@ theorem chain'_iff_get {R} : ∀ {l : List α}, Chain' R l ↔
   | [a] => iff_of_true (by simp) (fun _ h => by simp at h)
   | a :: b :: t => by
     rw [← and_forall_succ, chain'_cons, chain'_iff_get]
-    simp only [length_cons, get_cons_succ, Fin.zero_eta, get_cons_zero, zero_add, Fin.mk_one,
-      get_cons_cons_one, succ_sub_succ_eq_sub, Nat.le_zero, add_eq_zero_iff, and_false,
+    simp only [length_cons, get_cons_succ, Fin.zero_eta, get_cons_zero, Nat.zero_add, Fin.mk_one,
+      get_cons_cons_one, succ_sub_succ_eq_sub, Nat.le_zero, Nat.add_eq_zero_iff, and_false,
       Nat.sub_zero, Nat.add_pos_iff_pos_or_pos, Nat.zero_lt_one, or_true, forall_true_left,
       and_congr_right_iff]
     dsimp [succ_sub_one]
