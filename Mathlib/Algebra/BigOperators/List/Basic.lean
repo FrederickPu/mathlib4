@@ -3,8 +3,7 @@ Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Floris van Doorn, Sébastien Gouëzel, Alex J. Best
 -/
-import Mathlib.Algebra.BigOperators.List.Defs
-import Mathlib.Algebra.Group.Commute.Defs
+import Mathlib.Algebra.Group.Units
 import Mathlib.Algebra.GroupWithZero.NeZero
 import Mathlib.Data.Int.Basic
 import Mathlib.Data.List.Dedup
@@ -37,6 +36,32 @@ assert_not_exists vieta_formula_quadratic
 variable {ι α β γ M N P M₀ G R : Type*}
 
 namespace List
+section Defs
+
+/-- Product of a list.
+`List.prod [a, b, c] = ((1 * a) * b) * c` -/
+@[to_additive "Sum of a list.\n\n`List.sum [a, b, c] = ((0 + a) + b) + c`"]
+def prod {α} [Mul α] [One α] : List α → α :=
+  foldl (· * ·) 1
+#align list.prod List.prod
+#align list.sum List.sum
+
+/-- The alternating sum of a list. -/
+def alternatingSum {G : Type*} [Zero G] [Add G] [Neg G] : List G → G
+  | [] => 0
+  | g :: [] => g
+  | g :: h :: t => g + -h + alternatingSum t
+#align list.alternating_sum List.alternatingSum
+
+/-- The alternating product of a list. -/
+@[to_additive existing]
+def alternatingProd {G : Type*} [One G] [Mul G] [Inv G] : List G → G
+  | [] => 1
+  | g :: [] => g
+  | g :: h :: t => g * h⁻¹ * alternatingProd t
+#align list.alternating_prod List.alternatingProd
+
+end Defs
 
 section MulOneClass
 
@@ -181,6 +206,26 @@ theorem prod_map_hom (L : List ι) (f : ι → M) {G : Type*} [FunLike G M N] [M
     (L.map (g ∘ f)).prod = g (L.map f).prod := by rw [← prod_hom, map_map]
 #align list.prod_map_hom List.prod_map_hom
 #align list.sum_map_hom List.sum_map_hom
+
+@[to_additive]
+theorem prod_isUnit : ∀ {L : List M}, (∀ m ∈ L, IsUnit m) → IsUnit L.prod
+  | [], _ => by simp
+  | h :: t, u => by
+    simp only [List.prod_cons]
+    exact IsUnit.mul (u h (mem_cons_self h t)) (prod_isUnit fun m mt => u m (mem_cons_of_mem h mt))
+#align list.prod_is_unit List.prod_isUnit
+#align list.sum_is_add_unit List.sum_isAddUnit
+
+@[to_additive]
+theorem prod_isUnit_iff {α : Type*} [CommMonoid α] {L : List α} :
+    IsUnit L.prod ↔ ∀ m ∈ L, IsUnit m := by
+  refine' ⟨fun h => _, prod_isUnit⟩
+  induction' L with m L ih
+  · exact fun m' h' => False.elim (not_mem_nil m' h')
+  rw [prod_cons, IsUnit.mul_iff] at h
+  exact fun m' h' => Or.elim (eq_or_mem_of_mem_cons h') (fun H => H.substr h.1) fun H => ih h.2 _ H
+#align list.prod_is_unit_iff List.prod_isUnit_iff
+#align list.sum_is_add_unit_iff List.sum_isAddUnit_iff
 
 @[to_additive (attr := simp)]
 theorem prod_take_mul_prod_drop : ∀ (L : List M) (i : ℕ), (L.take i).prod * (L.drop i).prod = L.prod
