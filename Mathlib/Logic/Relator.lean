@@ -12,8 +12,6 @@ import Mathlib.Init.Function
 # Relator for functions, pairs, sums, and lists.
 -/
 
-set_option autoImplicit true
-
 namespace Relator
 universe u₁ u₂ v₁ v₂
 
@@ -142,6 +140,7 @@ open Function
 
 namespace LeftTotal
 
+set_option autoImplicit true
 protected lemma refl (hr : ∀ a : α, r₁₁ a a) :
     LeftTotal r₁₁ :=
   fun a ↦ ⟨a, hr _⟩
@@ -157,7 +156,7 @@ protected lemma trans (hr : ∀ (a : α) (b : β) (c : γ), r₁₂ a b → r₂
 end LeftTotal
 
 namespace RightTotal
-
+set_option autoImplicit true
 protected lemma refl (hr : ∀ a : α, r₁₁ a a) :
     RightTotal r₁₁ :=
   LeftTotal.refl hr
@@ -173,7 +172,7 @@ protected lemma trans (hr : ∀ (a : α) (b : β) (c : γ), r₁₂ a b → r₂
 end RightTotal
 
 namespace BiTotal
-
+set_option autoImplicit true
 protected lemma refl (hr : ∀ a : α, r₁₁ a a) :
     BiTotal r₁₁ :=
   ⟨LeftTotal.refl hr, RightTotal.refl hr⟩
