@@ -36,8 +36,6 @@ The above types have corresponding classes:
 
 -/
 
-set_option autoImplicit true
-
 assert_not_exists Submonoid
 
 variable (M' : Type*)
@@ -103,6 +101,7 @@ initialize_simps_projections MulActionHom (toFun → apply)
 namespace MulActionHom
 
 variable {M M' X Y}
+variable {F : Type*}
 
 /- porting note: inserted following def & instance for consistent coercion behaviour,
 see also Algebra.Hom.Group -/
@@ -117,7 +116,8 @@ def _root_.SMulHomClass.toMulActionHom [SMul M X] [SMul M Y] [FunLike F X Y]
 
 /-- Any type satisfying `SMulHomClass` can be cast into `MulActionHom` via
   `SMulHomClass.toMulActionHom`. -/
-instance [SMul M X] [SMul M Y] [FunLike F X Y] [SMulHomClass F M X Y] : CoeTC F (X →[M] Y) :=
+instance [SMul M X] [SMul M Y] [FunLike F X Y] [SMulHomClass F M X Y] :
+    CoeTC F (X →[M] Y) :=
   ⟨SMulHomClass.toMulActionHom⟩
 
 variable (M' X Y F) in
@@ -268,14 +268,14 @@ see also Algebra.Hom.Group -/
 /-- Turn an element of a type `F` satisfying `SMulHomClass F M X Y` into an actual
 `MulActionHom`. This is declared as the default coercion from `F` to `MulActionHom M X Y`. -/
 @[coe]
-def _root_.DistribMulActionHomClass.toDistribMulActionHom [FunLike F A B]
+def _root_.DistribMulActionHomClass.toDistribMulActionHom {F : Type*} [FunLike F A B]
     [DistribMulActionHomClass F M A B]
     (f : F) : A →+[M] B :=
   { (f : A →+ B), (f : A →[M] B) with }
 
 /-- Any type satisfying `SMulHomClass` can be cast into `MulActionHom` via
   `SMulHomClass.toMulActionHom`. -/
-instance [FunLike F A B] [DistribMulActionHomClass F M A B] :
+instance {F : Type*} [FunLike F A B] [DistribMulActionHomClass F M A B] :
     CoeTC F (A →+[M] B) :=
   ⟨DistribMulActionHomClass.toDistribMulActionHom⟩
 
@@ -508,14 +508,14 @@ see also Algebra.Hom.Group -/
 `MulSemiringActionHom`. This is declared as the default coercion from `F` to
 `MulSemiringActionHom M X Y`. -/
 @[coe]
-def _root_.MulSemiringActionHomClass.toMulSemiringActionHom [FunLike F R S]
+def _root_.MulSemiringActionHomClass.toMulSemiringActionHom {F : Type*} [FunLike F R S]
     [MulSemiringActionHomClass F M R S]
     (f : F) : R →+*[M] S :=
  { (f : R →+* S), (f : R →+[M] S) with }
 
 /-- Any type satisfying `MulSemiringActionHomClass` can be cast into `MulSemiringActionHom` via
   `MulSemiringActionHomClass.toMulSemiringActionHom`. -/
-instance [FunLike F R S] [MulSemiringActionHomClass F M R S] :
+instance {F : Type*} [FunLike F R S] [MulSemiringActionHomClass F M R S] :
     CoeTC F (R →+*[M] S) :=
   ⟨MulSemiringActionHomClass.toMulSemiringActionHom⟩
 

@@ -22,12 +22,11 @@ This file establishes the class equation for finite groups.
 
 -/
 
-set_option autoImplicit true
-
 open MulAction ConjClasses
 
 open scoped BigOperators
 
+universe u
 variable (G : Type u) [Group G]
 
 /-- Conjugacy classes form a partition of G, stated in terms of cardinality. -/

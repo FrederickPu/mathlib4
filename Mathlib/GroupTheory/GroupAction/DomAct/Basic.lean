@@ -79,8 +79,6 @@ right action, so lemmas can be formulated in terms of `DomMulAct`.
 group action, function, domain
 -/
 
-set_option autoImplicit true
-
 open Function
 
 /-- If `M` multiplicatively acts on `α`, then `DomMulAct M` acts on `α → β` as well as some
@@ -95,6 +93,8 @@ def DomMulAct (M : Type*) := MulOpposite M
 @[inherit_doc] postfix:max "ᵈᵃᵃ" => DomAddAct
 
 namespace DomMulAct
+
+variable {M : Type*}
 
 /-- Equivalence between `M` and `Mᵈᵐᵃ`. -/
 @[to_additive "Equivalence between `M` and `Mᵈᵐᵃ`."]
@@ -150,7 +150,7 @@ lemma mk_zpow [DivInvMonoid M] (a : M) (n : ℤ) : mk (a ^ n) = mk a ^ n := rfl
 @[to_additive (attr := simp)]
 lemma symm_mk_zpow [DivInvMonoid M] (a : Mᵈᵐᵃ) (n : ℤ) : mk.symm (a ^ n) = mk.symm a ^ n := rfl
 
-variable {β : Type*}
+variable {β α N : Type*}
 
 @[to_additive]
 instance [SMul M α] : SMul Mᵈᵐᵃ (α → β) where
@@ -183,6 +183,7 @@ instance [SMul M α] [FaithfulSMul M α] [Nontrivial β] : FaithfulSMul Mᵈᵐ�
 instance [SMul M α] [Zero β] : SMulZeroClass Mᵈᵐᵃ (α → β) where
   smul_zero _ := rfl
 
+set_option autoImplicit true
 instance [SMul M α] [AddZeroClass A] : DistribSMul Mᵈᵐᵃ (α → A) where
   smul_add _ _ _ := rfl
 
