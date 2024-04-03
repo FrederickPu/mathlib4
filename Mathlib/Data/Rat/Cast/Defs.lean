@@ -56,7 +56,7 @@ lemma cast_comm (q : ℚ≥0) (a : α) : q * a = a * q := cast_commute _ _
   have hd : (d : α) ≠ 0 := by
     refine fun hd ↦ hb ?_
     have : Rat.divInt a b = _ := congr_arg NNRat.cast e
-    obtain ⟨k, rfl⟩ : d ∣ b := by simpa [Int.coe_nat_dvd, this] using Rat.den_dvd a b
+    obtain ⟨k, rfl⟩ : d ∣ b := by simpa [Int.natCast_dvd_natCast, this] using Rat.den_dvd a b
     simp [*]
   have hb' : b ≠ 0 := by rintro rfl; exact hb Nat.cast_zero
   have hd' : d ≠ 0 := by rintro rfl; exact hd Nat.cast_zero
