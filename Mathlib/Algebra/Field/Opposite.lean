@@ -13,8 +13,6 @@ import Mathlib.Data.Int.Cast.Lemmas
 # Field structure on the multiplicative/additive opposite
 -/
 
-open scoped NNRat
-
 variable {α : Type*}
 
 namespace MulOpposite
@@ -39,25 +37,25 @@ lemma unop_ratCast [RatCast α] (q : ℚ) : unop (q : αᵐᵒᵖ) = q := rfl
 #align add_opposite.unop_rat_cast AddOpposite.unop_ratCast
 
 instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵐᵒᵖ where
-  toSemiring := instSemiring
+  __ := instSemiring
   __ := instGroupWithZero
   nnratCast_def q := unop_injective $ by rw [unop_nnratCast, unop_div, unop_natCast, unop_natCast,
     NNRat.cast_def, div_eq_mul_inv, Nat.cast_comm]
   nnqsmul := _
 
 instance instDivisionRing [DivisionRing α] : DivisionRing αᵐᵒᵖ where
-  toRing := instRing
+  __ := instRing
   __ := instDivisionSemiring
   ratCast_def q := unop_injective <| by rw [unop_ratCast, Rat.cast_def, unop_div,
     unop_natCast, unop_intCast, Int.commute_cast, div_eq_mul_inv]
   qsmul := qsmulRec _
 
 instance instSemifield [Semifield α] : Semifield αᵐᵒᵖ where
-  toCommSemiring := instCommSemiring
+  __ := instCommSemiring
   __ := instDivisionSemiring
 
 instance instField [Field α] : Field αᵐᵒᵖ where
-  toCommRing := instCommRing
+  __ := instCommRing
   __ := instDivisionRing
 
 end MulOpposite
@@ -65,21 +63,21 @@ end MulOpposite
 namespace AddOpposite
 
 instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵃᵒᵖ where
-  toSemiring := instSemiring
+  __ := instSemiring
   __ := instGroupWithZero
   nnratCast_def q := unop_injective $ by rw [unop_nnratCast, unop_div, unop_natCast, unop_natCast,
     NNRat.cast_def, div_eq_mul_inv]
   nnqsmul := _
 
 instance instDivisionRing [DivisionRing α] : DivisionRing αᵃᵒᵖ where
-  toRing := instRing
+  __ := instRing
   __ := instDivisionSemiring
   ratCast_def q := unop_injective <| by rw [unop_ratCast, Rat.cast_def, unop_div, unop_natCast,
     unop_intCast, div_eq_mul_inv]
   qsmul := qsmulRec _
 
 instance instSemifield [Semifield α] : Semifield αᵃᵒᵖ where
-  toCommSemiring := instCommSemiring
+  __ := instCommSemiring
   __ := instDivisionSemiring
 
 instance instField [Field α] : Field αᵃᵒᵖ where
