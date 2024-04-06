@@ -264,33 +264,36 @@ section NoncomputableDefs
 variable {R : Type*} [Nontrivial R]
 
 /-- Constructs a `DivisionRing` structure on a `Ring` consisting only of units and 0. -/
-noncomputable def divisionRingOfIsUnitOrEqZero [Ring R] (h : ∀ a : R, IsUnit a ∨ a = 0) :
+@[reducible] -- See note [reducible non-instances]
+noncomputable def DivisionRing.ofIsUnitOrEqZero [Ring R] (h : ∀ a : R, IsUnit a ∨ a = 0) :
     DivisionRing R where
-  __ := ‹Ring R›
+  toRing := ‹Ring R›
   __ := groupWithZeroOfIsUnitOrEqZero h
   nnqsmul := _
-  qsmul := qsmulRec _
-#align division_ring_of_is_unit_or_eq_zero divisionRingOfIsUnitOrEqZero
+  qsmul := _
+#align division_ring_of_is_unit_or_eq_zero DivisionRing.ofIsUnitOrEqZero
 
-/-- Constructs a `Field` structure on a `CommRing` consisting only of units and 0.
-See note [reducible non-instances]. -/
-@[reducible]
-noncomputable def fieldOfIsUnitOrEqZero [hR : CommRing R] (h : ∀ a : R, IsUnit a ∨ a = 0) :
-    Field R :=
-  { divisionRingOfIsUnitOrEqZero h, hR with }
-#align field_of_is_unit_or_eq_zero fieldOfIsUnitOrEqZero
+/-- Constructs a `Field` structure on a `CommRing` consisting only of units and 0. -/
+@[reducible] -- See note [reducible non-instances]
+noncomputable def Field.ofIsUnitOrEqZero [CommRing R] (h : ∀ a : R, IsUnit a ∨ a = 0) :
+    Field R where
+  toCommRing := ‹CommRing R›
+  __ := DivisionRing.ofIsUnitOrEqZero h
+#align field_of_is_unit_or_eq_zero Field.ofIsUnitOrEqZero
 
 end NoncomputableDefs
 
--- See note [reducible non-instances]
+namespace Function.Injective
+variable [Zero α] [Add α] [Neg α] [Sub α] [One α] [Mul α] [Inv α] [Div α] [SMul ℕ α] [SMul ℤ α]
+  [SMul ℚ≥0 α] [SMul ℚ α] [Pow α ℕ] [Pow α ℤ] [NatCast α] [IntCast α] [NNRatCast α] [RatCast α]
+  (f : α → β) (hf : Injective f)
+
 /-- Pullback a `DivisionSemiring` along an injective function. -/
-@[reducible]
-protected def Function.Injective.divisionSemiring [DivisionSemiring β] [Zero α] [Mul α] [Add α]
-    [One α] [Inv α] [Div α] [SMul ℕ α] [SMul ℚ≥0 α] [Pow α ℕ] [Pow α ℤ] [NatCast α] [NNRatCast α]
-    (f : α → β) (hf : Injective f) (zero : f 0 = 0) (one : f 1 = 1)
+@[reducible] -- See note [reducible non-instances]
+protected def divisionSemiring [DivisionSemiring β] (zero : f 0 = 0) (one : f 1 = 1)
     (add : ∀ x y, f (x + y) = f x + f y) (mul : ∀ x y, f (x * y) = f x * f y)
     (inv : ∀ x, f x⁻¹ = (f x)⁻¹) (div : ∀ x y, f (x / y) = f x / f y)
-    (nsmul : ∀ (x) (n : ℕ), f (n • x) = n • f x) (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x)
+    (nsmul : ∀ (n : ℕ) (x), f (n • x) = n • f x) (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x)
     (npow : ∀ (x) (n : ℕ), f (x ^ n) = f x ^ n) (zpow : ∀ (x) (n : ℤ), f (x ^ n) = f x ^ n)
     (natCast : ∀ n : ℕ, f n = n) (nnratCast : ∀ q : ℚ≥0, f q = q) : DivisionSemiring α where
   toSemiring := hf.semiring f zero one add mul nsmul npow natCast
@@ -300,22 +303,17 @@ protected def Function.Injective.divisionSemiring [DivisionSemiring β] [Zero α
   nnqsmul_def q a := hf $ by rw [nnqsmul, NNRat.smul_def, mul, nnratCast]
 #align function.injective.division_semiring Function.Injective.divisionSemiring
 
-/-- Pullback a `DivisionSemiring` along an injective function.
-See note [reducible non-instances]. -/
-@[reducible]
-protected def Function.Injective.divisionRing [DivisionRing K] {K'} [Zero K'] [One K'] [Add K']
-    [Mul K'] [Neg K'] [Sub K'] [Inv K'] [Div K'] [SMul ℕ K'] [SMul ℤ K'] [SMul ℚ≥0 K'] [SMul ℚ K']
-    [Pow K' ℕ] [Pow K' ℤ] [NatCast K'] [IntCast K'] [NNRatCast K'] [RatCast K']
-    (f : K' → K) (hf : Injective f)
-    (zero : f 0 = 0) (one : f 1 = 1) (add : ∀ x y, f (x + y) = f x + f y)
-    (mul : ∀ x y, f (x * y) = f x * f y) (neg : ∀ x, f (-x) = -f x)
-    (sub : ∀ x y, f (x - y) = f x - f y) (inv : ∀ x, f x⁻¹ = (f x)⁻¹)
-    (div : ∀ x y, f (x / y) = f x / f y) (nsmul : ∀ (x) (n : ℕ), f (n • x) = n • f x)
-    (zsmul : ∀ (x) (n : ℤ), f (n • x) = n • f x) (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x)
-    (qsmul : ∀ (q : ℚ) (x), f (q • x) = q • f x)
+/-- Pullback a `DivisionSemiring` along an injective function. -/
+@[reducible] -- See note [reducible non-instances]
+protected def divisionRing [DivisionRing β] (zero : f 0 = 0) (one : f 1 = 1)
+    (add : ∀ x y, f (x + y) = f x + f y) (mul : ∀ x y, f (x * y) = f x * f y)
+    (neg : ∀ x, f (-x) = -f x) (sub : ∀ x y, f (x - y) = f x - f y) (inv : ∀ x, f x⁻¹ = (f x)⁻¹)
+    (div : ∀ x y, f (x / y) = f x / f y)
+    (nsmul : ∀ (n : ℕ) (x), f (n • x) = n • f x) (zsmul : ∀ (n : ℤ) (x), f (n • x) = n • f x)
+    (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x) (qsmul : ∀ (q : ℚ) (x), f (q • x) = q • f x)
     (npow : ∀ (x) (n : ℕ), f (x ^ n) = f x ^ n) (zpow : ∀ (x) (n : ℤ), f (x ^ n) = f x ^ n)
     (natCast : ∀ n : ℕ, f n = n) (intCast : ∀ n : ℤ, f n = n) (nnratCast : ∀ q : ℚ≥0, f q = q)
-    (ratCast : ∀ q : ℚ, f q = q) : DivisionRing K' where
+    (ratCast : ∀ q : ℚ, f q = q) : DivisionRing α where
   toRing := hf.ring f zero one add mul neg sub nsmul zsmul npow natCast intCast
   __ := hf.groupWithZero f zero one mul inv div npow zpow
   __ := hf.divisionSemiring f zero one add mul inv div nsmul nnqsmul npow zpow natCast nnratCast
@@ -324,16 +322,12 @@ protected def Function.Injective.divisionRing [DivisionRing K] {K'} [Zero K'] [O
   qsmul_def q a := hf $ by erw [qsmul, mul, Rat.smul_def, ratCast]
 #align function.injective.division_ring Function.Injective.divisionRing
 
--- See note [reducible non-instances]
 /-- Pullback a `Field` along an injective function. -/
-@[reducible]
-protected def Function.Injective.semifield [Semifield β] [Zero α] [Mul α] [Add α] [One α] [Inv α]
-    [Div α] [SMul ℕ α] [SMul ℚ≥0 α] [Pow α ℕ] [Pow α ℤ] [NatCast α] [NNRatCast α]
-    (f : α → β) (hf : Injective f)
-    (zero : f 0 = 0) (one : f 1 = 1) (add : ∀ x y, f (x + y) = f x + f y)
-    (mul : ∀ x y, f (x * y) = f x * f y) (inv : ∀ x, f x⁻¹ = (f x)⁻¹)
-    (div : ∀ x y, f (x / y) = f x / f y)
-    (nsmul : ∀ (x) (n : ℕ), f (n • x) = n • f x) (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x)
+@[reducible] -- See note [reducible non-instances]
+protected def semifield [Semifield β] (zero : f 0 = 0) (one : f 1 = 1)
+    (add : ∀ x y, f (x + y) = f x + f y) (mul : ∀ x y, f (x * y) = f x * f y)
+    (inv : ∀ x, f x⁻¹ = (f x)⁻¹) (div : ∀ x y, f (x / y) = f x / f y)
+    (nsmul : ∀ (n : ℕ) (x), f (n • x) = n • f x) (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x)
     (npow : ∀ (x) (n : ℕ), f (x ^ n) = f x ^ n) (zpow : ∀ (x) (n : ℤ), f (x ^ n) = f x ^ n)
     (natCast : ∀ n : ℕ, f n = n) (nnratCast : ∀ q : ℚ≥0, f q = q) : Semifield α where
   toCommSemiring := hf.commSemiring f zero one add mul nsmul npow natCast
@@ -341,78 +335,57 @@ protected def Function.Injective.semifield [Semifield β] [Zero α] [Mul α] [Ad
   __ := hf.divisionSemiring f zero one add mul inv div nsmul nnqsmul npow zpow natCast nnratCast
 #align function.injective.semifield Function.Injective.semifield
 
-/-- Pullback a `Field` along an injective function.
-See note [reducible non-instances]. -/
-@[reducible]
-protected def Function.Injective.field [Field K] {K'} [Zero K'] [Mul K'] [Add K'] [Neg K'] [Sub K']
-    [One K'] [Inv K'] [Div K'] [SMul ℕ K'] [SMul ℤ K'] [SMul ℚ≥0 K'] [SMul ℚ K'] [Pow K' ℕ]
-    [Pow K' ℤ] [NatCast K'] [IntCast K'] [NNRatCast K'] [RatCast K'] (f : K' → K) (hf : Injective f)
-    (zero : f 0 = 0) (one : f 1 = 1)
+/-- Pullback a `Field` along an injective function. -/
+@[reducible] -- See note [reducible non-instances]
+protected def field [Field β] (zero : f 0 = 0) (one : f 1 = 1)
     (add : ∀ x y, f (x + y) = f x + f y) (mul : ∀ x y, f (x * y) = f x * f y)
     (neg : ∀ x, f (-x) = -f x) (sub : ∀ x y, f (x - y) = f x - f y) (inv : ∀ x, f x⁻¹ = (f x)⁻¹)
     (div : ∀ x y, f (x / y) = f x / f y)
-    (nsmul : ∀ (x) (n : ℕ), f (n • x) = n • f x) (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x)
-    (zsmul : ∀ (x) (n : ℤ), f (n • x) = n • f x) (qsmul : ∀ (q : ℚ) (x), f (q • x) = q • f x)
+    (nsmul : ∀ (n : ℕ) (x), f (n • x) = n • f x) (zsmul : ∀ (n : ℤ) (x), f (n • x) = n • f x)
+    (nnqsmul : ∀ (q : ℚ≥0) (x), f (q • x) = q • f x) (qsmul : ∀ (q : ℚ) (x), f (q • x) = q • f x)
     (npow : ∀ (x) (n : ℕ), f (x ^ n) = f x ^ n) (zpow : ∀ (x) (n : ℤ), f (x ^ n) = f x ^ n)
     (natCast : ∀ n : ℕ, f n = n) (intCast : ∀ n : ℤ, f n = n) (nnratCast : ∀ q : ℚ≥0, f q = q)
     (ratCast : ∀ q : ℚ, f q = q) :
-    Field K' where
+    Field α where
   toCommRing := hf.commRing f zero one add mul neg sub nsmul zsmul npow natCast intCast
   __ := hf.divisionRing f zero one add mul neg sub inv div nsmul zsmul nnqsmul qsmul npow zpow
     natCast intCast nnratCast ratCast
 #align function.injective.field Function.Injective.field
 
+end Function.Injective
+
 /-! ### Order dual -/
 
+namespace OrderDual
 
-instance [h : RatCast α] : RatCast αᵒᵈ :=
-  h
+instance instRatCast [RatCast α] : RatCast αᵒᵈ := ‹_›
+instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring αᵒᵈ := ‹_›
+instance instDivisionRing [DivisionRing α] : DivisionRing αᵒᵈ := ‹_›
+instance instSemifield [Semifield α] : Semifield αᵒᵈ := ‹_›
+instance instField [Field α] : Field αᵒᵈ := ‹_›
 
-instance [h : DivisionSemiring α] : DivisionSemiring αᵒᵈ :=
-  h
+end OrderDual
 
-instance [h : DivisionRing α] : DivisionRing αᵒᵈ :=
-  h
+@[simp] lemma toDual_ratCast [RatCast α] (n : ℚ) : toDual (n : α) = n := rfl
+#align to_dual_rat_cast toDual_ratCast
 
-instance [h : Semifield α] : Semifield αᵒᵈ :=
-  h
-
-instance [h : Field α] : Field αᵒᵈ :=
-  h
-
-@[simp]
-theorem toDual_rat_cast [RatCast α] (n : ℚ) : toDual (n : α) = n :=
-  rfl
-#align to_dual_rat_cast toDual_rat_cast
-
-@[simp]
-theorem ofDual_rat_cast [RatCast α] (n : ℚ) : (ofDual n : α) = n :=
-  rfl
-#align of_dual_rat_cast ofDual_rat_cast
+@[simp] lemma ofDual_ratCast [RatCast α] (n : ℚ) : (ofDual n : α) = n := rfl
+#align of_dual_rat_cast ofDual_ratCast
 
 /-! ### Lexicographic order -/
 
-instance [h : RatCast α] : RatCast (Lex α) :=
-  h
+namespace Lex
 
-instance [h : DivisionSemiring α] : DivisionSemiring (Lex α) :=
-  h
+instance instRatCast [RatCast α] : RatCast (Lex α) := ‹_›
+instance instDivisionSemiring [DivisionSemiring α] : DivisionSemiring (Lex α) := ‹_›
+instance instDivisionRing [DivisionRing α] : DivisionRing (Lex α) := ‹_›
+instance instSemifield [Semifield α] : Semifield (Lex α) := ‹_›
+instance instField [Field α] : Field (Lex α) := ‹_›
 
-instance [h : DivisionRing α] : DivisionRing (Lex α) :=
-  h
+end Lex
 
-instance [h : Semifield α] : Semifield (Lex α) :=
-  h
+@[simp] lemma toLex_ratCast [RatCast α] (n : ℚ) : toLex (n : α) = n := rfl
+#align to_lex_rat_cast toLex_ratCast
 
-instance [h : Field α] : Field (Lex α) :=
-  h
-
-@[simp]
-theorem toLex_rat_cast [RatCast α] (n : ℚ) : toLex (n : α) = n :=
-  rfl
-#align to_lex_rat_cast toLex_rat_cast
-
-@[simp]
-theorem ofLex_rat_cast [RatCast α] (n : ℚ) : (ofLex n : α) = n :=
-  rfl
-#align of_lex_rat_cast ofLex_rat_cast
+@[simp] lemma ofLex_ratCast [RatCast α] (n : ℚ) : (ofLex n : α) = n := rfl
+#align of_lex_rat_cast ofLex_ratCast
