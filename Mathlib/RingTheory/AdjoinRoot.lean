@@ -394,16 +394,16 @@ noncomputable instance instGroupWithZero [Fact (Irreducible f)] : GroupWithZero 
   Quotient.groupWithZero (span {f} : Ideal K[X])
 
 noncomputable instance instField [Fact (Irreducible f)] : Field (AdjoinRoot f) where
-  toCommRing := instCommRing f
+  __ := instCommRing _
   __ := instGroupWithZero
   nnratCast_def q := by
     rw [← map_natCast (of f), ← map_natCast (of f), ← map_div₀, ← NNRat.cast_def]; rfl
-  ratCast_def q := by
-    rw [← map_natCast (of f), ← map_intCast (of f), ← map_div₀, ← Rat.cast_def]; rfl
   nnqsmul := (· • ·)
   nnqsmul_def q x :=
     AdjoinRoot.induction_on (C := fun y ↦ q • y = (of f) q * y) x fun p ↦ by
       simp only [smul_mk, of, RingHom.comp_apply, ← (mk f).map_mul, Polynomial.nnqsmul_eq_C_mul]
+  ratCast_def q := by
+    rw [← map_natCast (of f), ← map_intCast (of f), ← map_div₀, ← Rat.cast_def]; rfl
   qsmul := (· • ·)
   qsmul_def q x :=
     -- Porting note: I gave the explicit motive and changed `rw` to `simp`.

@@ -275,7 +275,7 @@ instance instGroupWithZero : GroupWithZero (SplittingField f) :=
     __ := e.surjective.nontrivial }
 
 instance instField : Field (SplittingField f) where
-  toCommRing := SplittingField.commRing f
+  __ := commRing _
   __ := instGroupWithZero _
   nnratCast q := algebraMap K _ q
   nnratCast_def q := by change algebraMap K _ _ = _; simp_rw [NNRat.cast_def, map_div₀, map_natCast]

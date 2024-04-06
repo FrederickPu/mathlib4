@@ -431,7 +431,7 @@ instance instGroupWithZero : GroupWithZero (AlgebraicClosure k) :=
     __ := e.surjective.nontrivial }
 
 instance instField : Field (AlgebraicClosure k) where
-  toCommRing := instCommRing k
+  __ := instCommRing _
   __ := instGroupWithZero _
   nnratCast q := algebraMap k _ q
   nnratCast_def q := by change algebraMap k _ _ = _; simp_rw [NNRat.cast_def, map_div₀, map_natCast]
