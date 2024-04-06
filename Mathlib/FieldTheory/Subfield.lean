@@ -141,8 +141,8 @@ instance (priority := 75) toField {K} [Field K] [SetLike S K] [SubfieldClass S K
     Field s :=
   Subtype.coe_injective.field ((↑) : s → K)
     (by rfl) (by rfl) (by intros; rfl) (by intros; rfl) (by intros; rfl)
-    (by intros; rfl) (by intros; rfl) (by intros; rfl) (by intros; rfl) (coe_nnqsmul _)
-    (by intros; rfl) (coe_qsmul _) (by intros; rfl) (by intros; rfl) (by intros; rfl)
+    (by intros; rfl) (by intros; rfl) (by intros; rfl) (by intros; rfl) (by intros; rfl)
+    (coe_nnqsmul _) (coe_qsmul _) (by intros; rfl) (by intros; rfl) (by intros; rfl)
     (by intros; rfl) (by intros; rfl) (by intros; rfl)
 #align subfield_class.to_field SubfieldClass.toField
 
