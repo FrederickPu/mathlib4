@@ -19,7 +19,7 @@ import Mathlib.Data.Nat.Basic
 
 This file provides basic results about `List.prod`, `List.sum`, which calculate the product and sum
 of elements of a list and `List.alternatingProd`, `List.alternatingSum`, their alternating
-counterparts. These are defined in [`Algebra.BigOperators.List.Defs`](./Defs).
+counterparts.
 -/
 
 -- Make sure we haven't imported `Data.Nat.Order.Basic`
@@ -339,10 +339,7 @@ lemma prod_range_succ' (f : ℕ → M) (n : ℕ) :
 #align list.prod_range_succ' List.prod_range_succ'
 #align list.sum_range_succ' List.sum_range_succ'
 
-/-- Slightly more general version of `List.prod_eq_one_iff` for a non-ordered `Monoid` -/
-@[to_additive
-      "Slightly more general version of `List.sum_eq_zero_iff` for a non-ordered `AddMonoid`"]
-lemma prod_eq_one (hl : ∀ x ∈ l, x = 1) : l.prod = 1 := by
+@[to_additive] lemma prod_eq_one (hl : ∀ x ∈ l, x = 1) : l.prod = 1 := by
   induction' l with i l hil
   · rfl
   rw [List.prod_cons, hil fun x hx ↦ hl _ (mem_cons_of_mem i hx), hl _ (mem_cons_self i l), one_mul]
@@ -433,37 +430,15 @@ lemma prod_mul_prod_eq_prod_zipWith_of_length_eq (l l' : List M) (h : l.length =
 
 end CommMonoid
 
-section MonoidWithZero
-
-variable [MonoidWithZero M₀]
-
-/-- If zero is an element of a list `L`, then `List.prod L = 0`. If the domain is a nontrivial
-monoid with zero with no divisors, then this implication becomes an `iff`, see
-`List.prod_eq_zero_iff`. -/
-theorem prod_eq_zero {L : List M₀} (h : (0 : M₀) ∈ L) : L.prod = 0 := by
-  induction' L with a L ihL
-  · exact absurd h (not_mem_nil _)
-  · rw [prod_cons]
-    cases' mem_cons.1 h with ha hL
-    exacts [mul_eq_zero_of_left ha.symm _, mul_eq_zero_of_right _ (ihL hL)]
-#align list.prod_eq_zero List.prod_eq_zero
-
-/-- Product of elements of a list `L` equals zero if and only if `0 ∈ L`. See also
-`List.prod_eq_zero` for an implication that needs weaker typeclass assumptions. -/
-@[simp]
-theorem prod_eq_zero_iff [Nontrivial M₀] [NoZeroDivisors M₀] {L : List M₀} :
-    L.prod = 0 ↔ (0 : M₀) ∈ L := by
-  induction' L with a L ihL
-  · simp
-  · rw [prod_cons, mul_eq_zero, ihL, mem_cons, eq_comm]
-#align list.prod_eq_zero_iff List.prod_eq_zero_iff
-
-theorem prod_ne_zero [Nontrivial M₀] [NoZeroDivisors M₀] {L : List M₀} (hL : (0 : M₀) ∉ L) :
-    L.prod ≠ 0 :=
-  mt prod_eq_zero_iff.1 hL
-#align list.prod_ne_zero List.prod_ne_zero
-
-end MonoidWithZero
+@[to_additive]
+lemma eq_of_prod_take_eq [LeftCancelMonoid M] {L L' : List M} (h : L.length = L'.length)
+    (h' : ∀ i ≤ L.length, (L.take i).prod = (L'.take i).prod) : L = L' := by
+  refine ext_get h fun i h₁ h₂ => ?_
+  have : (L.take (i + 1)).prod = (L'.take (i + 1)).prod := h' _ (Nat.succ_le_of_lt h₁)
+  rw [prod_take_succ L i h₁, prod_take_succ L' i h₂, h' i (le_of_lt h₁)] at this
+  convert mul_left_cancel this
+#align list.eq_of_prod_take_eq List.eq_of_prod_take_eq
+#align list.eq_of_sum_take_eq List.eq_of_sum_take_eq
 
 section Group
 
@@ -558,16 +533,6 @@ theorem sum_zipWith_distrib_left [Semiring γ] (f : α → β → γ) (n : γ) (
     · simp
     · simp [hl, mul_add]
 #align list.sum_zip_with_distrib_left List.sum_zipWith_distrib_left
-
-@[to_additive]
-theorem eq_of_prod_take_eq [LeftCancelMonoid M] {L L' : List M} (h : L.length = L'.length)
-    (h' : ∀ i ≤ L.length, (L.take i).prod = (L'.take i).prod) : L = L' := by
-  refine ext_get h fun i h₁ h₂ => ?_
-  have : (L.take (i + 1)).prod = (L'.take (i + 1)).prod := h' _ (Nat.succ_le_of_lt h₁)
-  rw [prod_take_succ L i h₁, prod_take_succ L' i h₂, h' i (le_of_lt h₁)] at this
-  convert mul_left_cancel this
-#align list.eq_of_prod_take_eq List.eq_of_prod_take_eq
-#align list.eq_of_sum_take_eq List.eq_of_sum_take_eq
 
 theorem sum_const_nat (m n : ℕ) : sum (replicate m n) = m * n :=
   sum_replicate m n

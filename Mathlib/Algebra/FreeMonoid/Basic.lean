@@ -5,6 +5,7 @@ Authors: Simon Hudon, Yury Kudryashov
 -/
 import Mathlib.Algebra.Group.Units
 import Mathlib.Algebra.BigOperators.List.Basic
+import Mathlib.Algebra.Group.Units
 import Mathlib.GroupTheory.GroupAction.Defs
 
 #align_import algebra.free_monoid.basic from "leanprover-community/mathlib"@"657df4339ae6ceada048c8a2980fb10e393143ec"

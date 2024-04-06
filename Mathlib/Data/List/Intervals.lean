@@ -74,7 +74,7 @@ theorem eq_nil_of_le {n m : ℕ} (h : m ≤ n) : Ico n m = [] := by
 #align list.Ico.eq_nil_of_le List.Ico.eq_nil_of_le
 
 theorem map_add (n m k : ℕ) : (Ico n m).map (k + ·) = Ico (n + k) (m + k) := by
-  rw [Ico, Ico, map_add_range', Nat.add_comm, Nat.add_sub_add_right]
+  rw [Ico, Ico, map_add_range', Nat.add_sub_add_right m k, Nat.add_comm n k]
 #align list.Ico.map_add List.Ico.map_add
 
 theorem map_sub (n m k : ℕ) (h₁ : k ≤ n) :
@@ -89,7 +89,7 @@ theorem self_empty {n : ℕ} : Ico n n = [] :=
 
 @[simp]
 theorem eq_empty_iff {n m : ℕ} : Ico n m = [] ↔ m ≤ n :=
-  ⟨fun h ↦ Nat.sub_eq_zero_iff_le.1 <| by rw [← length, h, List.length], eq_nil_of_le⟩
+  Iff.intro (fun h => Nat.sub_eq_zero_iff_le.mp <| by rw [← length, h, List.length]) eq_nil_of_le
 #align list.Ico.eq_empty_iff List.Ico.eq_empty_iff
 
 theorem append_consecutive {n m l : ℕ} (hnm : n ≤ m) (hml : m ≤ l) :
@@ -117,7 +117,8 @@ theorem bagInter_consecutive (n m l : Nat) :  @List.bagInter ℕ instBEq (Ico n 
 
 @[simp]
 theorem succ_singleton {n : ℕ} : Ico n (n + 1) = [n] := by
-  simp [Ico, range', Nat.add_sub_cancel_left]
+  dsimp [Ico]
+  simp [range', Nat.add_sub_cancel_left]
 #align list.Ico.succ_singleton List.Ico.succ_singleton
 
 theorem succ_top {n m : ℕ} (h : n ≤ m) : Ico n (m + 1) = Ico n m ++ [m] := by
