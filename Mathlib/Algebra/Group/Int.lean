@@ -4,18 +4,19 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jeremy Avigad
 -/
 import Mathlib.Algebra.Group.TypeTags
-import Mathlib.Algebra.Ring.Defs
-import Mathlib.Data.Int.Cast.Basic
-import Mathlib.Data.Int.Defs
 import Mathlib.Order.Monotone.Basic
 
 #align_import data.int.basic from "leanprover-community/mathlib"@"00d163e35035c3577c1c79fa53b68de17781ffc1"
 
 /-!
-# Basic algebraic instances on the integers
+# The integers form a group
 
-This file contains instances on `ℤ`. The stronger one is `Int.linearOrderedCommRing`.
+This file contains the additive group and multiplicative monoid instances on the integers.
+
+See note [foundational algebra order theory].
 -/
+
+assert_not_exists Ring
 
 open Nat
 
@@ -23,18 +24,18 @@ variable {α : Type*}
 
 namespace Int
 
-instance instCommRingInt : CommRing ℤ where
-  zero_mul := Int.zero_mul
-  mul_zero := Int.mul_zero
+/-! ### Instances -/
+
+instance instCommMonoidInt : CommMonoid ℤ where
   mul_comm := Int.mul_comm
-  left_distrib := Int.mul_add
-  right_distrib := Int.add_mul
   mul_one := Int.mul_one
   one_mul := Int.one_mul
   npow n x := x ^ n
   npow_zero _ := rfl
-  npow_succ n x := rfl
+  npow_succ _ _ := rfl
   mul_assoc := Int.mul_assoc
+
+instance instAddCommGroup : AddCommGroup ℤ where
   add_comm := Int.add_comm
   add_assoc := Int.add_assoc
   add_zero := Int.add_zero
@@ -51,27 +52,9 @@ instance instCommRingInt : CommRing ℤ where
     simp only [ofNat_eq_coe, ofNat_succ, Int.add_mul, Int.add_comm, Int.one_mul]
   zsmul_neg' m n := by simp only [negSucc_coe, ofNat_succ, Int.neg_mul]
   sub_eq_add_neg _ _ := Int.sub_eq_add_neg
-  natCast := (·)
-  natCast_zero := rfl
-  natCast_succ _ := rfl
-  intCast := (·)
-  intCast_ofNat _ := rfl
-  intCast_negSucc _ := rfl
 
-@[simp, norm_cast] lemma cast_id (n : ℤ) : Int.cast n = n := rfl
-
-@[simp, norm_cast] lemma cast_mul [NonAssocRing α] (m n : ℤ) : ↑(m * n) = (m * n : α) := by
-  induction n using Int.induction_on <;> simp [mul_add, mul_sub, -mul_neg, *]
-#align int.cast_mul Int.cast_mul
-
-lemma cast_natCast [AddGroupWithOne α] (n : ℕ) : (Int.cast (Nat.cast n) : α) = Nat.cast n :=
-  Int.cast_ofNat _
-
-@[simp, norm_cast] lemma cast_pow [Ring α] (n : ℤ) (m : ℕ) : ↑(n ^ m) = (n ^ m : α) := by
-  induction' m with m ih <;> simp [_root_.pow_succ, *]
-#align int.cast_pow Int.cast_pow
-
-/-! ### Extra instances to short-circuit type class resolution
+/-!
+### Extra instances to short-circuit type class resolution
 
 These also prevent non-computable instances like `Int.normedCommRing` being used to construct
 these instances non-computably.
@@ -125,3 +108,4 @@ lemma zsmul_int_one (n : ℤ) : n • (1 : ℤ) = n := mul_one _
 #align zsmul_int_one zsmul_int_one
 
 assert_not_exists Set.range
+assert_not_exists Ring

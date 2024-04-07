@@ -114,7 +114,7 @@ theorem cast_intCast (n : ℤ) : ((n : ℚ) : α) = n :=
 
 @[simp, norm_cast]
 theorem cast_natCast (n : ℕ) : ((n : ℚ) : α) = n := by
-  rw [← Int.cast_ofNat, cast_intCast, Int.cast_ofNat]
+  rw [← Int.cast_natCast, cast_intCast, Int.cast_natCast]
 #align rat.cast_coe_nat Rat.cast_natCast
 
 -- 2024-03-21
@@ -158,13 +158,13 @@ lemma cast_divInt_of_ne_zero (a : ℤ) {b : ℤ} (b0 : (b : α) ≠ 0) : (a /. b
     intro d0
     have dd := den_dvd a b
     cases' show (d : ℤ) ∣ b by rwa [e] at dd with k ke
-    have : (b : α) = (d : α) * (k : α) := by rw [ke, Int.cast_mul, Int.cast_ofNat]
+    have : (b : α) = (d : α) * (k : α) := by rw [ke, Int.cast_mul, Int.cast_natCast]
     rw [d0, zero_mul] at this
     contradiction
   rw [mk'_eq_divInt] at e
   have := congr_arg ((↑) : ℤ → α)
     ((divInt_eq_iff b0' <| ne_of_gt <| Int.coe_nat_pos.2 h.bot_lt).1 e)
-  rw [Int.cast_mul, Int.cast_mul, Int.cast_ofNat] at this
+  rw [Int.cast_mul, Int.cast_mul, Int.cast_natCast] at this
   rw [eq_comm, cast_def, div_eq_mul_inv, eq_div_iff_mul_eq d0, mul_assoc, (d.commute_cast _).eq,
     ← mul_assoc, this, mul_assoc, mul_inv_cancel b0, mul_one]
 #align rat.cast_mk_of_ne_zero Rat.cast_divInt_of_ne_zero
@@ -246,7 +246,7 @@ variable {f g : F}
 /-- If `f` and `g` agree on the integers then they are equal `φ`. -/
 theorem ext_rat' (h : ∀ m : ℤ, f m = g m) : f = g :=
   (DFunLike.ext f g) fun r => by
-    rw [← r.num_div_den, div_eq_mul_inv, map_mul, map_mul, h, ← Int.cast_ofNat,
+    rw [← r.num_div_den, div_eq_mul_inv, map_mul, map_mul, h, ← Int.cast_natCast,
       eq_on_inv₀ f g]
     apply h
 #align monoid_with_zero_hom.ext_rat' MonoidWithZeroHom.ext_rat'
