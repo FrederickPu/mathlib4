@@ -20,8 +20,6 @@ assert_not_exists Ring
 
 open Nat
 
-variable {α : Type*}
-
 namespace Int
 
 /-! ### Instances -/
@@ -59,20 +57,20 @@ instance instAddCommGroup : AddCommGroup ℤ where
 These also prevent non-computable instances like `Int.normedCommRing` being used to construct
 these instances non-computably.
 -/
-instance instAddCommMonoid    : AddCommMonoid ℤ    := by infer_instance
-instance instAddMonoid        : AddMonoid ℤ        := by infer_instance
-instance instMonoid           : Monoid ℤ           := by infer_instance
-instance instCommMonoid       : CommMonoid ℤ       := by infer_instance
-instance instCommSemigroup    : CommSemigroup ℤ    := by infer_instance
-instance instSemigroup        : Semigroup ℤ        := by infer_instance
-instance instAddCommGroup     : AddCommGroup ℤ     := by infer_instance
-instance instAddGroup         : AddGroup ℤ         := by infer_instance
-instance instAddCommSemigroup : AddCommSemigroup ℤ := by infer_instance
-instance instAddSemigroup     : AddSemigroup ℤ     := by infer_instance
-instance instCommSemiring     : CommSemiring ℤ     := by infer_instance
-instance instSemiring         : Semiring ℤ         := by infer_instance
-instance instRing             : Ring ℤ             := by infer_instance
-instance instDistrib          : Distrib ℤ          := by infer_instance
+
+instance : AddCommMonoid ℤ    := by infer_instance
+instance : AddMonoid ℤ        := by infer_instance
+instance : Monoid ℤ           := by infer_instance
+instance : CommSemigroup ℤ    := by infer_instance
+instance : Semigroup ℤ        := by infer_instance
+instance : AddGroup ℤ         := by infer_instance
+instance : AddCommGroup ℤ     := by infer_instance
+instance : AddCommSemigroup ℤ := by infer_instance
+instance : AddSemigroup ℤ     := by infer_instance
+
+/-! ### Miscellaneous lemmas -/
+
+@[simp, norm_cast] lemma cast_id {n : ℤ} : Int.cast n = n := rfl
 
 lemma natAbs_pow (n : ℤ) (k : ℕ) : Int.natAbs (n ^ k) = Int.natAbs n ^ k := by
   induction' k with k ih
