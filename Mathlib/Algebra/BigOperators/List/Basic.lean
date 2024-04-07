@@ -5,14 +5,14 @@ Authors: Johannes Hölzl, Floris van Doorn, Sébastien Gouëzel, Alex J. Best
 -/
 import Mathlib.Algebra.Group.Units
 import Mathlib.Algebra.GroupWithZero.NeZero
-import Mathlib.Data.Int.Basic
+import Mathlib.Algebra.Ring.Int
+import Mathlib.Algebra.Ring.Nat
 import Mathlib.Data.List.Dedup
 import Mathlib.Data.List.ProdSigma
 import Mathlib.Data.List.Join
 import Mathlib.Data.List.Perm
 import Mathlib.Data.List.Range
 import Mathlib.Data.List.Rotate
-import Mathlib.Data.Nat.Basic
 
 #align_import data.list.big_operators.basic from "leanprover-community/mathlib"@"6c5f73fd6f6cc83122788a80a27cdd54663609f4"
 
