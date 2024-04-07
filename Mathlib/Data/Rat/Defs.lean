@@ -545,6 +545,6 @@ theorem coe_int_inj (m n : ℤ) : (m : ℚ) = n ↔ m = n :=
 end Casts
 
 theorem mkRat_eq_div (n : ℤ) (d : ℕ) : mkRat n d = n / d := by
-  simp only [mkRat_eq, divInt_eq_div, Int.cast_ofNat]
+  simp only [mkRat_eq, divInt_eq_div, Int.cast_natCast]
 
 end Rat
