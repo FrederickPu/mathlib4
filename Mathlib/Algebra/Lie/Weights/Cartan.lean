@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Oliver Nash
 -/
 import Mathlib.Algebra.Lie.CartanSubalgebra
-import Mathlib.Algebra.Lie.Character
 import Mathlib.Algebra.Lie.Weights.Basic
 
 /-!
@@ -19,9 +18,8 @@ Basic definitions and properties of the above ideas are provided in this file.
 
 ## Main definitions
 
-  * `LieModule.IsWeight`
   * `LieAlgebra.rootSpace`
-  * `LieAlgebra.IsRoot`
+  * `LieAlgebra.corootSpace`
   * `LieAlgebra.rootSpaceWeightSpaceProduct`
   * `LieAlgebra.rootSpaceProduct`
   * `LieAlgebra.zeroRootSubalgebra_eq_iff_is_cartan`
@@ -35,28 +33,6 @@ open Set
 variable {R L : Type*} [CommRing R] [LieRing L] [LieAlgebra R L]
   (H : LieSubalgebra R L) [LieAlgebra.IsNilpotent R H]
   {M : Type*} [AddCommGroup M] [Module R M] [LieRingModule L M] [LieModule R L M]
-
-namespace LieModule
-
-open LieAlgebra TensorProduct TensorProduct.LieModule
-open scoped BigOperators TensorProduct
-
-variable (M)
-
-/-- Given a Lie module `M` of a Lie algebra `L`, a weight of `M` with respect to a nilpotent
-subalgebra `H ⊆ L` is a Lie character whose corresponding weight space is non-empty. -/
-def IsWeight (χ : LieCharacter R H) : Prop :=
-  weightSpace M χ ≠ ⊥
-#align lie_module.is_weight LieModule.IsWeight
-
-/-- For a non-trivial nilpotent Lie module over a nilpotent Lie algebra, the zero character is a
-weight with respect to the `⊤` Lie subalgebra. -/
-theorem isWeight_zero_of_nilpotent [Nontrivial M] [LieAlgebra.IsNilpotent R L] [IsNilpotent R L M] :
-    IsWeight (⊤ : LieSubalgebra R L) M 0 := by
-  rw [IsWeight, LieHom.coe_zero, zero_weightSpace_eq_top_of_nilpotent]; exact top_ne_bot
-#align lie_module.is_weight_zero_of_nilpotent LieModule.isWeight_zero_of_nilpotent
-
-end LieModule
 
 namespace LieAlgebra
 
@@ -73,12 +49,6 @@ theorem zero_rootSpace_eq_top_of_nilpotent [IsNilpotent R L] :
     rootSpace (⊤ : LieSubalgebra R L) 0 = ⊤ :=
   zero_weightSpace_eq_top_of_nilpotent L
 #align lie_algebra.zero_root_space_eq_top_of_nilpotent LieAlgebra.zero_rootSpace_eq_top_of_nilpotent
-
-/-- A root of a Lie algebra `L` with respect to a nilpotent subalgebra `H ⊆ L` is a weight of `L`,
-regarded as a module of `H` via the adjoint action. -/
-abbrev IsRoot (χ : LieCharacter R H) :=
-  χ ≠ 0 ∧ IsWeight H L χ
-#align lie_algebra.is_root LieAlgebra.IsRoot
 
 @[simp]
 theorem rootSpace_comap_eq_weightSpace (χ : H → R) :
@@ -282,7 +252,10 @@ denoted `⁅H(α), H(-α)⁆`.
 
 When `L` is semisimple over a field of characteristic zero, it is one-dimensional and spanned by
 corresponding coroot corresponding to `α`, see
-`LieAlgebra.IsKilling.corootSpace_eq_span_singleton`. -/
+`LieAlgebra.IsKilling.corootSpace_eq_span_singleton`.
+
+Note that the name "coroot space" is not standard as this space does not seem to have a name in the
+informal literature. -/
 def corootSpace : LieIdeal R H :=
   LieModuleHom.range <| ((rootSpace H 0).incl.comp <|
     rootSpaceProduct R L H α (-α) 0 (add_neg_self α)).codRestrict H.toLieSubmodule (by

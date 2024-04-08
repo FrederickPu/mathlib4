@@ -536,23 +536,22 @@ lemma killingForm_apply_eq_zero_of_mem_rootSpace_of_add_ne_zero {α β : H → K
     (LieSubmodule.iSup_eq_top_iff_coe_toSubmodule.mp <| iSup_weightSpace_eq_top K H L)
   exact LinearMap.trace_eq_zero_of_mapsTo_ne hds σ hσ hf
 
-lemma mem_ker_killingForm_of_bar {α : H → K} {x : L} (hx : x ∈ rootSpace H α)
+/-- Elements of the `α` root space which are Killing-orthogonal to the `-α` root space are
+Killing-orthogonal to all of `L`. -/
+lemma mem_ker_killingForm_of_mem_rootSpace_of_forall_rootSpace_neg
+    {α : H → K} {x : L} (hx : x ∈ rootSpace H α)
     (hx' : ∀ y ∈ rootSpace H (-α), killingForm K L x y = 0) :
     x ∈ LinearMap.ker (killingForm K L) := by
   rw [LinearMap.mem_ker]
   ext y
-  have hy : y ∈ ⨆ β, rootSpace H β := by
-    have := LieSubmodule.iSup_eq_top_iff_coe_toSubmodule.mp <| iSup_weightSpace_eq_top K H L
-    rw [← LieSubmodule.iSup_coe_toSubmodule, LieSubmodule.coeSubmodule_eq_top_iff] at this
-    rw [this]
-    exact Submodule.mem_top
-  induction' hy using LieSubmodule.iSup_induction' with β y hy y₁ y₂ _ _ hy₁ hy₂
-  · by_cases hαβ : α + β = 0
-    · replace hy : y ∈ rootSpace H (-α) := by rw [add_eq_zero_iff_neg_eq] at hαβ; rwa [← hαβ] at hy
-      exact hx' _ hy
+  have hy : y ∈ ⨆ β, rootSpace H β := by simp [iSup_weightSpace_eq_top K H L]
+  induction hy using LieSubmodule.iSup_induction'
+  · next β y hy =>
+    by_cases hαβ : α + β = 0
+    · exact hx' _ (add_eq_zero_iff_neg_eq.mp hαβ ▸ hy)
     · exact killingForm_apply_eq_zero_of_mem_rootSpace_of_add_ne_zero K L H hx hy hαβ
   · simp
-  · simp [map_add, hy₁, hy₂]
+  · simp_all
 
 namespace IsKilling
 
@@ -609,7 +608,7 @@ lemma killingEquivCartan_symm_apply_mem_corootSpace (α : weight K H L) :
     refine ⟨(killingForm K L e f)⁻¹ • e, Submodule.smul_mem _ _ he', f, hf', ?_⟩
     simpa [smul_lie, inv_smul_eq_iff₀ hf, Subtype.ext_iff] using hef
   contrapose! he₀
-  simpa using mem_ker_killingForm_of_bar K L H he' he₀
+  simpa using mem_ker_killingForm_of_mem_rootSpace_of_forall_rootSpace_neg K L H he' he₀
 
 /-- Given a splitting Cartan subalgebra `H` of a finite-dimensional Lie algebra with non-singular
 Killing form, the corresponding roots span the dual space of `H`. -/
