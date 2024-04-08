@@ -53,20 +53,32 @@ class LinearWeights [LieAlgebra.IsNilpotent R L] : Prop :=
   map_smul : ∀ χ : L → R, weightSpace M χ ≠ ⊥ → ∀ (t : R) x, χ (t • x) = t • χ x
   map_lie : ∀ χ : L → R, weightSpace M χ ≠ ⊥ → ∀ x y : L, χ ⁅x, y⁆ = 0
 
-/-- A weight of a Lie module, bundled as a linear map. -/
-@[simps]
-def weight.toLinear [LieAlgebra.IsNilpotent R L] [LinearWeights R L M]
-    [NoZeroSMulDivisors R M] [IsNoetherian R M] (χ : weight R L M) :
-    L →ₗ[R] R where
-  toFun := χ
-  map_add' := LinearWeights.map_add (χ : L → R) (M := M) <| (Finite.mem_toFinset _).mp χ.property
-  map_smul' := LinearWeights.map_smul (χ : L → R) (M := M) <| (Finite.mem_toFinset _).mp χ.property
+variable [LieAlgebra.IsNilpotent R L] [LinearWeights R L M]
+    [NoZeroSMulDivisors R M] [IsNoetherian R M] (χ : weight R L M)
 
 @[simp]
-lemma weight.toLinear_apply_lie [LieAlgebra.IsNilpotent R L] [LinearWeights R L M]
-    [NoZeroSMulDivisors R M] [IsNoetherian R M] (χ : weight R L M) (x y : L) :
-    (χ : L → R) ⁅x, y⁆ = 0 :=
-  LinearWeights.map_lie (χ : L → R) ((Finite.mem_toFinset _).mp χ.property) x y
+lemma weight.apply_lie (x y : L) :
+    χ ⁅x, y⁆ = 0 :=
+  LinearWeights.map_lie χ ((Finite.mem_toFinset _).mp χ.property) x y
+
+variable {R L M} in
+/-- A weight of a Lie module, bundled as a linear map. -/
+@[simps]
+def weight.toLinear : L →ₗ[R] R where
+  toFun := χ
+  map_add' := LinearWeights.map_add χ <| (Finite.mem_toFinset _).mp χ.property
+  map_smul' := LinearWeights.map_smul χ <| (Finite.mem_toFinset _).mp χ.property
+
+attribute [coe] weight.toLinear
+
+instance weight.instCoeLinearMap : CoeOut (weight R L M) (L →ₗ[R] R) where
+  coe := weight.toLinear
+
+@[simp] lemma weight.coe_coe : (↑(χ : L →ₗ[R] R) : L → R) = (χ : L → R) := rfl
+
+@[simp] lemma weight.coe_toLinear_eq_zero_iff :
+    (χ : L →ₗ[R] R) = 0 ↔ (χ : L → R) = 0 :=
+  ⟨fun h ↦ funext fun x ↦ LinearMap.congr_fun h x, fun h ↦ by aesop⟩
 
 /-- For an Abelian Lie algebra, the weights of any Lie module are linear. -/
 instance instLinearWeightsOfIsLieAbelian [IsLieAbelian L] [NoZeroSMulDivisors R M] :
@@ -192,8 +204,9 @@ end shiftedWeightSpace
 has a simultaneous generalized eigenvector for the action of `L` then it has a simultaneous true
 eigenvector, provided `M` is Noetherian and has linear weights. -/
 lemma exists_forall_lie_eq_smul_of_weightSpace_ne_bot
-    [IsNoetherian R M] (hχ : weightSpace M χ ≠ ⊥) :
+    [IsNoetherian R M] (χ : weight R L M) :
     ∃ m : M, m ≠ 0 ∧ ∀ x : L, ⁅x, m⁆ = χ x • m := by
+  have hχ : weightSpace M χ ≠ ⊥ := by simp
   replace hχ : Nontrivial (shiftedWeightSpace R L M χ) :=
     (LieSubmodule.nontrivial_iff_ne_bot R L M).mpr hχ
   obtain ⟨⟨⟨m, _⟩, hm₁⟩, hm₂⟩ :=

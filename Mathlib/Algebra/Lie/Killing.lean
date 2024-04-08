@@ -214,6 +214,16 @@ lemma trace_toEndomorphism_eq_zero_of_mem_lcs
   · simp [hu, hv]
   · simp [hu]
 
+@[simp]
+lemma traceForm_lieSubalgebra_mk_left (L' : LieSubalgebra R L) {x : L} (hx : x ∈ L') (y : L') :
+    traceForm R L' M ⟨x, hx⟩ y = traceForm R L M x y :=
+  rfl
+
+@[simp]
+lemma traceForm_lieSubalgebra_mk_right (L' : LieSubalgebra R L) {x : L'} {y : L} (hy : y ∈ L') :
+    traceForm R L' M x ⟨y, hy⟩ = traceForm R L M x y :=
+  rfl
+
 open TensorProduct
 
 variable [LieAlgebra.IsNilpotent R L] [IsDomain R] [IsPrincipalIdealRing R]
@@ -486,18 +496,19 @@ lemma traceForm_eq_sum_finrank_nsmul_mul (x y : L) :
     (LieSubmodule.iSup_eq_top_iff_coe_toSubmodule.mp <| iSup_weightSpace_eq_top K L M)
   simp only [LinearMap.coeFn_sum, Finset.sum_apply, traceForm_apply_apply,
     LinearMap.trace_eq_sum_trace_restrict' hds hfin hxy]
-  exact Finset.sum_congr (by simp) (fun χ _ ↦ traceForm_weightSpace_eq K L M χ x y)
+  exact Finset.sum_congr (by simp [weight]) (fun χ _ ↦ traceForm_weightSpace_eq K L M χ x y)
 
 lemma traceForm_eq_sum_finrank_nsmul :
-    traceForm K L M = ∑ χ : weight K L M, finrank K (weightSpace M (χ : L → K)) •
-      (weight.toLinear K L M χ).smulRight (weight.toLinear K L M χ) := by
+    traceForm K L M = ∑ χ : weight K L M, finrank K (weightSpace M χ) •
+      (χ : L →ₗ[K] K).smulRight (χ : L →ₗ[K] K) := by
   ext
   rw [traceForm_eq_sum_finrank_nsmul_mul, ← Finset.sum_attach]
   simp
+  congr -- TODO Remove (why now necessary?)
 
 -- The reverse inclusion should also hold: TODO prove this!
 lemma range_traceForm_le_span_weight :
-    LinearMap.range (traceForm K L M) ≤ span K (range (weight.toLinear K L M)) := by
+    LinearMap.range (traceForm K L M) ≤ span K (range (weight.toLinear (M := M))) := by
   rintro - ⟨x, rfl⟩
   rw [LieModule.traceForm_eq_sum_finrank_nsmul, LinearMap.coeFn_sum, Finset.sum_apply]
   refine Submodule.sum_mem _ fun χ _ ↦ ?_
@@ -582,10 +593,9 @@ lemma killingEquivCartan_apply_foo (f : Module.Dual K H) (z : H) :
 `exists_forall_lie_eq_smul_of_weightSpace_ne_bot` instead of Lie's theorem (and so avoid assuming
 `K` has characteristic zero). -/
 lemma killingEquivCartan_symm_apply_mem_corootSpace (α : weight K H L) :
-    (killingEquivCartan H).symm (weight.toLinear K H L α) ∈ corootSpace α := by
-  set α' := (killingEquivCartan H).symm (weight.toLinear K H L α)
-  have hα : rootSpace H (α : H → K) ≠ ⊥ := by aesop -- Missing API for `weight`
-  obtain ⟨e, he₀, he⟩ := exists_forall_lie_eq_smul_of_weightSpace_ne_bot K H L α hα
+    (killingEquivCartan H).symm α ∈ corootSpace α := by
+  set α' := (killingEquivCartan H).symm α
+  obtain ⟨e, he₀, he⟩ := exists_forall_lie_eq_smul_of_weightSpace_ne_bot K H L α
   have he' : e ∈ rootSpace H α :=
     (mem_weightSpace L (α : H → K) e).mpr fun x ↦ ⟨1, by simp [← he x]⟩
   suffices ∃ f ∈ rootSpace H (-α), killingForm K L e f ≠ 0 by
@@ -597,12 +607,11 @@ lemma killingEquivCartan_symm_apply_mem_corootSpace (α : weight K H L) :
       have h_inj : Function.Injective (traceForm K H L) := by simp [← LinearMap.ker_eq_bot]
       rw [← h_inj.eq_iff]
       ext ⟨z, hz⟩
-      simp only [map_smul, LinearMap.smul_apply, smul_eq_mul]
-      change killingForm K L ⁅e, f⁆ z = killingForm K L e f * killingForm K L α' z -- Missing API
       specialize he ⟨z, hz⟩
       simp only [LieSubalgebra.coe_bracket_of_module] at he
+      simp only [traceForm_lieSubalgebra_mk_right, map_smul, LinearMap.smul_apply, smul_eq_mul]
       rw [traceForm_comm, ← traceForm_apply_lie_apply, he, mul_comm]
-      simp [killingEquivCartan_apply_foo (f := (weight.toLinear K H L α)) (z := ⟨z, hz⟩)]
+      simp [killingEquivCartan_apply_foo (f := α) (z := ⟨z, hz⟩)]
     rw [mem_corootSpace]
     apply Submodule.subset_span
     refine ⟨(killingForm K L e f)⁻¹ • e, Submodule.smul_mem _ _ he', f, hf', ?_⟩
@@ -614,14 +623,14 @@ lemma killingEquivCartan_symm_apply_mem_corootSpace (α : weight K H L) :
 Killing form, the corresponding roots span the dual space of `H`. -/
 @[simp]
 lemma span_weight_eq_top :
-    span K (range (weight.toLinear K H L)) = ⊤ := by
+    span K (range (weight.toLinear (R := K) (L := H) (M := L))) = ⊤ := by
   refine eq_top_iff.mpr (le_trans ?_ (LieModule.range_traceForm_le_span_weight K H L))
   rw [← traceForm_flip K H L, ← LinearMap.dualAnnihilator_ker_eq_range_flip,
     ker_traceForm_eq_bot_of_isCartanSubalgebra, Submodule.dualAnnihilator_bot]
 
 @[simp]
 lemma iInf_ker_weight_eq_bot :
-    ⨅ α : weight K H L, LinearMap.ker (weight.toLinear K H L α) = ⊥ := by
+    ⨅ α : weight K H L, LinearMap.ker (α : H →ₗ[K] K) = ⊥ := by
   rw [← Subspace.dualAnnihilator_inj, Subspace.dualAnnihilator_iInf_eq,
     Submodule.dualAnnihilator_bot]
   simp [← LinearMap.range_dualMap_eq_dualAnnihilator_ker, ← Submodule.span_range_eq_iSup]
@@ -649,16 +658,16 @@ lemma eq_zero_of_apply_eq_zero_of_mem_corootSpace
     (x : H) (α : H → K) (hαx : α x = 0) (hx : x ∈ corootSpace α) :
     x = 0 := by
   rcases eq_or_ne α 0 with rfl | hα; · simpa using hx
-  replace hx : x ∈ ⨅ β : weight K H L, LinearMap.ker (weight.toLinear K H L β) := by
-    simp only [Submodule.mem_iInf, Subtype.forall, Finite.mem_toFinset]
-    intro β hβ
-    obtain ⟨a, b, hb, hab⟩ := exists_forall_mem_corootSpace_smul_add_eq_zero L α β hα hβ
+  replace hx : x ∈ ⨅ β : weight K H L, LinearMap.ker (β : H →ₗ[K] K) := by
+    refine (Submodule.mem_iInf _).mpr fun β ↦ ?_
+    obtain ⟨a, b, hb, hab⟩ :=
+      exists_forall_mem_corootSpace_smul_add_eq_zero L α β hα (weightSpace_ne_bot K H L β)
     simpa [hαx, hb.ne'] using hab _ hx
   simpa using hx
 
 /-- See also `LieAlgebra.IsKilling.isCompl_ker_weight_corootSpace`. -/
 lemma disjoint_ker_weight_corootSpace (α : weight K H L) :
-    Disjoint (LinearMap.ker (weight.toLinear K H L α)) (corootSpace (α : H → K)) := by
+    Disjoint (LinearMap.ker (α : H →ₗ[K] K)) (corootSpace (α : H → K)) := by
   rw [disjoint_iff]
   refine (Submodule.eq_bot_iff _).mpr fun x ⟨hαx, hx⟩ ↦ ?_
   replace hαx : (α : H → K) x = 0 := by simpa using hαx
@@ -666,48 +675,45 @@ lemma disjoint_ker_weight_corootSpace (α : weight K H L) :
 
 /-- The coroot corresponding to a root.
 
-TODO Should we have an abbrev for `(killingEquivCartan H).symm (weight.toLinear K H L α)`? Or
+TODO Should we have an abbrev for `(killingEquivCartan H).symm α`? Or
 maybe we should have API for a linear form + vector which pair together to give `1`? -/
 noncomputable def coroot (α : weight K H L) : H := by
-  exact 2 • (weight.toLinear K H L α <| (killingEquivCartan H).symm (weight.toLinear K H L α))⁻¹ •
-    (killingEquivCartan H).symm (weight.toLinear K H L α)
+  exact 2 • (α <| (killingEquivCartan H).symm α)⁻¹ • (killingEquivCartan H).symm α
 
-lemma root_apply_coroot (α : weight K H L) (hα : weight.toLinear K H L α ≠ 0) :
-    weight.toLinear K H L α (coroot α) = 2 := by
-  set t := (weight.toLinear K H L α <| (killingEquivCartan H).symm (weight.toLinear K H L α))
+lemma root_apply_coroot (α : weight K H L) (hα : (α : H →ₗ[K] K) ≠ 0) :
+    (α : H →ₗ[K] K) (coroot α) = 2 := by
+  set t := ((α : H →ₗ[K] K) <| (killingEquivCartan H).symm ((α : H →ₗ[K] K)))
   suffices t ≠ 0 by simpa [coroot] using inv_mul_cancel this
   contrapose! hα
-  suffices (killingEquivCartan H).symm (weight.toLinear K H L α) ∈
-      LinearMap.ker (weight.toLinear K H L α) ⊓ corootSpace (α : H → K) by
+  suffices (killingEquivCartan H).symm ((α : H →ₗ[K] K)) ∈
+      LinearMap.ker ((α : H →ₗ[K] K)) ⊓ corootSpace (α : H → K) by
     rw [(disjoint_ker_weight_corootSpace α).eq_bot] at this
     simpa using this
   exact Submodule.mem_inf.mp ⟨hα, killingEquivCartan_symm_apply_mem_corootSpace K L H α⟩
 
 lemma corootSpace_eq_span_singleton (α : weight K H L) :
-    corootSpace (α : H → K) = K ∙ (killingEquivCartan H).symm (weight.toLinear K H L α) := by
+    corootSpace α = K ∙ (killingEquivCartan H).symm α := by
   -- TODO: fix this truly awful proof.
   rcases eq_or_ne (α : H → K) 0 with hα | hα
-  · have hα' : weight.toLinear K H L α = 0 := by ext z; simp [hα]
+  · have hα' : (α : H →ₗ[K] K) = 0 := by ext z; simp [hα]
     rw [hα, hα']
     simp
-  replace hα : (killingEquivCartan H).symm (weight.toLinear K H L α) ≠ 0 := by
+  replace hα : (killingEquivCartan H).symm α ≠ 0 := by
     contrapose! hα
     simp only [AddEquivClass.map_eq_zero_iff] at hα
     ext z
     simpa using LinearMap.congr_fun hα z
-  have : (K ∙ (killingEquivCartan H).symm (weight.toLinear K H L α) : Submodule K H) ≤
-      corootSpace (α : H → K) := by
+  have : (K ∙ (killingEquivCartan H).symm α : Submodule K H) ≤ corootSpace (α : H → K) := by
     simpa using killingEquivCartan_symm_apply_mem_corootSpace K L H α
   refine (eq_of_le_of_finrank_le this ?_).symm
   rw [finrank_span_singleton hα, LieIdeal.coe_to_lieSubalgebra_to_submodule]
-  have aux := Submodule.finrank_sup_add_finrank_inf_eq (LinearMap.ker (weight.toLinear K H L α))
-    (corootSpace (α : H → K))
+  have aux := Submodule.finrank_sup_add_finrank_inf_eq (LinearMap.ker (α : H →ₗ[K] K))
+    (corootSpace α)
   rw [(disjoint_ker_weight_corootSpace α).eq_bot] at aux
   simp only [finrank_bot, add_zero] at aux
   have aux₂ : finrank K
-      ↑(LinearMap.ker (weight.toLinear K H L α) ⊔ (corootSpace (α : H → K))) ≤
-      finrank K H := by exact Submodule.finrank_le _
-  have aux₃ : finrank K H = finrank K ↑(LinearMap.ker (weight.toLinear K H L α)) + 1 := by
+      ↑(LinearMap.ker ((α : H →ₗ[K] K)) ⊔ (corootSpace α)) ≤ finrank K H := Submodule.finrank_le _
+  have aux₃ : finrank K H = finrank K ↑(LinearMap.ker (α : H →ₗ[K] K)) + 1 := by
     simp only [ne_eq, AddEquivClass.map_eq_zero_iff] at hα
     rw [Module.Dual.finrank_ker_add_one_of_ne_zero hα]
   rw [aux, aux₃] at aux₂
@@ -722,13 +728,9 @@ unique element of `⁅H(α), H(-α)⁆` on which `α` takes value `2`.
 
 In fact these complementary spaces are orthogonal (wrt the Killing form). TODO (easy) prove this. -/
 lemma isCompl_ker_weight_corootSpace (α : weight K H L) (hα : (α : H → K) ≠ 0) :
-    IsCompl (LinearMap.ker (weight.toLinear K H L α)) (corootSpace (α : H → K)) := by
-  suffices corootSpace (α : H → K) ≠ ⊥ by
-    have hα' : weight.toLinear K H L α ≠ 0 := by
-      -- OMG we're proving this again 🙄 API sorely missing
-      contrapose! hα
-      ext z
-      simpa using LinearMap.congr_fun hα z
+    IsCompl (LinearMap.ker (α : H →ₗ[K] K)) (corootSpace α) := by
+  suffices corootSpace α ≠ ⊥ by
+    have hα' : (α : H →ₗ[K] K) ≠ 0 := by aesop
     apply Module.Dual.isCompl_ker_of_disjoint_of_ne_bot hα' (disjoint_ker_weight_corootSpace α)
     simp only [LieIdeal.coe_to_lieSubalgebra_to_submodule, LieModuleHom.coeSubmodule_range]
     rw [ne_eq, ← LieSubmodule.coe_toSubmodule_eq_iff] at this
@@ -736,12 +738,9 @@ lemma isCompl_ker_weight_corootSpace (α : weight K H L) (hα : (α : H → K) �
   contrapose! hα
   rw [← LieSubmodule.coeSubmodule_eq_bot_iff] at hα
   change (corootSpace (α : H → K) : Submodule K H) = _ at hα --Fix bad coercion?
-  rw [corootSpace_eq_span_singleton α, killingEquivCartan_symm_apply,
+  rwa [corootSpace_eq_span_singleton α, killingEquivCartan_symm_apply,
     Submodule.span_singleton_eq_bot, AddEquivClass.map_eq_zero_iff,
-    AddEquivClass.map_eq_zero_iff] at hα
-  -- Missing API for `weight.toLinear`
-  ext x
-  simpa using LinearMap.congr_fun hα x
+    AddEquivClass.map_eq_zero_iff, weight.coe_toLinear_eq_zero_iff] at hα
 
 end CharZero
 

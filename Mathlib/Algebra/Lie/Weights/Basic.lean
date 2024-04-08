@@ -603,9 +603,24 @@ lemma finite_weightSpace_ne_bot [NoZeroSMulDivisors R M] [IsNoetherian R M] :
   CompleteLattice.WellFounded.finite_ne_bot_of_independent
     (LieSubmodule.wellFounded_of_noetherian R L M) (independent_weightSpace R L M)
 
+-- TODO Should I make this a `structure` for dot notation, e.g., for `weight.toLinear`?
 /-- The collection of weights of a Noetherian Lie module, bundled as a `Finset`. -/
-noncomputable abbrev weight [NoZeroSMulDivisors R M] [IsNoetherian R M] :=
+noncomputable def weight [NoZeroSMulDivisors R M] [IsNoetherian R M] :=
   (finite_weightSpace_ne_bot R L M).toFinset
+
+instance weight.instFunLike [NoZeroSMulDivisors R M] [IsNoetherian R M] :
+    FunLike (weight R L M) L R where
+  coe χ := χ.1
+  coe_injective' χ₁ χ₂ h := by ext x; simp [h]
+
+@[simp] lemma coe_weight_mk [NoZeroSMulDivisors R M] [IsNoetherian R M] (χ : L → R) (h) :
+    (↑(⟨χ, h⟩ : weight R L M) : L → R) = χ :=
+  rfl
+
+@[simp] lemma weightSpace_ne_bot [NoZeroSMulDivisors R M] [IsNoetherian R M] (χ : weight R L M) :
+    weightSpace M χ ≠ ⊥ := by
+  obtain ⟨χ, hχ⟩ := χ
+  simpa [weight] using hχ
 
 /-- A Lie module `M` of a Lie algebra `L` is triangularizable if the endomorhpism of `M` defined by
 any `x : L` is triangularizable. -/
