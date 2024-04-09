@@ -305,34 +305,6 @@ lemma _root_.ContDiff.fourierPowSMulRight {f : V → E} {k : ℕ∞} (hf : ContD
   apply (ContinuousMultilinearMap.contDiff _).comp
   exact contDiff_pi.2 (fun _ ↦ L.contDiff)
 
-
-#check ContinuousLinearMap.norm_iteratedFDeriv_le_of_bilinear_of_le_one
-
-lemma gloug {f : V → E} {K : ℕ∞} {C : ℝ} (hf : ContDiff ℝ K f) (n : ℕ) {k : ℕ} (hk : k ≤ K)
-    {v : V} (hv : ∀ i ≤ k, ‖iteratedFDeriv ℝ i f v‖ ≤ C) :
-    ‖iteratedFDeriv ℝ k (fun v ↦ fourierPowSMulRight L f v n) v‖ ≤ (2 * π) ^ n * ‖v‖^n := by
-  have A : ContDiff ℝ K fun y ↦ (compContinuousLinearMapLRight
-      (ContinuousMultilinearMap.mkPiAlgebra ℝ (Fin n) ℝ)) fun x ↦ L y := by
-    apply (ContinuousMultilinearMap.contDiff _).comp
-    exact contDiff_pi.2 (fun _ ↦ L.contDiff)
-  simp_rw [fourierPowSMulRight_eq_comp]
-  rw [iteratedFDeriv_const_smul_apply', norm_smul (β := V [×k]→L[ℝ] (W [×n]→L[ℝ] E))]; swap
-  · exact (smulRightL ℝ (fun (_ : Fin n) ↦ W) E).isBoundedBilinearMap.contDiff.comp₂ (A.of_le hk)
-      (hf.of_le hk)
-  simp only [norm_pow, norm_neg, norm_mul, RCLike.norm_ofNat, Complex.norm_eq_abs, abs_ofReal,
-    _root_.abs_of_nonneg pi_nonneg, abs_I, mul_one]
-  gcongr
-  apply (ContinuousLinearMap.norm_iteratedFDeriv_le_of_bilinear_of_le_one _ A hf _
-    hk ContinuousMultilinearMap.norm_smulRightL_le).trans
-
-
---  have Z := (smulRightL ℝ (fun (x : Fin n) ↦ W) E).norm_iteratedFDeriv_le_of_bilinear_of_le_one
---    (smulRightL ℝ (fun (x : Fin n) ↦ W) E)
-
-
-
-#exit
-
 lemma norm_fourierPowSMulRight_le (f : V → E) (v : V) (n : ℕ) :
     ‖fourierPowSMulRight L f v n‖ ≤ (2 * π * ‖L‖) ^ n * ‖v‖ ^ n * ‖f v‖ := by
   apply ContinuousMultilinearMap.opNorm_le_bound _ (by positivity) (fun m ↦ ?_)
@@ -478,26 +450,6 @@ theorem fourierIntegral_iteratedFDeriv [FiniteDimensional ℝ V]
     · exact h'f n h'n.le
     · exact hf.differentiable_iteratedFDeriv h'n
     · exact J
-
-theorem glouglou [FiniteDimensional ℝ V]
-    {μ : Measure V} [Measure.IsAddHaarMeasure μ] {K N : ℕ∞} (hf : ContDiff ℝ N f)
-    (h'f : ∀ (k n : ℕ), k ≤ K → n ≤ N → Integrable (fun v ↦ ‖v‖^k * ‖iteratedFDeriv ℝ n f v‖) μ)
-    {k n : ℕ} (hk : k ≤ K) (hn : n ≤ N) {w : W} :
-    fourierPowSMulRight (-L.flip)
-      (iteratedFDeriv ℝ k (fourierIntegral 𝐞 μ L.toLinearMap₂ f)) w n =
-    fourierIntegral 𝐞 μ L.toLinearMap₂
-      (iteratedFDeriv ℝ n (fun v ↦ fourierPowSMulRight L f v k)) w := by
-  rw [fourierIntegral_iteratedFDeriv (N := N) _ (hf.fourierPowSMulRight _ _) _ hn]
-  · congr
-    rw [iteratedFDeriv_fourierIntegral (N := K) _ _ hf.continuous.aestronglyMeasurable hk]
-    intro k hk
-    simpa only [norm_iteratedFDeriv_zero] using h'f k 0 hk bot_le
-  · intro m hm
-
-
-
-#exit
-
 
 end VectorFourier
 
